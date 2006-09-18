@@ -1,21 +1,39 @@
 import Numeric
+from datetime import datetime
+import gc
 
 import gtk.gdk
 from gtk.gdk import Pixbuf
 
-current = Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, 10, 10)
-current.fill(0x22222222)
-current_pixel = current.get_pixels_array()
-previous = Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, 10, 10)
-previous.fill(0x00000000)
-previous_pixel = previous.get_pixels_array()
-threshold = Numeric.array([0xFF,0xFF,0xFF])
+def run():
+    current_pixbuf = gtk.gdk.pixbuf_new_from_file("bitmap/1.bmp")
+    current = current_pixbuf.get_pixels_array()
+    previous_pixbuf = gtk.gdk.pixbuf_new_from_file("bitmap/1.bmp")
+    previous = previous_pixbuf.get_pixels_array()
+    threshold = Numeric.array([0x1,0x1,0x1])
+    window = [0, 0, current_pixbuf.props.height, current_pixbuf.props.width]
+    window_is_defined = True
 
-for x in range(0, current.props.width):
-    for y in range(0, current.props.height):
-#        print "(" + str(x) + ", " + str(y) + "): " + str(current_pixel[y][x] - previous_pixel[y][x])
-        print "+: " + str((previous_pixel[y][x] + threshold).astype(Numeric.UnsignedInt8))        
-        print "-: " + str((previous_pixel[y][x] - threshold).astype(Numeric.UnsignedInt8))
-        if current_pixel[y][x] < (previous_pixel[y][x] - threshold).astype(Numeric.UnsignedInt8) | \
-           current_pixel[y][x] > (previous_pixel[y][x] - threshold).astype(Numeric.UnsignedInt8):
-            pass
+    for i in range(2,8):
+        for row in range(0, current_pixbuf.props.height):#window[0], window[2]):
+            for pixel in range(0,current_pixbuf.props.width):#window[1], window[3]):
+                if current[row][pixel] < (previous[row][pixel] - threshold) or \
+                   current[row][pixel] > (previous[row][pixel] + threshold):
+                    if window_is_defined:
+                        window[2],window[3] = row, pixel
+                    else:
+                        window = [row,pixel,row,pixel]
+                        window_is_defined = True
+        
+        previous = current            
+        current_pixbuf = gtk.gdk.pixbuf_new_from_file("bitmap/"+str(i)+".bmp")
+        current = current_pixbuf.get_pixels_array()
+        print "window:", window
+        window_is_defined = False        
+        print "current: bitmap/"+str(i)+".bmp  previous: bitmap/"+str(i-1)+".bmp"
+    gc.collect()
+
+begin = datetime(1,1,1).now()
+run()
+end = datetime(1,1,1).now()
+print end - begin
