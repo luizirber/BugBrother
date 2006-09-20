@@ -5,7 +5,12 @@ import gc
 import gtk.gdk
 from gtk.gdk import Pixbuf
 
-def run():
+from project import experiment
+from areas import point
+
+def run(exp):
+    if exp.start_time == None:
+        exp.start_time = datetime(1,1,1).now()
     current_pixbuf = gtk.gdk.pixbuf_new_from_file("bitmap/1.bmp")
     current = current_pixbuf.get_pixels_array()
     previous_pixbuf = gtk.gdk.pixbuf_new_from_file("bitmap/1.bmp")
@@ -20,16 +25,16 @@ def run():
 
     for i in range(2,8):
         begin = datetime(1,1,1).now()
-        middle = (window[2] + window[0])/2
+        middle_height = (window[2] + window[0])/2
         size = (window[2] - window[0])/2
         if size < bug_size:
             size = bug_size
-        rows = range(middle-size, middle+size)#0, current_pixbuf.props.height)
-        middle = (window[3] + window[1])/2
+        rows = range(middle_height-size, middle_height+size)#0, current_pixbuf.props.height)
+        middle_width = (window[3] + window[1])/2
         size = (window[3] - window[1])/2
         if size < bug_size:
             size = bug_size
-        pixels = range(middle-size, middle+size)#0, current_pixbuf.props.width)
+        pixels = range(middle_width-size, middle_width+size)#0, current_pixbuf.props.width)
         for row in rows:
             for pixel in pixels:
                 if current[row][pixel] < (previous[row][pixel] - threshold) or \
@@ -47,10 +52,18 @@ def run():
         window_is_defined = False        
         print "current: bitmap/"+str(i)+".bmp  previous: bitmap/"+str(i-1)+".bmp"
         end = datetime(1,1,1).now()
-        print "quantum:", end - begin        
+        print "quantum:", end - begin
+        ptemp = point()
+        ptemp.x, ptemp.y, ptemp.start_time = (window[2] + window[0])/2, (window[3] + window[1])/2, end
+        exp.point_list.append(ptemp)     
     gc.collect()
+    exp.end_time = datetime(1,1,1).now()
 
-begin = datetime(1,1,1).now()
-run()
-end = datetime(1,1,1).now()
-print end - begin
+if __name__ == '__main__':
+    exper = experiment()
+    begin = datetime(1,1,1).now()
+    run(exper)
+    end = datetime(1,1,1).now()
+    print end - begin    
+    exper.process()
+    
