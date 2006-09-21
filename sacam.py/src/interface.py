@@ -27,16 +27,12 @@ class Interface(object):
         gladefile = "sacam.glade"
         windowname = "mainwindow"
         
-        
         self.xml = gtk.glade.XML(gladefile, windowname)
         self.window = self.xml.get_widget(windowname)
         self.project = project()
         
-        widget = self.xml.get_widget("videoOutputArea")
-        self.device_manager = Device_manager(widget)
-        
-        widget = self.xml.get_widget("hboxVideoOutput")
-        widget.add(self.device_manager.outputarea)
+        outputarea = self.xml.get_widget("videoOutputArea")
+        self.device_manager = Device_manager(outputarea)
         
         track = self.xml.get_widget("trackArea")        
            
@@ -60,7 +56,7 @@ class Interface(object):
         
         self.window.connect("destroy", self.destroy)
         self.window.show()
-       
+        
         return
    
     def main(self):

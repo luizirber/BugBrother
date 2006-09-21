@@ -14,77 +14,6 @@ import pygst
 pygst.require('0.10')
 import gst
 
-WIDTH = 640
-HEIGHT = 480
-         
-class GtkGstOutput(gtk.Widget):
-    """A widget that encapsulate a GStreamer videosink"""   
-    
-    def __init__(self, parent):
-        gtk.Widget.__init__(self)
-        self.wparent = parent
-               
-    def set_xid(self, value):
-        if platform=='win32':                        
-            self.xid = str(value)
-            self.foreignGtk = gtk.gdk.window_foreign_new(long(self.xid))
-        else:
-            self.xid = value   
-            self.foreignGtk = gtk.gdk.window_foreign_new(self.xid)
-        
-        self.window = self.foreignGtk
-       
-        self.window.reparent(self.wparent.window, 0, 0)
-            
-    def do_realize(self):
-        self.set_flags(self.flags() | gtk.REALIZED)
-#        self.window.reparent(self.wparent.window, -1, -1)        
-        self.window.set_user_data(self)
-        self.style.attach(self.window)
-        self.style.set_background(self.window, gtk.STATE_NORMAL)
-        self.window.move_resize(*self.allocation)
-        self.gc = self.style.fg_gc[gtk.STATE_NORMAL]
-        self.connect("motion_notify_event", self.motion_notify_event)
-        
-    def do_unrealize(self):
-        self.window.hide()
-      
-    def do_size_request(self, requisition):
-        requisition.height = HEIGHT
-        requisition.width = WIDTH
-    
-    
-    def do_size_allocate(self, allocation):
-        if self.flags() & gtk.REALIZED:
-            self.window.move_resize(*allocation)
-            
-    def motion_notify_event(self, widget, event):
-        # if this is a hint, then let's get all the necessary 
-        # information, if not it's all we need.
-        if event.is_hint:
-            x, y, state = event.window.get_pointer()
-        else:
-            x = event.x
-            y = event.y
-            state = event.state
-        
-#        new_stars = 0
-#        if (state & gtk.gdk.BUTTON1_MASK):
-        # loop through the sizes and see if the
-        # number of stars should change
-#            self.check_for_new_stars(event.x)   
-            
-    def do_button_press_event(self, event):
-        """The button press event virtual method"""
-           
-       # make sure it was the first button
-#        if event.button == 1:
-           #check for new stars
-#            self.check_for_new_stars(event.x)           
-        return True
-        
-gobject.type_register(GtkGstOutput)        
-         
 class Device_manager(object):
    
     xml = None
@@ -106,7 +35,7 @@ class Device_manager(object):
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("destroy", self.destroy)
         
-        self.outputarea = GtkGstOutput(output)
+        self.outputarea = output
         
         device = '/dev/video0'
         width, height = 320, 240
@@ -130,7 +59,6 @@ class Device_manager(object):
         watch_id = bus.connect('message', self.on_message)
         self.pipeline = pipeline
         self.watch_id = watch_id
-#        self.pipeline.set_state(gst.STATE_PLAYING)
         self.pipeline.set_state(gst.STATE_PAUSED)
 
         chan = self.source.find_channel_by_name('Composite1')
@@ -176,7 +104,7 @@ class Device_manager(object):
             
         for item in possibilities:
             pass            
-            
+       
         return
         
     def on_message(self, bus, message):
@@ -187,7 +115,9 @@ class Device_manager(object):
                 if platform=='win32':                
                     self.outputarea.set_xid(message.structure["handle"])
                 else:
-                    self.outputarea.set_xid(message.structure["xwindow-id"])
+#                    self.outputarea.set_xid(message.structure["xwindow-id"])
+                    self.xid = message.structure["xwindow-id"]
+                    
         return True        
           
     def on_timeout(self, *args):
@@ -202,6 +132,8 @@ class Device_manager(object):
         return True
           
     def start_video(self, widget):
+        self.sink.set_xwindow_id(self.outputarea.window.xid)
+        self.pipeline.set_state(gst.STATE_PLAYING)
         if ( widget.get_active() ):
             self.timeout_id = gobject.timeout_add(1000, self.on_timeout)
         else:
