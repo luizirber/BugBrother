@@ -41,19 +41,22 @@ class Device_manager(object):
         width, height = 320, 240
         framerate_string = '25/1'
         
-        pipeline_string = ('v4l2src name=source device=%s '
-                           '! video/x-raw-rgb,format=RGB24,width=%s,height=%s'
+        pipeline_string = ('playbin uri=file:///home/lc/temp/merry.mp4')
+#        pipeline_string =  ('v4l2src name=source device=%s '
+#                           '! video/x-raw-rgb,format=RGB24,width=%s,height=%s'
 #                           ',framerate=%s'
-                           '! ffmpegcolorspace '
-                           '! tee name=tee '
+#                           '! ffmpegcolorspace '
+#                           '! tee name=tee '
 #                           'tee. ! gdkpixbufdec name=pixbuf '
-                           'tee. ! xvimagesink name=sink force-aspect-ratio=true ') \
-                          % (device,width,height)#,framerate_string)
+#                           'tee. ! xvimagesink name=sink force-aspect-ratio=true ') \
+#                          % (device,width,height)#,framerate_string)
                           
         pipeline = gst.parse_launch(pipeline_string)
-        self.source = pipeline.get_by_name("source")
-        self.sink = pipeline.get_by_name("sink")
-        self.pixbuf = pipeline.get_by_name("pixbuf")
+#        pipeline = gst.element_factory_make("playbin", "player")
+        print [prop for prop in pipeline.props]
+#        pipeline.set_property('source', gst.element_factory_make("v4lsrc"))
+#        self.source = pipeline.props.source
+        self.sink = pipeline.get_by_name("video-sink")
         bus = pipeline.get_bus()
         bus.add_signal_watch()
         watch_id = bus.connect('message', self.on_message)
@@ -61,49 +64,49 @@ class Device_manager(object):
         self.watch_id = watch_id
         self.pipeline.set_state(gst.STATE_PAUSED)
 
-        chan = self.source.find_channel_by_name('Composite1')
-        self.source.set_channel(chan)       
+#        chan = self.source.find_channel_by_name('Composite1')
+#        self.source.set_channel(chan)       
 #        print [param.name for param in self.sink.props]        
 
-        cell = gtk.CellRendererText()
+#        cell = gtk.CellRendererText()
         
-        combodevice = self.xml.get_widget("comboDevice")
-        deviceliststore = gtk.ListStore(gobject.TYPE_STRING)        
+#        combodevice = self.xml.get_widget("comboDevice")
+#        deviceliststore = gtk.ListStore(gobject.TYPE_STRING)        
         
-        combochannel = self.xml.get_widget("comboChannel")
-        channelliststore = gtk.ListStore(gobject.TYPE_STRING)        
+#        combochannel = self.xml.get_widget("comboChannel")
+#        channelliststore = gtk.ListStore(gobject.TYPE_STRING)        
         
-        combonorm = self.xml.get_widget("comboNorm")                        
-        normliststore = gtk.ListStore(gobject.TYPE_STRING)
+#        combonorm = self.xml.get_widget("comboNorm")                        
+#        normliststore = gtk.ListStore(gobject.TYPE_STRING)
         
-        comboformat = self.xml.get_widget("comboFormat")                        
-        formatliststore = gtk.ListStore(gobject.TYPE_STRING)
+#        comboformat = self.xml.get_widget("comboFormat")                        
+#        formatliststore = gtk.ListStore(gobject.TYPE_STRING)
         
-        liststore = { combodevice:deviceliststore, combochannel:channelliststore,
-                      combonorm:normliststore, comboformat:formatliststore }
+#        liststore = { combodevice:deviceliststore, combochannel:channelliststore,
+#                      combonorm:normliststore, comboformat:formatliststore }
 
-        for comboitem in liststore:
-            comboitem.set_model(liststore[comboitem])
-            comboitem.pack_start(cell, True)
-            comboitem.add_attribute(cell, 'text', 0)
+#        for comboitem in liststore:
+#            comboitem.set_model(liststore[comboitem])
+#            comboitem.pack_start(cell, True)
+#            comboitem.add_attribute(cell, 'text', 0)
         
-        channels = [channel.label for channel in self.source.list_channels()]
-        for item in channels:
-            combochannel.append_text(item)
+#        channels = [channel.label for channel in self.source.list_channels()]
+#        for item in channels:
+#            combochannel.append_text(item)
                 
-        norms = [norm.label for norm in self.source.list_norms()]
-        for item in norms:
-            combonorm.append_text(item)
+#        norms = [norm.label for norm in self.source.list_norms()]
+#        for item in norms:
+#            combonorm.append_text(item)
             
-        possibilities = []            
-        capstring = [param.get_caps().to_string() for param in self.source.pads()]
-        caps = capstring[0].split(';')
-        for item in caps:
-            comboformat.append_text(item)
-            possibilities.append(item.split())
+#        possibilities = []            
+#        capstring = [param.get_caps().to_string() for param in self.source.pads()]
+#        caps = capstring[0].split(';')
+#        for item in caps:
+#            comboformat.append_text(item)
+#            possibilities.append(item.split())
             
-        for item in possibilities:
-            pass            
+#        for item in possibilities:
+#            pass            
        
         return
         
@@ -121,24 +124,28 @@ class Device_manager(object):
         return True        
           
     def on_timeout(self, *args):
-        temp = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB,0,8,
-                              640, 480)
-        colormap = self.outputarea.window.get_colormap()
-        temp = temp.get_from_drawable(self.outputarea.window, 
-                                      colormap, 0, 0, 0, 0, -1, -1)
-        filename = "teste" + str(choice(range(1, 20))) + '.jpg'
-        temp.save(filename, "jpeg", {"quality":"100"})
-        print filename
+#        temp = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB,0,8,
+#                              640, 480)
+#        colormap = self.outputarea.window.get_colormap()
+#        temp = temp.get_from_drawable(self.outputarea.window, 
+#                                      colormap, 0, 0, 0, 0, -1, -1)
+#        filename = "teste" + str(choice(range(1, 20))) + '.jpg'
+#        temp.save(filename, "jpeg", {"quality":"100"})
+#        print filename
         return True
           
     def start_video(self, widget):
+        self.get_current_frame()
         self.sink.set_xwindow_id(self.outputarea.window.xid)
         self.pipeline.set_state(gst.STATE_PLAYING)
         if ( widget.get_active() ):
             self.timeout_id = gobject.timeout_add(1000, self.on_timeout)
         else:
             gobject.source_remove(self.timeout_id)
-        
+            
+    def get_current_frame(self):
+        temp = self.pipeline.props.frame
+        print temp                   
                    
     def show_window(self, widget):
         self.devicewindow.show_all()
