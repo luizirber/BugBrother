@@ -41,7 +41,7 @@ class Device_manager(object):
         width, height = 320, 240
         framerate_string = '25/1'
         
-        pipeline_string = ('playbin uri=file:///home/lc/temp/merry.mp4')
+        pipeline_string = ('playbin')
 #        pipeline_string =  ('v4l2src name=source device=%s '
 #                           '! video/x-raw-rgb,format=RGB24,width=%s,height=%s'
 #                           ',framerate=%s'
@@ -53,9 +53,12 @@ class Device_manager(object):
                           
         pipeline = gst.parse_launch(pipeline_string)
 #        pipeline = gst.element_factory_make("playbin", "player")
-        print [prop for prop in pipeline.props]
 #        pipeline.set_property('source', gst.element_factory_make("v4lsrc"))
 #        self.source = pipeline.props.source
+
+#
+#       A Solution: gst_pad_add_buffer_probe
+#
         self.sink = pipeline.get_by_name("video-sink")
         bus = pipeline.get_bus()
         bus.add_signal_watch()

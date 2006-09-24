@@ -11,7 +11,6 @@ class point(object):
     
     x = None
     y = None
-    areas = []
     start_time = None
     end_time = None
     
