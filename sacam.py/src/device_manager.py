@@ -14,6 +14,8 @@ import pygst
 pygst.require('0.10')
 import gst
 
+from videoprocessor import videoprocessor
+
 class Device_manager(object):
    
     xml = None
@@ -27,8 +29,6 @@ class Device_manager(object):
     frame = None
     pixbuf = None
            
-    # TODO: see flumotion/component/producers/bttv/bttv.py 
-    # and optimize this    
     def __init__(self, output):
         
         gladefile = "sacam.glade"
@@ -37,14 +37,17 @@ class Device_manager(object):
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("destroy", self.destroy)
         
+        self.processor = videoprocessor()         
         self.outputarea = output
         
         device = '/dev/video0'
         width, height = 320, 240
         framerate_string = '25/1'
         
-        pipeline_string = ('videotestsrc name=source ! video/x-raw-rgb,format=RGB24 !'
-                           'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink ')
+        pipeline_string = ('videotestsrc name=source ! '
+                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24 !'
+                           'identity name=null ! ffmpegcolorspace ! ' 
+                           'xvimagesink name=sink force-aspect-ratio=true')
 #        pipeline_string =  ('v4l2src name=source device=%s '
 #                           '! video/x-raw-rgb,format=RGB24,width=%s,height=%s'
 #                           ',framerate=%s'
@@ -55,21 +58,13 @@ class Device_manager(object):
 #                          % (device,width,height)#,framerate_string)
                           
         pipeline = gst.parse_launch(pipeline_string)
-#        pipeline = gst.element_factory_make("playbin", "player")
-#        pipeline.set_property('source', gst.element_factory_make("v4lsrc"))
-#        self.source = pipeline.props.source
-
-#
-#       A Solution: gst_pad_add_buffer_probe
-#
+        self.source = pipeline.get_by_name("source") 
         self.null = pipeline.get_by_name("null")
         self.null.connect("handoff", self.frame_setter)
-        self.sink = pipeline.get_by_name("video-sink")
+        self.sink = pipeline.get_by_name("sink")
         bus = pipeline.get_bus()
         bus.add_signal_watch()
-        watch_id = bus.connect('message', self.on_message)
         self.pipeline = pipeline
-        self.watch_id = watch_id
         self.pipeline.set_state(gst.STATE_PAUSED)
 
 #        chan = self.source.find_channel_by_name('Composite1')
@@ -115,65 +110,31 @@ class Device_manager(object):
             
 #        for item in possibilities:
 #            pass            
-       
-        return
         
     def frame_setter(self, element, buf):
         structure = buf.caps[0]
-        print structure.to_string()
         if structure["format"]=="RGB24":
             self.frame = buf.data
             self.frame_format = structure["format"]            
             self.frame_width = structure["width"]
             self.frame_height = structure["height"]
-            print self.frame_format, self.frame_width, self.frame_height
-            self.get_image()            
         
-    def get_image(self):
+    def get_current_frame(self):
         self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, gtk.gdk.COLORSPACE_RGB, 
-                        True, 8, self.frame_width, self.frame_height, 
-                        self.frame_width*4)
-        self.pixbuf.save("teste.bmp", "bmp", {"quality":"100"})
+                        False, 8, self.frame_width, self.frame_height, 
+                        self.frame_width*3)
         return self.pixbuf
         
-    
-    def on_message(self, bus, message):
-        t = message.type
-
-        if t == gst.MESSAGE_ELEMENT:
-            if message.structure:
-                if platform=='win32':                
-                    self.outputarea.set_xid(message.structure["handle"])
-                else:
-#                    self.outputarea.set_xid(message.structure["xwindow-id"])
-                    self.xid = message.structure["xwindow-id"]
-                    
-        return True        
-          
-    def on_timeout(self, *args):
-#        temp = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB,0,8,
-#                              640, 480)
-#        colormap = self.outputarea.window.get_colormap()
-#        temp = temp.get_from_drawable(self.outputarea.window, 
-#                                      colormap, 0, 0, 0, 0, -1, -1)
-#        filename = "teste" + str(choice(range(1, 20))) + '.jpg'
-#        temp.save(filename, "jpeg", {"quality":"100"})
-#        print filename
-        return True
-          
-    def start_video(self, widget):
+    def start_video(self, widget, experiment):
         self.get_current_frame()
-        self.sink.set_xwindow_id(self.outputarea.window.xid)
+        self.sink.set_xwindow_id(self.outputarea.window.xid)        
         self.pipeline.set_state(gst.STATE_PLAYING)
         if ( widget.get_active() ):
-            self.timeout_id = gobject.timeout_add(1000, self.on_timeout)
+            self.timeout_id = gobject.timeout_add(1000, self.processor.process_video,
+                                    self.get_current_frame(), None)#project.current_experiment)
         else:
             gobject.source_remove(self.timeout_id)
             
-    def get_current_frame(self):
-        temp = self.pipeline.props.frame
-        print temp                   
-                   
     def show_window(self, widget):
         self.devicewindow.show_all()
         

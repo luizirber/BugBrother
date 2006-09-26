@@ -1,5 +1,6 @@
 import Numeric
 from datetime import datetime, timedelta, time
+import gc
 
 import pygtk
 pygtk.require('2.0')
@@ -7,44 +8,70 @@ import gtk.gdk
 
 class videoprocessor(object):
     
-    first = None
     previous = None
     current = None
     threshold = None
     
     def __init__(self):
         self.first_run = False
+        self.window_is_defined = False
     
     def process_video(self, source, experiment):
-        
-        if experiment.start_time == None:
-            experiment.start_time = datetime().now()
-            self.threshold = array([experiment.threshold, experiment.threshold, experiment.threshold])
-        else:
-            begin = time().now()
-        
-        pixbuf = gtk.gdk.Pixbuf(gtk.gdk.COLORSPACE_RGB, False, 8, 1, 1)
-        pixbuf = pixbuf.get_from_drawable(source.Window, 
-                                   source.Window.get_colormap(),
-                                   0, 0, 0, 0, -1, -1)
         if self.first_run == False:
-            self.current = pixbuf
+#            if experiment.start_time == None:
+#                experiment.start_time = datetime(1,1,1).now()
+#                self.threshold = array([experiment.threshold, experiment.threshold, experiment.threshold])
+#            else:
+#                begin = time().now()
+            self.threshold = Numeric.array([0,0,0])
+            self.window = [0, 0, source.props.height, source.props.width]
+#            # the first window is the liberation area
+            self.window_is_defined = True
+            self.bug_max_velocity = 3
+            self.bug_size = 39 * self.bug_max_velocity
+            #this is defined inside the experiment object
+            self.current = source
             self.previous = self.current
-            self.first = self.previous
             self.first_run = True
         else:
-            self.first = self.previous
             self.previous = self.current
-            self.current = pixbuf
+            self.current = source
             
         current = self.current.get_pixels_array()
         previous = self.previous.get_pixels_array()
-        first = self.first.get_pixels_array()
         
-        for x in range(1, current.props.width):
-            for y in range(1, current.props.height):
-                if current[y][x] < (previous[y][x] - self.threshold).astype(Numeric.UnsignedInt8)) | \
-                   current[y][x] > (previous[y][x] + self.threshold).astype(Numeric.UnsignedInt8)):
-                    pass
-                  
+        begin = datetime(1,1,1).now()
+        middle_height = (self.window[2] + self.window[0])/2
+        size = (self.window[2] - self.window[0])/2
+        if size < self.bug_size:
+            size = self.bug_size
+        rows = range(middle_height-size, middle_height+size)
+                     #0, current_pixbuf.props.height)
+        middle_width = (self.window[3] + self.window[1])/2
+        size = (self.window[3] - self.window[1])/2
+        if size < self.bug_size:
+            size = self.bug_size
+        pixels = range(middle_width-size, middle_width+size)
+                       #0, current_pixbuf.props.width)
+        for row in rows:
+            for pixel in pixels:
+                if current[row][pixel] < (previous[row][pixel] - self.threshold) or \
+                   current[row][pixel] > (previous[row][pixel] + self.threshold):
+                    if window_is_defined:
+                        self.window[2],self.window[3] = row, pixel
+                    else:
+                        self.window = [row,pixel,row,pixel]
+                        self.window_is_defined = True
+        
+        self.window_is_defined = False        
+        end = datetime(1,1,1).now()
+        print "window:", self.window        
+        while gtk.events_pending():
+            gtk.main_iteration()
+        gc.collect()
+#        ptemp = point()
+#        ptemp.x, ptemp.y = (window[2] + window[0])/2, (window[3] + window[1])/2
+#        ptemp.start_time, ptemp.end_time = begin, end
+#        exp.point_list.append(ptemp)     
+                                              
         return True                           

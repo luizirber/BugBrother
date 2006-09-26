@@ -43,7 +43,8 @@ class Interface(object):
         widget.connect("clicked", self.new_project)
         
         widget = self.xml.get_widget("buttonStart")
-        widget.connect("clicked", self.device_manager.start_video)
+        widget.connect("clicked", self.device_manager.start_video, 
+                                  self.project)
         
         widget = self.xml.get_widget("buttonPreferences")
         widget.connect("clicked", self.device_manager.show_window)
@@ -53,6 +54,9 @@ class Interface(object):
         
         widget = self.xml.get_widget("buttonOpen")
         widget.connect("clicked", self.load_project)
+        
+        widget = self.xml.get_widget("buttonStart")
+        widget.set_sensitive(True)
         
         self.window.connect("destroy", self.destroy)
         self.window.show()
