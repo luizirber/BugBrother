@@ -24,6 +24,8 @@ class Device_manager(object):
     gladefile = None
     devicewindow = None
     outputarea = None
+    frame = None
+    pixbuf = None
            
     # TODO: see flumotion/component/producers/bttv/bttv.py 
     # and optimize this    
@@ -41,7 +43,8 @@ class Device_manager(object):
         width, height = 320, 240
         framerate_string = '25/1'
         
-        pipeline_string = ('playbin')
+        pipeline_string = ('videotestsrc name=source ! video/x-raw-rgb,format=RGB24 !'
+                           'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink ')
 #        pipeline_string =  ('v4l2src name=source device=%s '
 #                           '! video/x-raw-rgb,format=RGB24,width=%s,height=%s'
 #                           ',framerate=%s'
@@ -59,6 +62,8 @@ class Device_manager(object):
 #
 #       A Solution: gst_pad_add_buffer_probe
 #
+        self.null = pipeline.get_by_name("null")
+        self.null.connect("handoff", self.frame_setter)
         self.sink = pipeline.get_by_name("video-sink")
         bus = pipeline.get_bus()
         bus.add_signal_watch()
@@ -113,6 +118,25 @@ class Device_manager(object):
        
         return
         
+    def frame_setter(self, element, buf):
+        structure = buf.caps[0]
+        print structure.to_string()
+        if structure["format"]=="RGB24":
+            self.frame = buf.data
+            self.frame_format = structure["format"]            
+            self.frame_width = structure["width"]
+            self.frame_height = structure["height"]
+            print self.frame_format, self.frame_width, self.frame_height
+            self.get_image()            
+        
+    def get_image(self):
+        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, gtk.gdk.COLORSPACE_RGB, 
+                        True, 8, self.frame_width, self.frame_height, 
+                        self.frame_width*4)
+        self.pixbuf.save("teste.bmp", "bmp", {"quality":"100"})
+        return self.pixbuf
+        
+    
     def on_message(self, bus, message):
         t = message.type
 
