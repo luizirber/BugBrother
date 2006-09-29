@@ -35,8 +35,6 @@ class Interface(object):
         proc_output = self.xml.get_widget("trackArea")
         self.device_manager = Device_manager(outputarea, proc_output)
         
-        track = self.xml.get_widget("trackArea")        
-           
         widget = self.xml.get_widget("buttonManager")
         widget.connect("toggled", self.manager_toggled)
         
@@ -44,7 +42,7 @@ class Interface(object):
         widget.connect("clicked", self.new_project)
         
         widget = self.xml.get_widget("buttonStart")
-        widget.connect("clicked", self.device_manager.start_video, 
+        widget.connect("clicked", self.start_video, 
                                   self.project)
         
         widget = self.xml.get_widget("buttonPreferences")
@@ -162,6 +160,11 @@ class Interface(object):
         
         widget = self.xml.get_widget("toggleTimer")
         widget.set_sensitive(True)                        
+        
+    def start_video(self, widget, experiment):
+#        widget = self.xml.get_widget("hboxVideoOutput")        
+#        widget.add(self.device_manager.foreignGtk)                
+        self.device_manager.start_video(widget, experiment)
         
 if __name__ == "__main__":
     base = Interface()

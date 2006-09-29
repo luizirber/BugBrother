@@ -1,6 +1,5 @@
 import Numeric
 from datetime import datetime, timedelta, time
-import gc
 from random import choice
 
 import pygtk
@@ -33,6 +32,7 @@ class videoprocessor(object):
             #this is defined inside the experiment object
             self.current = source
             self.previous = self.current
+            self.graphic = gtk.gdk.GC(output.window)
             self.first_run = True
         else:
             self.previous = self.current
@@ -70,12 +70,9 @@ class videoprocessor(object):
         end = datetime(1,1,1).now()
         print "window:", self.window        
         
-#        if choice(range(0,10)) == 10:
-        gc.collect()
-        
-        graphic = gtk.gdk.GC(output.window)
         output.window.draw_pixbuf(None, self.current, 0, 0, 0, 0)
-        output.window.draw_rectangle(graphic, True, self.window[1], self.window[0],
+        output.window.draw_rectangle(self.graphic, True,         #GC, filled?
+                                     self.window[1], self.window[0], #(x0,y0)
                                      self.window[3] - self.window[1], #width 
                                      self.window[2] - self.window[0]) #height
         

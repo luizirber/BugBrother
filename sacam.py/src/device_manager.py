@@ -2,6 +2,7 @@
 
 from sys import platform
 from random import choice
+import gc
 
 import pygtk
 pygtk.require('2.0')
@@ -46,6 +47,7 @@ class Device_manager(object):
         framerate_string = '25/1'
         
         pipeline_string = ('videotestsrc name=source ! '
+                           #'v4lsrc device=/dev/video0 name=source ! '
                            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 !'
                            'identity name=null ! ffmpegcolorspace ! ' 
                            'xvimagesink name=sink force-aspect-ratio=true')
@@ -65,6 +67,7 @@ class Device_manager(object):
         self.sink = pipeline.get_by_name("sink")
         bus = pipeline.get_bus()
         bus.add_signal_watch()
+#        watch_id = bus.connect('message', self.on_message)        
         self.pipeline = pipeline
         self.pipeline.set_state(gst.STATE_PAUSED)
 
@@ -128,15 +131,25 @@ class Device_manager(object):
         
     def start_video(self, widget, experiment):
         self.get_current_frame()
-        self.sink.set_xwindow_id(self.outputarea.window.xid)        
+        self.sink.set_xwindow_id(self.outputarea.window.xid)
         self.pipeline.set_state(gst.STATE_PLAYING)
+        
+        gc.set_threshold(100)
+
         if ( widget.get_active() ):
-            self.timeout_id = gobject.timeout_add(1000, self.processor.process_video,
+            self.timeout_id = gobject.timeout_add(5000, self.processor.process_video,
                                     self.get_current_frame(), self.processor_output,
                                     None)#project.current_experiment)
         else:
             gobject.source_remove(self.timeout_id)
             
+#    def on_message(self, bus, message):
+#       t = message.type
+#       if t == gst.MESSAGE_ELEMENT:
+#           if message.structure:
+#               print self, message.structure
+#               self.foreignGtk = gtk.gdk.window_foreign_new(message.structure["xwindow-id"])
+           
     def show_window(self, widget):
         self.devicewindow.show_all()
         
