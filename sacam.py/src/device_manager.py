@@ -29,7 +29,7 @@ class Device_manager(object):
     frame = None
     pixbuf = None
            
-    def __init__(self, output):
+    def __init__(self, video_output, processor_output):
         
         gladefile = "sacam.glade"
         windowname = "devicemanager"
@@ -38,17 +38,18 @@ class Device_manager(object):
         self.devicewindow.connect("destroy", self.destroy)
         
         self.processor = videoprocessor()         
-        self.outputarea = output
+        self.outputarea = video_output
+        self.processor_output = processor_output
         
         device = '/dev/video0'
-        width, height = 320, 240
+        width, height = 640, 480
         framerate_string = '25/1'
         
         pipeline_string = ('videotestsrc name=source ! '
-                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24 !'
+                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 !'
                            'identity name=null ! ffmpegcolorspace ! ' 
                            'xvimagesink name=sink force-aspect-ratio=true')
-#        pipeline_string =  ('v4l2src name=source device=%s '
+#        pipeline_string =  ('v4lsrc name=source device=%s '
 #                           '! video/x-raw-rgb,format=RGB24,width=%s,height=%s'
 #                           ',framerate=%s'
 #                           '! ffmpegcolorspace '
@@ -131,7 +132,8 @@ class Device_manager(object):
         self.pipeline.set_state(gst.STATE_PLAYING)
         if ( widget.get_active() ):
             self.timeout_id = gobject.timeout_add(1000, self.processor.process_video,
-                                    self.get_current_frame(), None)#project.current_experiment)
+                                    self.get_current_frame(), self.processor_output,
+                                    None)#project.current_experiment)
         else:
             gobject.source_remove(self.timeout_id)
             

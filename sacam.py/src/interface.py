@@ -32,7 +32,8 @@ class Interface(object):
         self.project = project()
         
         outputarea = self.xml.get_widget("videoOutputArea")
-        self.device_manager = Device_manager(outputarea)
+        proc_output = self.xml.get_widget("trackArea")
+        self.device_manager = Device_manager(outputarea, proc_output)
         
         track = self.xml.get_widget("trackArea")        
            
