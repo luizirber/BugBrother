@@ -11,6 +11,7 @@ import gtk
 from gtk import gdk
 import gtk.glade
 import gobject
+gobject.threads_init()
 
 import pygst
 pygst.require('0.10')
@@ -109,15 +110,13 @@ class Device_manager(object):
                         self.frame_width*3)
         return self.pixbuf
         
-    def start_video(self, widget, experiment):
-#        self.timeout_id = gobject.timeout_add(1000, self.processor.process_video,
+    def start_video(self, widget, project):
+#        self.timeout_id = gobject.timeout_add(2000, self.processor.process_video,
 #                                    self.get_current_frame(),
 #                                    self.processor_output, experiment)
-            
-#        self.running = widget.get_active()     
-#        while self.running:
+
          self.processor.process_video(self.get_current_frame(), 
-                                    self.processor_output, None)#project.current_experiment)
+                                    self.processor_output, project)
            
     def show_window(self, widget):
         self.devicewindow.show_all()

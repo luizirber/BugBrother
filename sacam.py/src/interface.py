@@ -3,11 +3,14 @@
 import sys
 from os import mkdir, makedirs
 
+import gc
+
 import pygtk
 pygtk.require('2.0')
 import gtk
 import gtk.glade
 import gobject
+gobject.threads_init()
 
 import pygst
 pygst.require('0.10')
@@ -166,7 +169,7 @@ class Interface(object):
         widget = self.xml.get_widget("buttonSave")
         widget.set_sensitive(True)
         
-    def start_video(self, widget, experiment):
+    def start_video(self, widget, project):
         notebook = self.xml.get_widget("mainNotebook")
         notebook.set_current_page(1)        
         
@@ -180,7 +183,8 @@ class Interface(object):
             
         self.running = widget.get_active()    
         while self.running:
-            self.device_manager.start_video(widget,experiment)
+            self.device_manager.start_video(widget, project)
+            gc.collect()
         
 if __name__ == "__main__":
     base = Interface()

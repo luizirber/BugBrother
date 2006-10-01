@@ -18,17 +18,18 @@ class project(object):
     """
     
     name = None
-    insect_name = None
-    insect_size = None
+    bug_name = None
     compound_list = []
     temperature = None
     extra_attributes = {}
     refimage = None
-    experiment_list = None
+    experiment_list = []
     filename = None
     
     def __init__(self):
-        pass
+        self.current_experiment = experiment()
+        self.bug_max_velocity = 3
+        self.bug_size = 39 
     
     def save_project(self):
         temp = cPickle.dumps(self)
@@ -63,22 +64,9 @@ class experiment(object):
     experiment_name = None
     
     def __init__(self):
-        pass
-    
-    def add_point(self, point):
-        """
-        function used by the video processor module. put a new point in the 
-        point_list attribute.
-        """        
-        pass
-    
-    def get_last_point(self):
-        """
-        function that returns the last point inserted to make possible
-        comparisons inside the video processor module.
-        """
-        pass
-    
+        self.threshold = 6
+        self.liberation_area = [0, 0, 480, 640]
+        
     def save_experiment(self):
         pass
     
