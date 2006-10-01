@@ -3,6 +3,7 @@
 from sys import platform
 from random import choice
 import gc
+gc.set_threshold(100)
 
 import pygtk
 pygtk.require('2.0')
@@ -44,21 +45,13 @@ class Device_manager(object):
         
         device = '/dev/video0'
         width, height = 640, 480
-        framerate_string = '25/1'
         
         pipeline_string = ('videotestsrc name=source ! '
                            #'v4lsrc device=/dev/video0 name=source ! '
-                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 !'
+                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%s,height=%s !'
                            'identity name=null ! ffmpegcolorspace ! ' 
-                           'xvimagesink name=sink force-aspect-ratio=true')
-#        pipeline_string =  ('v4lsrc name=source device=%s '
-#                           '! video/x-raw-rgb,format=RGB24,width=%s,height=%s'
-#                           ',framerate=%s'
-#                           '! ffmpegcolorspace '
-#                           '! tee name=tee '
-#                           'tee. ! gdkpixbufdec name=pixbuf '
-#                           'tee. ! xvimagesink name=sink force-aspect-ratio=true ') \
-#                          % (device,width,height)#,framerate_string)
+                           'xvimagesink name=sink force-aspect-ratio=true'
+                          ) % (width,height)
                           
         pipeline = gst.parse_launch(pipeline_string)
         self.source = pipeline.get_by_name("source") 
@@ -67,9 +60,8 @@ class Device_manager(object):
         self.sink = pipeline.get_by_name("sink")
         bus = pipeline.get_bus()
         bus.add_signal_watch()
-#        watch_id = bus.connect('message', self.on_message)        
         self.pipeline = pipeline
-        self.pipeline.set_state(gst.STATE_PAUSED)
+        self.pipeline.set_state(gst.STATE_READY)
 
 #        chan = self.source.find_channel_by_name('Composite1')
 #        self.source.set_channel(chan)       
@@ -86,11 +78,8 @@ class Device_manager(object):
 #        combonorm = self.xml.get_widget("comboNorm")                        
 #        normliststore = gtk.ListStore(gobject.TYPE_STRING)
         
-#        comboformat = self.xml.get_widget("comboFormat")                        
-#        formatliststore = gtk.ListStore(gobject.TYPE_STRING)
-        
 #        liststore = { combodevice:deviceliststore, combochannel:channelliststore,
-#                      combonorm:normliststore, comboformat:formatliststore }
+#                      combonorm:normliststore }
 
 #        for comboitem in liststore:
 #            comboitem.set_model(liststore[comboitem])
@@ -105,15 +94,6 @@ class Device_manager(object):
 #        for item in norms:
 #            combonorm.append_text(item)
             
-#        possibilities = []            
-#        capstring = [param.get_caps().to_string() for param in self.source.pads()]
-#        caps = capstring[0].split(';')
-#        for item in caps:
-#            comboformat.append_text(item)
-#            possibilities.append(item.split())
-            
-#        for item in possibilities:
-#            pass            
         
     def frame_setter(self, element, buf):
         structure = buf.caps[0]
@@ -130,25 +110,14 @@ class Device_manager(object):
         return self.pixbuf
         
     def start_video(self, widget, experiment):
-        self.get_current_frame()
-        self.sink.set_xwindow_id(self.outputarea.window.xid)
-        self.pipeline.set_state(gst.STATE_PLAYING)
-        
-        gc.set_threshold(100)
-
-        if ( widget.get_active() ):
-            self.timeout_id = gobject.timeout_add(5000, self.processor.process_video,
-                                    self.get_current_frame(), self.processor_output,
-                                    None)#project.current_experiment)
-        else:
-            gobject.source_remove(self.timeout_id)
+#        self.timeout_id = gobject.timeout_add(1000, self.processor.process_video,
+#                                    self.get_current_frame(),
+#                                    self.processor_output, experiment)
             
-#    def on_message(self, bus, message):
-#       t = message.type
-#       if t == gst.MESSAGE_ELEMENT:
-#           if message.structure:
-#               print self, message.structure
-#               self.foreignGtk = gtk.gdk.window_foreign_new(message.structure["xwindow-id"])
+#        self.running = widget.get_active()     
+#        while self.running:
+         self.processor.process_video(self.get_current_frame(), 
+                                    self.processor_output, None)#project.current_experiment)
            
     def show_window(self, widget):
         self.devicewindow.show_all()

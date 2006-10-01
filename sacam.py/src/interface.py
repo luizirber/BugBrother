@@ -7,6 +7,7 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import gtk.glade
+import gobject
 
 import pygst
 pygst.require('0.10')
@@ -54,9 +55,6 @@ class Interface(object):
         widget = self.xml.get_widget("buttonOpen")
         widget.connect("clicked", self.load_project)
         
-        widget = self.xml.get_widget("buttonStart")
-        widget.set_sensitive(True)
-        
         self.window.connect("destroy", self.destroy)
         self.window.show()
         
@@ -103,9 +101,8 @@ class Interface(object):
         self.project.name = filename
         self.project.filename = filepath + '/' + filename + '/' + filename + '.exp'
         
-        widget = self.xml.get_widget("buttonSave")
-        widget.set_sensitive(True)                        
-        
+        self.ready_state()        
+                
     def load_project(self, widget):
         main = self.xml.get_widget("mainwindow")
         fsdial = gtk.FileChooserDialog("Load Project", main,
@@ -126,8 +123,13 @@ class Interface(object):
         
         if self.project.filename:
             self.project.load_project()
+                    
+        self.ready_state()
         
-        # this can be made in a better way        
+    def ready_state(self):
+        self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
+        self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)                 
+        
         widget = self.xml.get_widget("buttonManager")
         widget.set_sensitive(True)
         
@@ -159,12 +161,26 @@ class Interface(object):
         widget.set_sensitive(True)                        
         
         widget = self.xml.get_widget("toggleTimer")
-        widget.set_sensitive(True)                        
+        widget.set_sensitive(True)     
+                           
+        widget = self.xml.get_widget("buttonSave")
+        widget.set_sensitive(True)
         
     def start_video(self, widget, experiment):
-#        widget = self.xml.get_widget("hboxVideoOutput")        
-#        widget.add(self.device_manager.foreignGtk)                
-        self.device_manager.start_video(widget, experiment)
+        notebook = self.xml.get_widget("mainNotebook")
+        notebook.set_current_page(1)        
+        
+        if self.device_manager.pipeline.get_state() != gst.STATE_PLAYING:
+            self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
+        
+#        if ( widget.get_active() ):        
+#            self.device_manager.start_video(widget,experiment)
+#        else:
+#            gobject.source_remove(self.device_manager.timeout_id)
+            
+        self.running = widget.get_active()    
+        while self.running:
+            self.device_manager.start_video(widget,experiment)
         
 if __name__ == "__main__":
     base = Interface()
