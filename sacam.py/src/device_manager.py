@@ -43,24 +43,49 @@ class Device_manager(object):
         self.processor = videoprocessor()         
         self.outputarea = video_output
         self.processor_output = processor_output
+        self.frame_format = None
         
         device = '/dev/video0'
         width, height = 640, 480
+        pipeline = gst.Pipeline()
         
-        pipeline_string = ('videotestsrc name=source ! '
-                           #'v4lsrc device=/dev/video0 name=source ! '
-                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%s,height=%s !'
-                           'identity name=null ! ffmpegcolorspace ! ' 
-                           'xvimagesink name=sink force-aspect-ratio=true'
-                          ) % (width,height)
+#        pipeline_string = (#'videotestsrc name=source ! '
+#                           'v4l2src device=/dev/video0 name=source ! tee !'
+#                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%s,height=%s ! '
+#                           'video/x-raw-yuv,format=(fourcc)YUY2,width=%s,height=%s !'
+#                           'identity name=null ! '#ffmpegcolorspace ! '
+#                           'xvimagesink name=sink force-aspect-ratio=true'
+#                          ) % (width,height)
+        pipeline_string = (
+           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
+             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
+#             'tee. ! video/x-raw-yuv,format=(fourcc)YUY2,width=640,height=480 ! xvimagesink name=sink force-aspect-ratio=true \n'
+             'tee. ! ffmpegcolorspace ! ximagesink name=sink force-aspect-ratio=true \n'
+           )
                           
         pipeline = gst.parse_launch(pipeline_string)
-        self.source = pipeline.get_by_name("source") 
+        self.source = pipeline.get_by_name("source")
         self.null = pipeline.get_by_name("null")
         self.null.connect("handoff", self.frame_setter)
         self.sink = pipeline.get_by_name("sink")
+        
+#        self.source = gst.element_factory_make('v4lsrc', "source")
+#        self.source.props.device = device
+        
+#        self.null = gst.element_factory_make('identity', "null")
+#        self.null.connect("handoff", self.frame_setter)
+        
+#        colorspace = gst.element_factory_make('ffmpegcolorspace')
+        
+#        self.sink = gst.element_factory_make('xvimagesink', "sink")
+#        self.sink.props.force_aspect_ratio = True
+        
+#        pipeline.add(self.source, self.null, colorspace, self.sink) 
+#        gst.element_link_many(self.source, self.null, colorspace, self.sink)
+        
         bus = pipeline.get_bus()
         bus.add_signal_watch()
+        
         self.pipeline = pipeline
         self.pipeline.set_state(gst.STATE_READY)
 
@@ -97,12 +122,18 @@ class Device_manager(object):
             
         
     def frame_setter(self, element, buf):
-        structure = buf.caps[0]
-        if structure["format"]=="RGB24":
-            self.frame = buf.data
-            self.frame_format = structure["format"]            
-            self.frame_width = structure["width"]
-            self.frame_height = structure["height"]
+#        pass
+        for structure in buf.caps:
+#            print structure.to_string()
+            if structure["format"]=="RGB24":
+                self.frame = buf.data
+                if self.frame_format == None:
+                    self.frame_format = structure["format"]            
+                    self.frame_width = structure["width"]
+                    self.frame_height = structure["height"]
+            if structure["format"]=="YUV2":
+                pass
+                
         
     def get_current_frame(self):
         self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, gtk.gdk.COLORSPACE_RGB, 
