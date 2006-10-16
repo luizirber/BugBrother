@@ -34,7 +34,7 @@ class Device_manager(object):
            
     def __init__(self, video_output, processor_output):
         
-        gladefile = "sacam.glade"
+        gladefile = "interface/sacam.glade"
         windowname = "devicemanager"
         self.xml = gtk.glade.XML(gladefile, windowname)
         self.devicewindow = self.xml.get_widget(windowname)

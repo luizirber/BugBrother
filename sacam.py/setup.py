@@ -39,6 +39,6 @@ setup(name='SACAM',
       ext_modules = [videoprocessor],
       packages = ['sacam'],
       package_dir = { 'sacam': 'src' },
-      package_data = { 'sacam': ['pixmaps/*.png'] }
+      package_data = { 'sacam': ['interface/*'] }
      )
      

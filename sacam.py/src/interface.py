@@ -29,7 +29,7 @@ class Interface(object):
     project = None
     
     def __init__(self):
-        gladefile = "sacam.glade"
+        gladefile = "interface/sacam.glade"
         windowname = "mainwindow"
         
         self.xml = gtk.glade.XML(gladefile)
