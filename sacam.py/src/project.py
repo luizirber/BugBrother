@@ -65,7 +65,7 @@ class experiment(object):
     
     def __init__(self):
         self.threshold = 0x30
-        self.liberation_area = [320, 320, 480, 640]
+        self.release_area = [400, 400, 480, 640]
         
     def save_experiment(self):
         pass

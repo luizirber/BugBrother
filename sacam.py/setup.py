@@ -3,11 +3,13 @@
 from commands import getoutput
 from distutils.core import setup, Extension
 
-cflags = getoutput('pkg-config gdk-2.0 glib-2.0 --cflags')
+cflags = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 '
+                   'pygtk-2.0 pygobject-2.0 --cflags')
 temp = cflags.replace('-I', '')
 includes = temp.split()
 
-libs_output = getoutput('pkg-config gdk-2.0 glib-2.0 --libs')
+libs_output = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 ' 
+                        'pygtk-2.0 pygobject-2.0 --libs')
 lib_dirs = []
 libs = []
 for item in libs_output.split():
@@ -17,12 +19,13 @@ for item in libs_output.split():
     elif head == '-l':
         libs.append(tail)
     else:
-        print "Warning: unused flags supplied by `pkg-config gdk-2.0 glib-2.0 --libs'"
+        print "Warning: unused flags supplied by "\
+              "`pkg-config glib-2.0 gdk-2.0 gtk+-2.0 "\
+              "pygtk-2.0 pygobject-2.0 --libs`"
 
 videoprocessor = Extension("videoprocessor",
                             include_dirs = includes,
-                            libraries = libs,
-#                            extra_compile_args = [''],   
+                            libraries = libs,   
                             library_dirs = lib_dirs,
                             sources = ['src/videoprocessormodule.c'])
 
@@ -38,5 +41,4 @@ setup(name='SACAM',
       package_dir = { 'sacam': 'src' },
       package_data = { 'sacam': ['pixmaps/*.png'] }
      )
-
-             
+     

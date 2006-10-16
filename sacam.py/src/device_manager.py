@@ -49,19 +49,19 @@ class Device_manager(object):
         width, height = 640, 480
         pipeline = gst.Pipeline()
         
-#        pipeline_string = (#'videotestsrc name=source ! '
+        pipeline_string = ('videotestsrc name=source ! '
 #                           'v4l2src device=/dev/video0 name=source ! tee !'
-#                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%s,height=%s ! '
+                           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%s,height=%s ! '
 #                           'video/x-raw-yuv,format=(fourcc)YUY2,width=%s,height=%s !'
-#                           'identity name=null ! '#ffmpegcolorspace ! '
-#                           'xvimagesink name=sink force-aspect-ratio=true'
-#                          ) % (width,height)
-        pipeline_string = (
-           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
-             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
+                           'identity name=null ! ffmpegcolorspace ! '
+                           'xvimagesink name=sink force-aspect-ratio=true'
+                          ) % (width,height)
+#        pipeline_string = (
+#           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
+#             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
 #             'tee. ! video/x-raw-yuv,format=(fourcc)YUY2,width=640,height=480 ! xvimagesink name=sink force-aspect-ratio=true \n'
-             'tee. ! ffmpegcolorspace ! ximagesink name=sink force-aspect-ratio=true \n'
-           )
+#             'tee. ! ffmpegcolorspace ! ximagesink name=sink force-aspect-ratio=true \n'
+#           )
                           
         pipeline = gst.parse_launch(pipeline_string)
         self.source = pipeline.get_by_name("source")
@@ -122,15 +122,13 @@ class Device_manager(object):
             
         
     def frame_setter(self, element, buf):
-#        pass
         for structure in buf.caps:
-#            print structure.to_string()
             if structure["format"]=="RGB24":
-                self.frame = buf.data
                 if self.frame_format == None:
                     self.frame_format = structure["format"]            
                     self.frame_width = structure["width"]
-                    self.frame_height = structure["height"]
+                    self.frame_height = structure["height"]                
+                self.frame = buf.data
             if structure["format"]=="YUV2":
                 pass
                 
@@ -142,13 +140,14 @@ class Device_manager(object):
         return self.pixbuf
         
     def start_video(self, widget, project):
-#        self.timeout_id = gobject.timeout_add(2000, self.processor.process_video,
+#        self.timeout_id = gobject.timeout_add(200, self.processor.process_video,
 #                                    self.get_current_frame(),
-#                                    self.processor_output, experiment)
+#                                    self.processor_output, project)
 
-         self.processor.process_video(self.get_current_frame(), 
-                                    self.processor_output, project)
-           
+        self.processor.process_video(self.get_current_frame(), 
+                                     self.processor_output, project)
+        return True 
+          
     def show_window(self, widget):
         self.devicewindow.show_all()
         

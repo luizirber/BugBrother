@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import sys
-from os import mkdir, makedirs
+from os import makedirs
 
 import gc
+from datetime import datetime
 
 import pygtk
 pygtk.require('2.0')
@@ -31,7 +32,7 @@ class Interface(object):
         gladefile = "sacam.glade"
         windowname = "mainwindow"
         
-        self.xml = gtk.glade.XML(gladefile, windowname)
+        self.xml = gtk.glade.XML(gladefile)
         self.window = self.xml.get_widget(windowname)
         self.project = project()
         
@@ -67,6 +68,9 @@ class Interface(object):
         gtk.main()
 
     def save_project(self, widget):
+        if self.invalid_path:
+            #handle this
+            pass
         self.project.save_project()
 
     def destroy(self, widget):
@@ -87,22 +91,44 @@ class Interface(object):
                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                         gtk.STOCK_OK, gtk.RESPONSE_OK) )
-                
-        response = fsdialog.run()
+                                
+        self.invalid_path = True
         
-        if ( response != gtk.RESPONSE_OK ):
-            fsdialog.destroy()        
-        else:
-            filepath = fsdialog.get_current_folder()
-            filename = fsdialog.get_filename()[len(filepath) + 1:]
-            try:
-                makedirs(filepath)
-            except:
-                pass
-        fsdialog.destroy()
+        while self.invalid_path:
+            response = fsdialog.run()                        
+            if response == gtk.RESPONSE_OK :
+                current = fsdialog.get_current_folder()     
+                filepath = fsdialog.get_filename()
+                filename = filepath[len(current) + 1:]
+                try:
+                    makedirs(filepath)
+                except OSError, why:
+                    errordiag = gtk.MessageDialog ( fsdialog, 
+                                                    gtk.DIALOG_DESTROY_WITH_PARENT, 
+                                                    gtk.MESSAGE_ERROR, 
+                                                    gtk.BUTTONS_OK,
+                                                    why.args[1] )
+                    errordiag.run()
+                    errordiag.destroy()                                        
+                else:                    
+                    self.invalid_path = False
+                    fsdialog.destroy()                                        
+            else:                
+                self.invalid_path = True                 
+                fsdialog.destroy()
+                return
         
         self.project.name = filename
-        self.project.filename = filepath + '/' + filename + '/' + filename + '.exp'
+        self.project.filename = filepath + '/' + filename + '.exp'
+        
+        propdiag = self.xml.get_widget("windowExpProperties"); 
+        response = propdiag.run()
+        
+        if response == gtk.RESPONSE_OK :
+            #save the properties            
+            propdiag.hide_all()
+        
+                
         
         self.ready_state()        
                 
@@ -177,12 +203,12 @@ class Interface(object):
             self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
         
 #        if ( widget.get_active() ):        
-#            self.device_manager.start_video(widget,experiment)
+#            self.device_manager.start_video(widget, project)
 #        else:
 #            gobject.source_remove(self.device_manager.timeout_id)
             
         self.running = widget.get_active()    
-        while self.running:
+        while self.running:            
             self.device_manager.start_video(widget, project)
             gc.collect()
         

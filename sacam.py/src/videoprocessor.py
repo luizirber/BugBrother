@@ -1,6 +1,5 @@
 import Numeric
-from datetime import datetime, timedelta, time
-from random import choice
+from datetime import datetime
 
 import pygtk
 pygtk.require('2.0')
@@ -17,25 +16,25 @@ class videoprocessor(object):
     def process_video(self, source, output, project):
         if self.first_run:
             if project.current_experiment.start_time == None:
-                project.current_experiment.start_time = datetime(1,1,1).now()
-            else:
-                begin = time().now()
-            t = project.current_experiment.threshold                
-            self.threshold = Numeric.array([t,t,t])
-            self.window = project.current_experiment.liberation_area
-            self.bug_size = project.bug_size * project.bug_max_velocity
-            self.current = source
-#            self.previous = self.current
-            self.graphic = gtk.gdk.GC(output.window)
-            self.graphic.set_values(line_width = 5, line_style = gtk.gdk.LINE_ON_OFF_DASH)            
+                project.current_experiment.start_time = datetime(1,1,1).now()            
+            t = project.current_experiment.threshold                            
+            self.threshold = Numeric.array([t,t,t])            
+            self.window = project.current_experiment.release_area            
             self.middle_height = (self.window[2] + self.window[0])/2            
-            self.middle_width = (self.window[3] + self.window[1])/2
-            self.first_run = False
+            self.middle_width = (self.window[3] + self.window[1])/2            
+            self.bug_size = project.bug_size * project.bug_max_velocity
+                        
+            self.graphic = gtk.gdk.GC(output.window)
+            self.graphic.set_values(line_width = 5, line_style = gtk.gdk.LINE_ON_OFF_DASH)
+                        
+            self.current = source                        
+            self.first_run = False            
+
             return True                        
         else:
             self.previous = self.current
             self.current = source
-        
+       
             current = self.current.get_pixels_array()
             previous = self.previous.get_pixels_array()
         
@@ -77,8 +76,7 @@ class videoprocessor(object):
                 while gtk.events_pending():
                     gtk.main_iteration()
         
-            end = datetime(1,1,1).now()
-            print "quantum:", end - begin        
+            end = datetime(1,1,1).now()        
             
             self.middle_width = (self.window[3] + self.window[1])/2
             self.middle_height = (self.window[2] + self.window[0])/2
@@ -102,7 +100,6 @@ class videoprocessor(object):
             ptemp = point()
             ptemp.x, ptemp.y = self.middle_width, self.middle_height
             ptemp.start_time, ptemp.end_time = begin, end
-            print ptemp.x, ptemp.y, ptemp.start_time, ptemp.end_time
             project.current_experiment.point_list.append(ptemp)     
                                               
         return True                           
