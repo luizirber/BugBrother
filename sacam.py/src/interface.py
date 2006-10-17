@@ -86,6 +86,7 @@ class Interface(object):
             
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
+        
         fsdialog = gtk.FileChooserDialog("Save Project", main,
                        gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT |
                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
@@ -127,10 +128,21 @@ class Interface(object):
         if response == gtk.RESPONSE_OK :
             #save the properties            
             propdiag.hide_all()
-        
                 
+        self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
+        self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)                 
+                
+        refimgDiag = self.xml.get_widget("dialogRefImage"); 
+        #connect the callbacks for the refimg dialog        
+        response = refimgDiag.run()
         
-        self.ready_state()        
+        if response == gtk.RESPONSE_OK :
+            #save the refimage
+            refimgDiag.hide_all()        
+        else:
+            self.invalid_refimage = True                
+                
+        self.ready_state()
                 
     def load_project(self, widget):
         main = self.xml.get_widget("mainwindow")
@@ -155,10 +167,7 @@ class Interface(object):
                     
         self.ready_state()
         
-    def ready_state(self):
-        self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
-        self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)                 
-        
+    def ready_state(self):        
         widget = self.xml.get_widget("buttonManager")
         widget.set_sensitive(True)
         
@@ -180,11 +189,14 @@ class Interface(object):
         widget = self.xml.get_widget("buttonInsectSize")
         widget.set_sensitive(True)                
         
-        widget = self.xml.get_widget("buttonProcess")
-        widget.set_sensitive(True)                        
+        if self.invalid_refimage:
+            pass
+        else:
+            widget = self.xml.get_widget("buttonProcess")
+            widget.set_sensitive(True)                        
         
         widget = self.xml.get_widget("buttonStart")
-        widget.set_sensitive(True)                        
+        widget.set_sensitive(True)
         
         widget = self.xml.get_widget("buttonTrackSimulator")
         widget.set_sensitive(True)                        

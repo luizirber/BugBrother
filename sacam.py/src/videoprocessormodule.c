@@ -370,7 +370,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
                             FALSE,                           //filled?
                             w_initial, h_initial,            //(x0,y0) 
                             w_final - w_initial,             //width
-                            h_initial - h_final);            //height
+                            h_final - h_initial);            //height
 
         gdk_draw_rectangle (GTK_WIDGET(output->obj)->window, //output
                             self->gc,                        //GC
