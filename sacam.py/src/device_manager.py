@@ -47,29 +47,34 @@ class Device_manager(object):
         
         device = '/dev/video0'
         width, height = 640, 480
-        pipeline = gst.Pipeline()
         
         pipeline_string = (
-            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! '
-            'ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true \n'
+            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480,framerate=1/1 ! '
+            'videorate ! identity name=null ! fakesink'
+
+#           'v4lsrc device=/dev/video0 name=source ! '
+#           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
+#            'identity name=null ! fakesink'
+
 #           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
 #             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
 #             'tee. ! video/x-raw-yuv,format=(fourcc)YUY2,width=640,height=480 ! xvimagesink name=sink force-aspect-ratio=true \n'
 #             'tee. ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true \n'
+
            )
                           
+        pipeline_string2 = (
+#           'v4lsrc device=/dev/video0 name=source ! xvimagesink name=sink force-aspect-ratio=true'
+           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
+        )
+                          
         pipeline = gst.parse_launch(pipeline_string)
+        self.pipeline_play = gst.parse_launch(pipeline_string2)
         self.source = pipeline.get_by_name("source")
-        self.capabilities = pipeline.get_by_name("caps")
-        cap1 = gst.Caps('video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480')        
-        cap2 = gst.Caps('video/x-raw-yuv,format=(fourcc)YUY2,width=640,height=480')
-#        self.capabilities.props.caps = gst.Caps()        
-#        self.capabilities.props.caps.append(cap1)
-#        self.capabilities.props.caps.append(cap2)
         
         self.null = pipeline.get_by_name("null")
         self.null.connect("handoff", self.frame_setter)
-        self.sink = pipeline.get_by_name("sink")
+        self.sink = self.pipeline_play.get_by_name("sink")
         
 #        self.source = gst.element_factory_make('v4lsrc', "source")
 #        self.source.props.device = device
@@ -88,8 +93,9 @@ class Device_manager(object):
         bus = pipeline.get_bus()
         bus.add_signal_watch()
         
-        self.pipeline = pipeline
-        self.pipeline.set_state(gst.STATE_READY)
+        self.pipeline_capture = pipeline
+        self.pipeline_capture.set_state(gst.STATE_READY)
+        self.pipeline_play.set_state(gst.STATE_READY)
 
 #        chan = self.source.find_channel_by_name('Composite1')
 #        self.source.set_channel(chan)       
