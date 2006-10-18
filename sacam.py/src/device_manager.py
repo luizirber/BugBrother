@@ -49,12 +49,12 @@ class Device_manager(object):
         width, height = 640, 480
         
         pipeline_string = (
-            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480,framerate=1/1 ! '
-            'videorate ! identity name=null ! fakesink'
+#            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480,framerate=1/1 ! '
+#            'videorate ! identity name=null ! fakesink'
 
-#           'v4lsrc device=/dev/video0 name=source ! '
-#           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
-#            'identity name=null ! fakesink'
+            'v4lsrc device=/dev/video0 name=source ! '
+            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
+            'videorate ! identity name=null ! fakesink'
 
 #           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
 #             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
@@ -64,8 +64,8 @@ class Device_manager(object):
            )
                           
         pipeline_string2 = (
-#           'v4lsrc device=/dev/video0 name=source ! xvimagesink name=sink force-aspect-ratio=true'
-           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
+           'v4lsrc device=/dev/video0 name=source ! xvimagesink name=sink force-aspect-ratio=true'
+#           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
         )
                           
         pipeline = gst.parse_launch(pipeline_string)
@@ -151,7 +151,7 @@ class Device_manager(object):
 #        self.timeout_id = gobject.timeout_add(200, self.processor.process_video,
 #                                    self.get_current_frame(),
 #                                    self.processor_output, project)
-
+        
         self.processor.process_video(self.get_current_frame(), 
                                      self.processor_output, project)
         return True 
@@ -161,7 +161,4 @@ class Device_manager(object):
         
     def destroy(self, widget):
         self.devicewindow.hide_all()
-                             
-    def __del__(self):
-        self.pipeline.set_state(gst.STATE_NULL)
         

@@ -130,6 +130,7 @@ class Interface(object):
             propdiag.hide_all()
                 
         self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
+        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)        
         self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)                 
                 
         refimgDiag = self.xml.get_widget("dialogRefImage"); 
@@ -196,13 +197,83 @@ class Interface(object):
                     
         self.ready_state()
         
-    def ready_state(self):        
+    def start_video(self, widget, project):
+        notebook = self.xml.get_widget("mainNotebook")
+        notebook.set_current_page(1)
+        
+        self.capturing_state()
+        
+        if self.device_manager.pipeline_capture.get_state() != gst.STATE_PLAYING:
+            self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
+        
+#        if ( widget.get_active() ):        
+#            self.device_manager.start_video(widget, project)
+#        else:
+#            gobject.source_remove(self.device_manager.timeout_id)
+            
+        self.running = widget.get_active()
+        while self.running:            
+            self.device_manager.start_video(widget, project)
+            gc.collect()
+        
+        self.ready_state()
+
+    def capturing_state(self):
         widget = self.xml.get_widget("buttonStart")
         widget.set_sensitive(True)        
+       
+        widget = self.xml.get_widget("buttonNew")
+        widget.set_sensitive(False)        
+
+        widget = self.xml.get_widget("buttonOpen")
+        widget.set_sensitive(False)        
+
+        widget = self.xml.get_widget("buttonSave")
+        widget.set_sensitive(False)        
+
+        widget = self.xml.get_widget("buttonManager")
+        widget.set_sensitive(False)
         
+        widget = self.xml.get_widget("buttonScale")
+        widget.set_sensitive(False)
+        
+        widget = self.xml.get_widget("buttonSave")
+        widget.set_sensitive(False)        
+        
+        widget = self.xml.get_widget("buttonInsectSize")
+        widget.set_sensitive(False)                
+      
+        widget = self.xml.get_widget("buttonTortuosity")
+        widget.set_sensitive(False)        
+        
+        widget = self.xml.get_widget("buttonReport")
+        widget.set_sensitive(False)        
+            
+        widget = self.xml.get_widget("buttonPrint")
+        widget.set_sensitive(False)
+        
+        widget = self.xml.get_widget("buttonProcess")
+        widget.set_sensitive(False)                        
+        
+        widget = self.xml.get_widget("toggleTimer")
+        widget.set_sensitive(False)     
+                           
+        widget = self.xml.get_widget("buttonSave")
+        widget.set_sensitive(False)    
+    
+    def ready_state(self):        
         self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
         self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)        
-        self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)        
+        self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)                
+        
+        widget = self.xml.get_widget("buttonNew")
+        widget.set_sensitive(True)        
+
+        widget = self.xml.get_widget("buttonOpen")
+        widget.set_sensitive(True)        
+        
+        widget = self.xml.get_widget("buttonStart")
+        widget.set_sensitive(True)        
         
         widget = self.xml.get_widget("buttonManager")
         widget.set_sensitive(True)
@@ -228,14 +299,11 @@ class Interface(object):
             
             widget = self.xml.get_widget("buttonPrint")
             widget.set_sensitive(True)
-
-      
-        if self.invalid_refimage:
-            pass
-        else:
-            widget = self.xml.get_widget("buttonProcess")
-            widget.set_sensitive(True)                        
-        
+            
+            if not self.invalid_refimage:
+                widget = self.xml.get_widget("buttonProcess")
+                widget.set_sensitive(True)
+            
         if self.invalid_size or self.invalid_areas:
             pass
         else:
@@ -245,24 +313,7 @@ class Interface(object):
         widget.set_sensitive(True)     
                            
         widget = self.xml.get_widget("buttonSave")
-        widget.set_sensitive(True)
-        
-    def start_video(self, widget, project):
-        notebook = self.xml.get_widget("mainNotebook")
-        notebook.set_current_page(1)        
-        
-        if self.device_manager.pipeline_capture.get_state() != gst.STATE_PLAYING:
-            self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
-        
-#        if ( widget.get_active() ):        
-#            self.device_manager.start_video(widget, project)
-#        else:
-#            gobject.source_remove(self.device_manager.timeout_id)
-            
-        self.running = widget.get_active()    
-        while self.running:            
-            self.device_manager.start_video(widget, project)
-            gc.collect()
+        widget.set_sensitive(True)    
         
 if __name__ == "__main__":
     base = Interface()
