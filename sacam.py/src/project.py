@@ -17,11 +17,7 @@ class project(object):
     attributes could be saved in and loaded from a XML file.
     """
     
-    name = None
-    bug_name = None
-    compound_list = []
-    temperature = None
-    extra_attributes = {}
+    attributes = {}
     refimage = None
     experiment_list = []
     filename = None
