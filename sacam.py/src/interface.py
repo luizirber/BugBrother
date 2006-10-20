@@ -27,6 +27,9 @@ class Interface(object):
     xml = None
     image = None
     project = None
+    invalid_size = False
+    invalid_areas = False
+    invalid_scale = False
     
     def __init__(self):
         gladefile = "interface/sacam.glade"
@@ -39,9 +42,6 @@ class Interface(object):
         outputarea = self.xml.get_widget("videoOutputArea")
         proc_output = self.xml.get_widget("trackArea")
         self.device_manager = Device_manager(outputarea, proc_output)
-        
-        widget = self.xml.get_widget("buttonManager")
-        widget.connect("toggled", self.manager_toggled)
         
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
@@ -62,8 +62,97 @@ class Interface(object):
         self.window.connect("destroy", self.destroy)
         self.window.show()
         
+        widget = self.xml.get_widget('buttonConfirm')
+        widget.connect('clicked', self.refimgCapture)
+        
         return
    
+    def run_prop_diag(self):
+        propdiag = self.xml.get_widget("dialogProjProp"); 
+        response = propdiag.run()
+        
+        if response == gtk.RESPONSE_OK :
+            widget = self.xml.get_widget("entryNameBio")
+            self.project.attributes["Name of the Project"] = widget.props.text
+            
+            widget = self.xml.get_widget("entryNameInsect")
+            self.project.attributes["Name of Insect"] = widget.props.text
+            
+            widget = self.xml.get_widget("entryComp")
+            self.project.attributes["Compounds used"] = widget.props.text
+                                    
+            widget = self.xml.get_widget("entryTemp")
+            self.project.attributes["Temperature"] = widget.props.text
+            
+            propdiag.hide_all()
+            return True
+        else:
+            return False
+     
+    def run_refimg_diag(self):
+        refimgDiag = self.xml.get_widget("dialogRefImage");                 
+        response = refimgDiag.run()
+                
+        if response == gtk.RESPONSE_OK :
+            refimgDiag.hide_all()
+            return True
+        else:
+            self.invalid_refimage = True
+            return False
+        
+    def run_areas_diag(self):
+        areasDiag = self.xml.get_widget("dialogAreas"); 
+        #connect the callbacks for the areas dialog        
+        response = areasDiag.run()
+        
+        if response == gtk.RESPONSE_OK :
+            areasDiag.hide_all()
+            return True
+        else:
+            self.invalid_areas = True
+            return False
+        
+    def run_scale_diag(self):
+        scaleDiag = self.xml.get_widget("dialogScale"); 
+        #connect the callbacks for the scale dialog        
+        response = scaleDiag.run()
+        
+        if response == gtk.RESPONSE_OK :
+            #save the scale
+            scaleDiag.hide_all()
+            return True
+        else:
+            self.invalid_scale = True
+            return False
+        
+    def run_insect_size_diag(self):
+        insectSizeDiag = self.xml.get_widget("dialogInsectSize"); 
+        #connect the callbacks for the insect size dialog        
+        response = insectSizeDiag.run()
+        
+        if response == gtk.RESPONSE_OK :
+#            widget = self.xml.get_widget("entryInsectSize")
+#            try:
+#                size = float(widget.props.text)
+#            except ValueError:
+#                self.invalid_size = True
+#            else:
+#                self.project.bug_size = size
+#            
+#            widget = self.xml.get_widget("entryInsectSpeed")
+#            try:
+#                speed = float(widget.props.text)
+#            except ValueError:
+#                self.invalid_speed = True
+#            else:
+#                self.project.bug_max_velocity = speed           
+            insectSizeDiag.hide_all()
+            return True
+        else:
+            self.invalid_size = True
+            return False
+                
+    
     def main(self):
         gtk.main()
 
@@ -76,14 +165,6 @@ class Interface(object):
     def destroy(self, widget):
         gtk.main_quit()
      
-    def manager_toggled(self, widget):
-        b = gtk.ToggleButton.get_active(widget)
-        widget = self.xml.get_widget("frameExpManager")
-        if b==True:
-            widget.show()
-        else:
-            widget.hide()
-            
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
         
@@ -122,80 +203,38 @@ class Interface(object):
         self.project.name = filename
         self.project.filename = filepath + '/' + filename + '.exp'
         
-        propdiag = self.xml.get_widget("windowExpProperties"); 
-        response = propdiag.run()
+        response = self.run_prop_diag()
         
-        if response == gtk.RESPONSE_OK :
-            widget = self.xml.get_widget("entryNameBio")
-            self.project.attributes["Name of the Project"] = widget.props.text
-            
-            widget = self.xml.get_widget("entryNameInsect")
-            self.project.attributes["Name of Insect"] = widget.props.text
-            
-            widget = self.xml.get_widget("entryComp")
-            self.project.attributes["Compounds used"] = widget.props.text
-                                    
-            widget = self.xml.get_widget("entryTemp")
-            self.project.attributes["Temperature"] = widget.props.text
-            
-            propdiag.hide_all()
-                
+        if response == False :
+            self.ready_state()            
+            return
+               
+        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)      
         self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
-        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)        
-        self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)                 
+       
+        self.device_manager.sink.set_xwindow_id(
+                                    self.device_manager.outputarea.window.xid)
                 
-        refimgDiag = self.xml.get_widget("dialogRefImage"); 
-        widget = self.xml.get_widget('buttonConfirm')
-        widget.connect('clicked', self.refimgCapture)
-        response = refimgDiag.run()
+        response = self.run_refimg_diag()
+        if response == False :
+            self.ready_state()            
+            return
         
-        if response == gtk.RESPONSE_OK :
-            refimgDiag.hide_all()        
-        else:
-            self.invalid_refimage = True
-        
-        areasDiag = self.xml.get_widget("dialogAreas"); 
-        #connect the callbacks for the areas dialog        
-        response = areasDiag.run()
-        
-        if response == gtk.RESPONSE_OK :
-            areasDiag.hide_all()
-        else:
-            self.invalid_areas = True
+        response = self.run_areas_diag()
+        if response == False :
+            self.ready_state()            
+            return
 
-        scaleDiag = self.xml.get_widget("dialogScale"); 
-        #connect the callbacks for the scale dialog        
-        response = scaleDiag.run()
-        
-        if response == gtk.RESPONSE_OK :
-            #save the scale
-            scaleDiag.hide_all()
-        else:
-            pass
-        
-        insectSizeDiag = self.xml.get_widget("dialogInsectSize"); 
-        #connect the callbacks for the insect size dialog        
-        response = scaleDiag.run()
-        
-        if response == gtk.RESPONSE_OK :
-#            widget = self.xml.get_widget("entryInsectSize")
-#            try:
-#                size = float(widget.props.text)
-#            except ValueError:
-#                self.invalid_size = True
-#            else:
-#                self.project.bug_size = size
-#            
-#            widget = self.xml.get_widget("entryInsectSpeed")
-#            try:
-#                speed = float(widget.props.text)
-#            except ValueError:
-#                self.invalid_speed = True
-#            else:
-#                self.project.bug_max_velocity = speed
-            
-            scaleDiag.hide_all()        
-        
+        response = self.run_scale_diag()
+        if response == False :
+            self.ready_state()
+            return
+                
+        response = self.run_insect_size_diag()
+        if response == False :
+            self.ready_state()            
+            return
+                
         self.ready_state()
                 
     def load_project(self, widget):
@@ -241,11 +280,12 @@ class Interface(object):
 #            gobject.source_remove(self.device_manager.timeout_id)
             
         self.running = widget.get_active()
-        while self.running:            
-            self.device_manager.start_video(widget, project)
-            gc.collect()
-        
-        self.ready_state()
+        if self.running:
+            while self.running:            
+                self.device_manager.start_video(widget, project)
+                gc.collect()
+        else:
+            self.ready_state()                
 
     def capturing_state(self):
         widget = self.xml.get_widget("buttonStart")
@@ -260,9 +300,6 @@ class Interface(object):
         widget = self.xml.get_widget("buttonSave")
         widget.set_sensitive(False)        
 
-        widget = self.xml.get_widget("buttonManager")
-        widget.set_sensitive(False)
-        
         widget = self.xml.get_widget("buttonScale")
         widget.set_sensitive(False)
         
@@ -283,6 +320,12 @@ class Interface(object):
         
         widget = self.xml.get_widget("toggleTimer")
         widget.set_sensitive(False)     
+        
+        widget = self.xml.get_widget("buttonAreas")
+        widget.set_sensitive(False)         
+        
+        widget = self.xml.get_widget("buttonProjProperties")
+        widget.set_sensitive(False)         
                            
     def ready_state(self):        
         self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
@@ -294,15 +337,6 @@ class Interface(object):
 
         widget = self.xml.get_widget("buttonOpen")
         widget.set_sensitive(True)        
-        
-        widget = self.xml.get_widget("buttonStart")
-        widget.set_sensitive(True)        
-        
-        widget = self.xml.get_widget("buttonManager")
-        widget.set_sensitive(True)
-        
-        widget = self.xml.get_widget("buttonScale")
-        widget.set_sensitive(True)
         
         widget = self.xml.get_widget("buttonSave")
         widget.set_sensitive(True)        
@@ -324,10 +358,24 @@ class Interface(object):
                 widget = self.xml.get_widget("buttonProcess")
                 widget.set_sensitive(True)
             
-        if self.invalid_size or self.invalid_areas:
-            pass
+        widget = self.xml.get_widget("buttonInsectSize")        
+        widget.set_sensitive(True)
+        
+        widget = self.xml.get_widget("buttonScale")        
+        widget.set_sensitive(True)
+            
+        widget = self.xml.get_widget("buttonAreas")
+        widget.set_sensitive(True)         
+        
+        widget = self.xml.get_widget("buttonProjProperties")
+        widget.set_sensitive(True)         
+            
+        widget = self.xml.get_widget("buttonStart")
+        if self.invalid_size or self.invalid_areas or \
+           self.invalid_scale:
+            widget.set_sensitive(False)
         else:
-            pass
+            widget.set_sensitive(True)        
        
         widget = self.xml.get_widget("toggleTimer")
         widget.set_sensitive(True)     
