@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+ #!/usr/bin/env python
 
 import sys
 from os import makedirs
@@ -59,6 +59,18 @@ class Interface(object):
         widget = self.xml.get_widget("buttonOpen")
         widget.connect("clicked", self.load_project)
         
+        widget = self.xml.get_widget("buttonProjProperties")
+        widget.connect("clicked", self.run_prop_diag)
+        
+        widget = self.xml.get_widget("buttonAreas")
+        widget.connect("clicked", self.run_areas_diag)
+        
+        widget = self.xml.get_widget("buttonScale")
+        widget.connect("clicked", self.run_scale_diag)
+        
+        widget = self.xml.get_widget("buttonInsectSize")
+        widget.connect("clicked", self.run_insect_size_diag)        
+        
         self.window.connect("destroy", self.destroy)
         self.window.show()
         
@@ -67,30 +79,51 @@ class Interface(object):
         
         return
    
-    def run_prop_diag(self):
+    def run_prop_diag(self, wid):
         propdiag = self.xml.get_widget("dialogProjProp"); 
-        response = propdiag.run()
+        propdiag.connect('delete-event', self.delete_diag)        
+        propdiag.show_all()
         
+        entryBio = self.xml.get_widget("entryNameBio")
+        entryName = self.xml.get_widget("entryNameInsect")
+        entryComp = self.xml.get_widget("entryComp")
+        entryTemp = self.xml.get_widget("entryTemp")
+        
+        try: t = self.project.attributes["Name of the Project"]
+        except KeyError: pass
+        else: 
+            entryBio.props.text = t
+        
+        try: t = self.project.attributes["Name of Insect"]
+        except KeyError: pass
+        else:
+            entryName.props.text = t
+            
+        try: t = self.project.attributes["Compounds used"]
+        except KeyError: pass
+        else:
+            entryComp.props.text = t
+        
+        try: t = self.project.attributes["Temperature"]
+        except KeyError: pass
+        else:
+            entryTemp.props.text = t
+
+        response = propdiag.run()        
         if response == gtk.RESPONSE_OK :
-            widget = self.xml.get_widget("entryNameBio")
-            self.project.attributes["Name of the Project"] = widget.props.text
-            
-            widget = self.xml.get_widget("entryNameInsect")
-            self.project.attributes["Name of Insect"] = widget.props.text
-            
-            widget = self.xml.get_widget("entryComp")
-            self.project.attributes["Compounds used"] = widget.props.text
-                                    
-            widget = self.xml.get_widget("entryTemp")
-            self.project.attributes["Temperature"] = widget.props.text
-            
+            self.project.attributes["Name of the Project"] = entryBio.props.text
+            self.project.attributes["Name of Insect"] = entryName.props.text
+            self.project.attributes["Compounds used"] = entryComp.props.text
+            self.project.attributes["Temperature"] = entryTemp.props.text
             propdiag.hide_all()
             return True
         else:
-            return False
+            return False     
      
-    def run_refimg_diag(self):
+    def run_refimg_diag(self, wid):
         refimgDiag = self.xml.get_widget("dialogRefImage");                 
+        refimgDiag.connect('delete-event', self.delete_diag)       
+        refimgDiag.show_all()        
         response = refimgDiag.run()
                 
         if response == gtk.RESPONSE_OK :
@@ -100,8 +133,10 @@ class Interface(object):
             self.invalid_refimage = True
             return False
         
-    def run_areas_diag(self):
+    def run_areas_diag(self, wid):
         areasDiag = self.xml.get_widget("dialogAreas"); 
+        areasDiag.connect('delete-event', self.delete_diag)        
+        areasDiag.show_all()        
         #connect the callbacks for the areas dialog        
         response = areasDiag.run()
         
@@ -112,8 +147,10 @@ class Interface(object):
             self.invalid_areas = True
             return False
         
-    def run_scale_diag(self):
+    def run_scale_diag(self, wid):
         scaleDiag = self.xml.get_widget("dialogScale"); 
+        scaleDiag.connect('delete-event', self.delete_diag)        
+        scaleDiag.show_all()        
         #connect the callbacks for the scale dialog        
         response = scaleDiag.run()
         
@@ -125,8 +162,10 @@ class Interface(object):
             self.invalid_scale = True
             return False
         
-    def run_insect_size_diag(self):
+    def run_insect_size_diag(self, wid):
         insectSizeDiag = self.xml.get_widget("dialogInsectSize"); 
+        insectSizeDiag.connect('delete-event', self.delete_diag)        
+        insectSizeDiag.show_all()
         #connect the callbacks for the insect size dialog        
         response = insectSizeDiag.run()
         
@@ -152,7 +191,6 @@ class Interface(object):
             self.invalid_size = True
             return False
                 
-    
     def main(self):
         gtk.main()
 
@@ -164,6 +202,9 @@ class Interface(object):
 
     def destroy(self, widget):
         gtk.main_quit()
+        
+    def delete_diag(self, diag, event):
+        diag.hide_all()
      
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
@@ -203,7 +244,7 @@ class Interface(object):
         self.project.name = filename
         self.project.filename = filepath + '/' + filename + '.exp'
         
-        response = self.run_prop_diag()
+        response = self.run_prop_diag(None)
         
         if response == False :
             self.ready_state()            
@@ -215,22 +256,22 @@ class Interface(object):
         self.device_manager.sink.set_xwindow_id(
                                     self.device_manager.outputarea.window.xid)
                 
-        response = self.run_refimg_diag()
+        response = self.run_refimg_diag(None)
         if response == False :
             self.ready_state()            
             return
         
-        response = self.run_areas_diag()
+        response = self.run_areas_diag(None)
         if response == False :
             self.ready_state()            
             return
 
-        response = self.run_scale_diag()
+        response = self.run_scale_diag(None)
         if response == False :
             self.ready_state()
             return
                 
-        response = self.run_insect_size_diag()
+        response = self.run_insect_size_diag(None)
         if response == False :
             self.ready_state()            
             return
@@ -253,12 +294,14 @@ class Interface(object):
             filepath = fsdial.get_current_folder()
             filename = fsdial.get_filename()[len(filepath) + 1:]
             self.project.filename = filepath + '/' + filename + '/' + filename + '.exp'
+            self.ready_state()            
         fsdial.destroy()
         
         if self.project.filename:
             self.project.load_project()
-                    
-        self.ready_state()
+            
+        #take this out when release the code
+        self.ready_state()            
         
     def refimgCapture(self, widget):
         image = self.xml.get_widget('imageRefImg')

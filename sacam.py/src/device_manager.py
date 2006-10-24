@@ -38,7 +38,7 @@ class Device_manager(object):
         windowname = "devicemanager"
         self.xml = gtk.glade.XML(gladefile, windowname)
         self.devicewindow = self.xml.get_widget(windowname)
-        self.devicewindow.connect("destroy", self.destroy)
+        self.devicewindow.connect("delete-event", self.delete)
         
         self.processor = videoprocessor()         
         self.outputarea = video_output
@@ -49,12 +49,12 @@ class Device_manager(object):
         width, height = 640, 480
         
         pipeline_string = (
-#            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480,framerate=1/1 ! '
-#            'videorate ! identity name=null ! fakesink'
-
-            'v4lsrc device=/dev/video0 name=source ! '
-            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
+            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
             'videorate ! identity name=null ! fakesink'
+
+#            'v4lsrc device=/dev/video0 name=source ! '
+#            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
+#            'videorate ! identity name=null ! fakesink'
 
 #           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
 #             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
@@ -64,8 +64,8 @@ class Device_manager(object):
            )
                           
         pipeline_string2 = (
-           'v4lsrc device=/dev/video0 name=source ! xvimagesink name=sink force-aspect-ratio=true'
-#           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
+#           'v4lsrc device=/dev/video0 name=source ! xvimagesink name=sink force-aspect-ratio=true'
+           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
         )
                           
         pipeline = gst.parse_launch(pipeline_string)
@@ -158,7 +158,15 @@ class Device_manager(object):
           
     def show_window(self, widget):
         self.devicewindow.show_all()
+        #connect the callbacks for the insect size dialog        
+        response = self.devicewindow.run()
         
-    def destroy(self, widget):
+        if response == gtk.RESPONSE_OK :
+            # Handle changes in the pipeline
+            self.devicewindow.hide_all()
+        else:
+            self.devicewindow.hide_all()
+        
+    def delete(self, widget, event):
         self.devicewindow.hide_all()
         
