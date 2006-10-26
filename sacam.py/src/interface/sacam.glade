@@ -7,6 +7,7 @@
     <property name="window_position">GTK_WIN_POS_CENTER</property>
     <property name="default_width">800</property>
     <property name="default_height">550</property>
+    <property name="icon">sacam.png</property>
     <property name="gravity">GDK_GRAVITY_CENTER</property>
     <child>
       <widget class="GtkVBox" id="mainvbox">
@@ -258,7 +259,6 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">clock.png</property>
-                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -333,7 +333,6 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">scale.png</property>
-                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -355,7 +354,6 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">insectsize.png</property>
-                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -466,7 +464,6 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">tortuosity.png</property>
-                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -1121,7 +1118,6 @@
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
-                <property name="stock">gtk-missing-image</property>
               </widget>
             </child>
             <child>
@@ -1212,7 +1208,6 @@
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
-                <property name="stock">gtk-missing-image</property>
               </widget>
             </child>
             <child>
