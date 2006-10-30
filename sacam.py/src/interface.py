@@ -74,6 +74,7 @@ class Interface(object):
         self.window.connect("destroy", self.destroy)
         self.window.show()
         
+        #refimg area callbacks
         widget = self.xml.get_widget('buttonConfirm')
         widget.connect('clicked', self.refimgCapture)
         
@@ -90,25 +91,21 @@ class Interface(object):
         entryTemp = self.xml.get_widget("entryTemp")
         
         try: t = self.project.attributes["Name of the Project"]
-        except KeyError: pass
-        else: 
-            entryBio.props.text = t
+        except KeyError: entryBio.props.text = ""
+        else: entryBio.props.text = t
         
         try: t = self.project.attributes["Name of Insect"]
-        except KeyError: pass
-        else:
-            entryName.props.text = t
+        except KeyError: entryName.props.text = ""
+        else: entryName.props.text = t
             
         try: t = self.project.attributes["Compounds used"]
-        except KeyError: pass
-        else:
-            entryComp.props.text = t
+        except KeyError: entryComp.props.text = ""
+        else: entryComp.props.text = t
         
         try: t = self.project.attributes["Temperature"]
-        except KeyError: pass
-        else:
-            entryTemp.props.text = t
-
+        except KeyError: entryTemp.props.text = ""
+        else: entryTemp.props.text = t
+            
         response = propdiag.run()        
         if response == gtk.RESPONSE_OK :
             self.project.attributes["Name of the Project"] = entryBio.props.text
@@ -118,6 +115,7 @@ class Interface(object):
             propdiag.hide_all()
             return True
         else:
+            propdiag.hide_all()            
             return False     
      
     def run_refimg_diag(self, wid):
@@ -130,6 +128,7 @@ class Interface(object):
             refimgDiag.hide_all()
             return True
         else:
+            refimgdiag.hide_all()            
             self.invalid_refimage = True
             return False
         
@@ -144,6 +143,7 @@ class Interface(object):
             areasDiag.hide_all()
             return True
         else:
+            areasDiag.hide_all()            
             self.invalid_areas = True
             return False
         
@@ -159,6 +159,7 @@ class Interface(object):
             scaleDiag.hide_all()
             return True
         else:
+            scaleDiag.hide_all()            
             self.invalid_scale = True
             return False
         
@@ -188,6 +189,7 @@ class Interface(object):
             insectSizeDiag.hide_all()
             return True
         else:
+            insectSizeDiag.hide_all()            
             self.invalid_size = True
             return False
                 
