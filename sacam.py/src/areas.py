@@ -15,20 +15,23 @@ class point(object):
         self.start_time = None
         self.end_time = None
     
-class area(object):
-    """
-    This class represents an area. An area contains 3 attributes: 
-    an unique identification,
-    a shape,
-    and a name, to simplify the area identification for the user.
-    """
     
+class track(object):
     def __init__(self):
-        self.shape = None
-        self.name = None
-        self.point_list = []
-        self.started = False
+        point_list = []
+        angleSpeedQuadSum = 0
+        linSpeedQuadSum = 0
+        linSpeedSum = 0
+        track_lenght = 0
+        total_time = 0
+        totalTrackSections = 0
+        trackLinSpeedDeviation = 0
+        trackAngleSpeedDeviation = 0
+        tortuosity = 0
+        meanTrackLinSpeed = 0
+        meanTrackAngleSpeed = 0
     
+       
 class shape(object):
     """
     Abstract class. Defines basic functions needed by the video processor
@@ -41,8 +44,9 @@ class shape(object):
     def contains(self, Point = None):
         pass
     
-    def area():
+    def area(self):
         pass
+
 
 class rectangle(shape):
     """
@@ -103,4 +107,19 @@ class ellipse(shape):
         
     def area(self):
         return pi * self.x_axis * self.y_axis
+    
+    
+class area(object):
+    """
+    This class represents an area. An area contains 3 attributes: 
+    an unique identification,
+    a shape,
+    and a name, to simplify the area identification for the user.
+    """
+    
+    def __init__(self):
+        self.shape = None
+        self.name = None
+        self.track_list = []
+        self.started = False
     

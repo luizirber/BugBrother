@@ -200,7 +200,7 @@ class Interface(object):
         if self.invalid_path:
             #handle this
             pass
-        self.project.save_project()
+        self.project.save()
 
     def destroy(self, widget):
         gtk.main_quit()
@@ -211,7 +211,7 @@ class Interface(object):
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
         
-        fsdialog = gtk.FileChooserDialog("Save Project", main,
+        fsdialog = gtk.FileChooserDialog("New Project", main,
                        gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT |
                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
@@ -300,7 +300,7 @@ class Interface(object):
         fsdial.destroy()
         
         if self.project.filename:
-            self.project.load_project()
+            self.project.load()
             
         #take this out when release the code
         self.ready_state()            
@@ -425,6 +425,30 @@ class Interface(object):
         widget = self.xml.get_widget("toggleTimer")
         widget.set_sensitive(True)     
         
+    def process(self, widget):
+        pass
+         #PrepararGradeApresentacaoEstatisticas
+             #Para cada area
+                #HoraInicio
+                #HoraFim
+                #Permanencia (Fim - Inicio)
+                #Trajeto
+                #VelLinearMedia
+                #DesvPadrao - VelLinear
+                #VelAngularMedia
+                #DesvPadrao - VelAngular
+                #Tortuosidade
+                
+         #PrepararGradeApresentacaoSintese
+            #Area
+            #Tempo de permanencia
+            #Tempo(%)
+            #TrajetoTotal (cm)
+            #Trajeto (%)
+           #calcular para point_list do experimento 
+            #TempoTotal
+            #ComprimentoTotal
+
 if __name__ == "__main__":
     base = Interface()
     base.main()
