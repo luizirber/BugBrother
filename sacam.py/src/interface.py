@@ -19,18 +19,10 @@ import gst
 
 from device_manager import Device_manager
 from project import project
+from areas import circle, ellipse, rectangle
 
 class Interface(object):
-    
-    device_manager = None
-    window = None
-    xml = None
-    image = None
-    project = None
-    invalid_size = False
-    invalid_areas = False
-    invalid_scale = False
-    
+        
     def __init__(self):
         gladefile = "interface/sacam.glade"
         windowname = "mainwindow"
@@ -71,14 +63,175 @@ class Interface(object):
         widget = self.xml.get_widget("buttonInsectSize")
         widget.connect("clicked", self.run_insect_size_diag)        
         
-        self.window.connect("destroy", self.destroy)
-        self.window.show()
+        widget = self.xml.get_widget("buttonProcess")
+        widget.connect("clicked", self.process_lists)        
+                        
+        # setting up the areas treeview
+        view = self.xml.get_widget("treeviewAreas")
+        model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
+        view.set_model(model)
+        renderer = gtk.CellRendererText()
+        column = gtk.TreeViewColumn("Area", renderer, text=1)
+        view.append_column(column)
+        view.connect("cursor_changed", select_area)
         
-        #refimg area callbacks
+        #connecting the callbacks of the areasDiag
+        widget = self.xml.get_widget("buttonAddArea")
+        widget.connect("clicked", self.shape_action, "add")
+        
+        widget = self.xml.get_widget("buttonRemoveArea")
+        widget.connect("clicked", self.remove_area)
+        
+        widget = self.xml.get_widget("buttonResizeArea")
+        widget.connect("clicked", self.shape_action, "resize")
+                                
+        widget = self.xml.get_widget("buttonMoveArea")
+        widget.connect("clicked", self.shape_action, "move")
+                                
+        #buttons to define the shape that will be drawn                                
+        widget = self.xml.get_widget("buttonRectangle")
+        widget.connect("clicked", self.set_shape, "rectangle")
+        
+        widget = self.xml.get_widget("buttonCircle")
+        widget.connect("clicked", self.set_shape, "circle")                      
+                                
+        widget = self.xml.get_widget("buttonEllipse")
+        widget.connect("clicked", self.set_shape, "ellipse")
+                                
+        #default shape to be drawn
+        self.shape_type = "rectangle"
+        
+        #default action is to add an area
+        self.action = "add"
+        self.composing_shape = False
+        self.moving_shape_started = False
+        self.graphic_context = None
+                                
+        widget = self.xml.get_widget("drawingareaAreas")
+        #what to do when the draw area is exposed        
+        widget.connect("expose_event", self.draw_expose, model)
+        #these two are necessary to draw something in the draw area
+        widget.connect("button-press-event", self.compose_shape)
+        widget.connect("button-release-event", self.finish_shape)        
+                                        
+        #refimg dialog callback
         widget = self.xml.get_widget('buttonConfirm')
         widget.connect('clicked', self.refimgCapture)
         
+        self.window.connect("destroy", self.destroy)
+        self.window.show()        
+        
         return
+   
+    def select_area(self, wid):
+        selection = wid.get_selection
+        selection.set_mode(gtk.SELECTION_SINGLE)
+        treemodel, treeiter = selection.get_selected()
+        #TODO: need to check if this is right
+        self.selected_shape = treemodel.get_value(treeiter, 1)
+   
+    def set_shape(self, wid, shape_type):
+        self.shape_type = shape_type
+   
+    def compose_shape(self, wid, event):
+        if not self.graphic_context:
+            self.graphic_context = gtk.gdk.GC(wid)        
+        #TODO: verify the event 
+        #if event is ok, do the action
+        if action == "add":
+            if self.composing_shape == False:
+                self.composing_shape = True            
+                if self.shape_type == "rectangle":
+                    self.temp_shape = rectangle()
+                elif self.shape_type == "circle":
+                    self.temp_shape = circle()
+                else: # self.shape_type == "ellipse"
+                    self.temp_shape = ellipse()        
+                #save the initial point
+                self.initial_point = (event.x, event.y)                
+            else:
+                self.end_point = (event.x, event.y)
+                if self.shape_type == "rectangle":
+                    self.temp_shape.width = abs(end_point[0] - start_point[0])
+                    self.temp_shape.height = abs(end_point[0] - start_point[0])
+                    self.temp_shape.x_center = start_point[0] + self.temp_shape.width/2
+                    self.temp_shape.y_center = start_point[1] + self.temp_shape.height/2
+                    self.temp_shape.draw(wid.window, self.graphic_context)
+                elif self.shape_type == "circle":
+                    self.temp_shape.radius = abs(end_point[0] - start_point[0])
+                    self.temp_shape.x_center = start_point[0] + self.radius
+                    self.temp_shape.y_center = start_point[1] + self.radius
+                    self.temp_shape.draw(wid.window, self.graphic_context)
+                else: # self.shape_type == "ellipse"                    
+                    self.temp_shape.x_axis = abs(end_point[0] - start_point[0])
+                    self.temp_shape.y_axis = abs(end_point[1] - start_point[1])            
+                    self.temp_shape.x_center = start_point[0] + self.x_axis
+                    self.temp_shape.y_center = start_point[1] + self.y_axis
+                    self.temp_shape.draw(wid.window, self.graphic_context)                    
+        elif action == "resize":
+            pass
+        elif action == "move":
+            if self.moving_shape_started == False:
+                self.moving_shape = self.selected_shape
+                self.first_point = (event.x, event.y)
+                self.moving_shape_started = True
+            else:
+                self.last_point = (event.x, event.y)
+                self.moving_shape.x_center += (self.last_point[0] - self.first_point[0])
+                self.moving_shape.y_center += (self.last_point[1] - self.first_point[1])
+                self.moving_shape.draw(wid.window, self.graphic_context)
+    
+    def finish_shape(self, wid, event):
+        if action == "add":
+            if self.composing_shape == True:
+                self.end_point = (event.x, event.y)            
+                if self.shape_type == "rectangle":
+                    self.temp_shape.width = abs(end_point[0] - start_point[0])
+                    self.temp_shape.height = abs(end_point[0] - start_point[0])
+                    self.temp_shape.x_center = start_point[0] + self.temp_shape.width/2
+                    self.temp_shape.y_center = start_point[1] + self.temp_shape.height/2
+                    self.temp_shape.draw(wid.window, self.graphic_context)
+                elif self.shape_type == "circle":
+                    self.temp_shape.radius = abs(end_point[0] - start_point[0])
+                    self.temp_shape.x_center = start_point[0] + self.radius
+                    self.temp_shape.y_center = start_point[1] + self.radius
+                    self.temp_shape.draw(wid.window, self.graphic_context)                    
+                else: # self.shape_type == "ellipse"
+                    self.temp_shape.x_axis = abs(end_point[0] - start_point[0])
+                    self.temp_shape.y_axis = abs(end_point[1] - start_point[1])            
+                    self.temp_shape.x_center = start_point[0] + self.x_axis
+                    self.temp_shape.y_center = start_point[1] + self.y_axis
+                    self.temp_shape.draw(wid.window, self.graphic_context)                    
+                self.composing_shape = False
+                #save temp_shape on the areas list
+        elif action == "resize":
+            pass
+        elif action == "move":
+            if self.moving_shape_started == True:
+                self.last_point = (event.x, event.y)
+                self.moving_shape.x_center += (self.last_point[0] - self.first_point[0])
+                self.moving_shape.y_center += (self.last_point[1] - self.first_point[1])
+                self.moving_shape.draw(wid.window, self.graphic_context)
+                self.moving_shape_started = False
+               
+    def draw_expose(self, wid, event, areas_list):
+        if not self.graphic_context:
+            self.graphic_context = gtk.gdk.GC(wid)
+        wid.draw_pixbuf(self.project.refimage)
+        values = [ r[1] for r in areas_list ]
+        for shape in values:
+            shape.draw(wid.window, self.graphic_context)
+    
+    def remove_area(self, wid):
+        pass
+    
+    def shape_action(self, wid, action):
+        self.action = action
+              
+    def process_lists(self, wid):
+        self.project.current_experiment.prepare_point_list()
+        self.project.current_experiment.prepare_areas_list()
+        self.project.current_experiment.prepare_stats()
    
     def run_prop_diag(self, wid):
         propdiag = self.xml.get_widget("dialogProjProp"); 

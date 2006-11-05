@@ -95,17 +95,17 @@ class experiment(object):
     def prepare_stats(self):
         for area in areas_list:
             for track in area.point_list:
-                angleSpeedQuadSum = 0
-                linSpeedQuadSum = 0
-                linSpeedSum = 0
-                track_lenght = 0
-                totalTrackSections = 0
-                trackLinSpeedDeviation = 0
-                trackAngleSpeedDeviation = 0
-                tortuosity = 0
-                meanTrackLinSpeed = 0
-                meanTrackAngleSpeed = 0
-                total_time = track[-1].end_time - track[0].start_time
+                track.angleSpeedQuadSum = 0
+                track.linSpeedQuadSum = 0
+                track.linSpeedSum = 0
+                track.lenght = 0
+                track.totalSections = 0
+                track.LinSpeedDeviation = 0
+                track.AngleSpeedDeviation = 0
+                track.tortuosity = 0
+                track.meanLinSpeed = 0
+                track.meanAngleSpeed = 0
+                track.total_time = track[-1].end_time - track[0].start_time
                 
                 first_point = track[0]
                 previous_point = track[1]
@@ -115,66 +115,66 @@ class experiment(object):
                     
                     temp = pow((previous_point.x - current_point.x) +
                                (previous_point.y - current_point.y), 2)
-                    distancePixels = sqrt(temp)
-                    distanceScaled = distancePixels / self.scale_ratio
+                    track.distancePixels = sqrt(temp)
+                    track.distanceScaled = track.distancePixels / self.scale_ratio
                     linTimeDelta = current_point.end_time \
                                    - previous_point.end_time
-                    linearSpeed = distanceScaled / linTimeDelta
-                    linSpeedQuadSum += pow(linearSpeed, 2)
-                    linSpeedSum += linearSpeed
-                    track_lenght += distanceScaled
-                    meanTrackLinSpeed += linearSpeed
-                    totalTrackSections += 1
+                    track.linearSpeed = track.distanceScaled / linTimeDelta
+                    track.linSpeedQuadSum += pow(track.linearSpeed, 2)
+                    track.linSpeedSum += track.linearSpeed
+                    track.lenght += track.distanceScaled
+                    track.meanLinSpeed += track.linearSpeed
+                    track.totalSections += 1
                     
                     angleTimeDelta = current_point.end_time \
                                      - first_point.end_time
-                    angle = AngleCalc(first_point, previous_point, 
+                    angle = AngleCalc(first_point, previous_point,
                                       current_point)
-                    angleSpeed = angle / angleTimeDelta
-                    angleSpeedQuadSum += pow(angleSpeed, 2)
-                    angleSpeedSum += angleSpeed
-                    meanTrackAngleSpeed += angleSpeed
-                    totalTrackAngles += 1            
+                    track.angleSpeed = angle / angleTimeDelta
+                    track.angleSpeedQuadSum += pow(track.angleSpeed, 2)
+                    track.angleSpeedSum += track.angleSpeed
+                    track.meanAngleSpeed += track.angleSpeed
+                    track.totalAngles += 1            
 
                     first_point = previous_point
                     previous_point = current_point
                     
-                if totalTrackSections > 0:
-                    meanTrackLinSpeed = meanTrackLinSpeed / totalTrackSections
-                    trackLinSpeedDeviation = linearSpeedQuadSum - \
-                                     ( pow(linSpeedSum,2)/totalTrackSections )
-                    if trackLinSpeedDeviation < 0:
-                        trackLinSpeedDeviation = 0
-                    trackLinSpeedDeviation = \
-                            trackLinSpeedDeviation / totalTrackSections
-                    TrackLinSpeedDeviation = sqrt(TrackLinSpeedDeviation)
-                    if totalTrackAngles > 0:
-                        meanTrackAngleSpeed =  meanTrackAngleSpeed \
-                                              / totalTrackAngles
-                        trackAngleSpeedDeviation = angleSpeedQuadSum \
-                                   - (pow(angleSpeedSum,2) / totalTrackAngles)
-                        if trackAngleSpeedDeviation < 0:
-                            trackAngleSpeedDeviation = 0;
-                        trackAngleSpeedDeviation =  trackAngleSpeedDeviation \
-                                                   /totalTrackAngles
-                        trackAngleSpeedDeviation = \
-                                                sqrt(trackAngleSpeedDeviation)
+                if track.totalSections > 0:
+                    track.meanLinSpeed = track.meanLinSpeed/track.totalSections
+                    track.LinSpeedDeviation = track.linearSpeedQuadSum - \
+                              ( pow(track.linSpeedSum,2)/track.totalSections )
+                    if track.LinSpeedDeviation < 0:
+                        track.LinSpeedDeviation = 0
+                    track.LinSpeedDeviation = track.LinSpeedDeviation \
+                                              / track.totalSections
+                    track.LinSpeedDeviation = sqrt(track.LinSpeedDeviation)
+                    if track.totalAngles > 0:
+                        track.meanAngleSpeed =  track.meanAngleSpeed \
+                                              / track.totalAngles
+                        track.AngleSpeedDeviation = track.angleSpeedQuadSum \
+                                   - (pow(track.angleSpeedSum,2) / track.totalAngles)
+                        if track.AngleSpeedDeviation < 0:
+                            track.AngleSpeedDeviation = 0;
+                        track.AngleSpeedDeviation =  track.AngleSpeedDeviation \
+                                                   / track.totalAngles
+                        track.AngleSpeedDeviation = \
+                                                sqrt(track.AngleSpeedDeviation)
                     else:
-                        meanTrackAngleSpeed = 0
-                        trackAngleStandardDeviation = 0
+                        track.meanAngleSpeed = 0
+                        track.AngleStandardDeviation = 0
                     #tortuosity
                     distance = pow(track[-1].x - track[0].x, 2) \
                                + pow(track[-1].y - track[0].y, 2)
                     distance = sqrt(distance) / scale_ratio
-                    if track_lenght > 0:
-                        tortuosity = 1 - distance / track_lenght
+                    if track.lenght > 0:
+                        track.tortuosity = 1 - distance / track.lenght
                     else:
-                        tortuosity = 0
+                        track.tortuosity = 0
                 else:
-                    meanTrackLinSpeed = 0
-                    meanTrackAngleSpeed = 0
-                    trackLinSpeedDeviation = 0                                  
-                    trackAngleSpeedDeviation = 0
+                    track.meanLinSpeed = 0
+                    track.meanAngleSpeed = 0
+                    track.LinSpeedDeviation = 0                                  
+                    track.AngleSpeedDeviation = 0
             #continua
         #mais mudancas que sejam necessarias na area
          

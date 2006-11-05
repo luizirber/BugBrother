@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from math import pi
+from gtk import gdk
 
 class point(object):
     """
@@ -47,6 +48,8 @@ class shape(object):
     def area(self):
         pass
 
+    def draw(self, canvas):
+        pass
 
 class rectangle(shape):
     """
@@ -73,6 +76,12 @@ class rectangle(shape):
     
     def area(self):
         return self.height * self.width
+    
+    def draw(self, canvas, gc):
+        canvas.draw_rectangle(gc, False, self.x_center - self.width/2,
+                              self.y_center - self.height/2,
+                              self.width, self.height)
+        
         
 class circle(shape):
        
@@ -90,8 +99,14 @@ class circle(shape):
     def area(self):
         return pi * pow(self.radius, 2)
         
+    def draw(self, canvas, gc):
+        canvas.draw_arc(gc, False, self.x_center - self.radius,
+                        self.y_center - self.radius,
+                        self.radius * 2, self.radius * 2,
+                        0, 360)
+                
 class ellipse(shape):
-        
+    """ http://en.wikipedia.org/wiki/Ellipse#Area """
     def __init__(self):
         self.x_center = None
         self.y_center = None
@@ -108,11 +123,16 @@ class ellipse(shape):
     def area(self):
         return pi * self.x_axis * self.y_axis
     
+    def draw(self, canvas, gc):
+        canvas.draw_arc(gc, False, self.x_center - self.x_axis,
+                        self.y_center - self.y_axis,
+                        self.x_axis * 2, self.y_axis * 2,
+                        0, 360)    
+    
     
 class area(object):
     """
-    This class represents an area. An area contains 3 attributes: 
-    an unique identification,
+    This class represents an area. An area contains 2 attributes: 
     a shape,
     and a name, to simplify the area identification for the user.
     """

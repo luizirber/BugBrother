@@ -259,6 +259,7 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">clock.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -333,6 +334,7 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">scale.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -354,6 +356,7 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">insectsize.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -464,6 +467,7 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">tortuosity.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
@@ -1036,6 +1040,7 @@
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
+                <property name="stock">gtk-missing-image</property>
               </widget>
             </child>
             <child>
@@ -1120,12 +1125,54 @@
           <widget class="GtkHBox" id="hbox47">
             <property name="visible">True</property>
             <child>
-              <widget class="GtkImage" id="imageAreas">
-                <property name="width_request">640</property>
-                <property name="height_request">480</property>
+              <widget class="GtkVBox" id="vbox3">
                 <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="yalign">0</property>
+                <child>
+                  <widget class="GtkDrawingArea" id="drawingareaAreas">
+                    <property name="width_request">640</property>
+                    <property name="height_request">480</property>
+                    <property name="visible">True</property>
+                  </widget>
+                </child>
+                <child>
+                  <widget class="GtkHBox" id="hbox5">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkButton" id="buttonRectangle">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Rectangle</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <widget class="GtkButton" id="buttonCircle">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Circle</property>
+                      </widget>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <widget class="GtkButton" id="buttonEllipse">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Ellipse</property>
+                      </widget>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
               </widget>
             </child>
             <child>
@@ -1134,6 +1181,79 @@
             <child>
               <widget class="GtkVBox" id="vbox18">
                 <property name="visible">True</property>
+                <child>
+                  <widget class="GtkScrolledWindow" id="scrolledwindow2">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="shadow_type">GTK_SHADOW_IN</property>
+                    <child>
+                      <widget class="GtkTreeView" id="treeviewAreas">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+                <child>
+                  <widget class="GtkHBox" id="hbox48">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkButton" id="buttonAddArea">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Add</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <widget class="GtkButton" id="buttonMoveArea">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="label" translatable="yes">Move</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <widget class="GtkButton" id="buttonResizeArea">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Resize</property>
+                      </widget>
+                      <packing>
+                        <property name="position">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <widget class="GtkButton" id="buttonRemoveArea">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="label" translatable="yes">Remove</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">6</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="padding">2</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
                 <child>
                   <widget class="GtkButton" id="buttonSetReleaseArea">
                     <property name="visible">True</property>
@@ -1144,57 +1264,6 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkScrolledWindow" id="scrolledwindow2">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="shadow_type">GTK_SHADOW_IN</property>
-                    <child>
-                      <widget class="GtkTreeView" id="treeview2">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                      </widget>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkHBox" id="hbox48">
-                    <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkButton" id="buttonRemoveArea">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="label" translatable="yes">Remove Area</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <widget class="GtkButton" id="buttonChangeArea">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="label" translatable="yes">Change Area</property>
-                        <property name="use_underline">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </widget>
-                  <packing>
                     <property name="position">2</property>
                   </packing>
                 </child>
