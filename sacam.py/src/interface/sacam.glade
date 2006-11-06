@@ -302,6 +302,22 @@
                   <widget class="GtkToolItem" id="toolitem7">
                     <property name="visible">True</property>
                     <child>
+                      <widget class="GtkButton" id="buttonRefImg">
+                        <property name="visible">True</property>
+                        <child>
+                          <widget class="GtkImage" id="image8">
+                            <property name="visible">True</property>
+                            <property name="stock">gtk-fullscreen</property>
+                          </widget>
+                        </child>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+                <child>
+                  <widget class="GtkToolItem" id="toolitem8">
+                    <property name="visible">True</property>
+                    <child>
                       <widget class="GtkButton" id="buttonAreas">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
@@ -320,7 +336,7 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem8">
+                  <widget class="GtkToolItem" id="toolitem9">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonScale">
@@ -342,7 +358,7 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem9">
+                  <widget class="GtkToolItem" id="toolitem10">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonInsectSize">
@@ -364,7 +380,7 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem10">
+                  <widget class="GtkToolItem" id="toolitem11">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkVSeparator" id="vseparator2">
@@ -375,7 +391,7 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem11">
+                  <widget class="GtkToolItem" id="toolitem12">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkToggleButton" id="buttonStart">
@@ -396,35 +412,24 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem12">
-                    <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkButton" id="buttonPreferences">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="tooltip">Preferences</property>
-                        <child>
-                          <widget class="GtkImage" id="image30">
-                            <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="stock">gtk-preferences</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                  </widget>
-                </child>
-                <child>
                   <widget class="GtkToolItem" id="toolitem13">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkToolItem" id="toolitem16">
                         <property name="visible">True</property>
                         <child>
-                          <widget class="GtkVSeparator" id="vseparator3">
-                            <property name="width_request">10</property>
+                          <widget class="GtkButton" id="buttonPreferences">
                             <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip">Preferences</property>
+                            <child>
+                              <widget class="GtkImage" id="image30">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
+                                <property name="stock">gtk-preferences</property>
+                              </widget>
+                            </child>
                           </widget>
                         </child>
                       </widget>
@@ -433,6 +438,17 @@
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem14">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkVSeparator" id="vseparator3">
+                        <property name="width_request">10</property>
+                        <property name="visible">True</property>
+                      </widget>
+                    </child>
+                  </widget>
+                </child>
+                <child>
+                  <widget class="GtkToolItem" id="toolitem15">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonProcess">
@@ -453,7 +469,7 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem15">
+                  <widget class="GtkToolItem" id="toolitem17">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonTortuosity">
@@ -475,7 +491,7 @@
                   </widget>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem17">
+                  <widget class="GtkToolItem" id="toolitem19">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonReport">
@@ -1195,6 +1211,34 @@
                   </widget>
                 </child>
                 <child>
+                  <widget class="GtkHBox" id="hbox6">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkLabel" id="label5">
+                        <property name="visible">True</property>
+                        <property name="xpad">5</property>
+                        <property name="label" translatable="yes">Area Name:</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                    <child>
+                      <widget class="GtkEntry" id="entryAreaName">
+                        <property name="visible">True</property>
+                        <property name="max_length">255</property>
+                      </widget>
+                      <packing>
+                        <property name="position">2</property>
+                      </packing>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+                <child>
                   <widget class="GtkHBox" id="hbox48">
                     <property name="visible">True</property>
                     <child>
@@ -1251,20 +1295,20 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="padding">2</property>
-                    <property name="position">1</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
                 <child>
                   <widget class="GtkButton" id="buttonSetReleaseArea">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="label" translatable="yes">Set Release Area</property>
+                    <property name="label" translatable="yes">Set as Release Area</property>
                     <property name="use_underline">True</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
               </widget>

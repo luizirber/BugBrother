@@ -61,7 +61,10 @@ class Interface(object):
         widget.connect("clicked", self.run_scale_diag)
         
         widget = self.xml.get_widget("buttonInsectSize")
-        widget.connect("clicked", self.run_insect_size_diag)        
+        widget.connect("clicked", self.run_insect_size_diag)
+                
+        widget = self.xml.get_widget("buttonRefImg")
+        widget.connect("clicked", self.run_refimg_diag)                   
         
         widget = self.xml.get_widget("buttonProcess")
         widget.connect("clicked", self.process_lists)        
@@ -71,9 +74,10 @@ class Interface(object):
         model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
         view.set_model(model)
         renderer = gtk.CellRendererText()
-        column = gtk.TreeViewColumn("Area", renderer, text=1)
+        renderer.props.editable = True
+        column = gtk.TreeViewColumn("Area", renderer, text=0)
         view.append_column(column)
-        view.connect("cursor_changed", select_area)
+        view.connect("cursor_changed", self.select_area)
         
         #connecting the callbacks of the areasDiag
         widget = self.xml.get_widget("buttonAddArea")
@@ -107,16 +111,24 @@ class Interface(object):
         self.moving_shape_started = False
         self.graphic_context = None
                                 
+        edit = self.xml.get_widget("entryAreaName")
         widget = self.xml.get_widget("drawingareaAreas")
+        widget.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
+                          | gtk.gdk.BUTTON_RELEASE_MASK
+                          | gtk.gdk.BUTTON_MOTION_MASK)
         #what to do when the draw area is exposed        
         widget.connect("expose_event", self.draw_expose, model)
         #these two are necessary to draw something in the draw area
         widget.connect("button-press-event", self.compose_shape)
-        widget.connect("button-release-event", self.finish_shape)        
+        widget.connect("motion-notify-event", self.compose_shape)        
+        widget.connect("button-release-event", self.finish_shape, model, edit, view)
                                         
         #refimg dialog callback
         widget = self.xml.get_widget('buttonConfirm')
         widget.connect('clicked', self.refimgCapture)
+        
+        #the "invalid_*" variables
+        self.invalid_size = True
         
         self.window.connect("destroy", self.destroy)
         self.window.show()        
@@ -124,10 +136,9 @@ class Interface(object):
         return
    
     def select_area(self, wid):
-        selection = wid.get_selection
+        selection = wid.get_selection()
         selection.set_mode(gtk.SELECTION_SINGLE)
         treemodel, treeiter = selection.get_selected()
-        #TODO: need to check if this is right
         self.selected_shape = treemodel.get_value(treeiter, 1)
    
     def set_shape(self, wid, shape_type):
@@ -135,10 +146,8 @@ class Interface(object):
    
     def compose_shape(self, wid, event):
         if not self.graphic_context:
-            self.graphic_context = gtk.gdk.GC(wid)        
-        #TODO: verify the event 
-        #if event is ok, do the action
-        if action == "add":
+            self.graphic_context = gtk.gdk.GC(wid.window)        
+        if self.action == "add":
             if self.composing_shape == False:
                 self.composing_shape = True            
                 if self.shape_type == "rectangle":
@@ -147,77 +156,83 @@ class Interface(object):
                     self.temp_shape = circle()
                 else: # self.shape_type == "ellipse"
                     self.temp_shape = ellipse()        
-                #save the initial point
-                self.initial_point = (event.x, event.y)                
+                self.start_point = (event.x, event.y)                
             else:
                 self.end_point = (event.x, event.y)
+                # TODO: verify which point is closer to (0,0) before assign the values
                 if self.shape_type == "rectangle":
-                    self.temp_shape.width = abs(end_point[0] - start_point[0])
-                    self.temp_shape.height = abs(end_point[0] - start_point[0])
-                    self.temp_shape.x_center = start_point[0] + self.temp_shape.width/2
-                    self.temp_shape.y_center = start_point[1] + self.temp_shape.height/2
+                    self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
+                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
                     self.temp_shape.draw(wid.window, self.graphic_context)
                 elif self.shape_type == "circle":
-                    self.temp_shape.radius = abs(end_point[0] - start_point[0])
-                    self.temp_shape.x_center = start_point[0] + self.radius
-                    self.temp_shape.y_center = start_point[1] + self.radius
+                    self.temp_shape.radius = int(abs(self.end_point[0] - self.start_point[0]))
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.radius)
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.radius)
                     self.temp_shape.draw(wid.window, self.graphic_context)
                 else: # self.shape_type == "ellipse"                    
-                    self.temp_shape.x_axis = abs(end_point[0] - start_point[0])
-                    self.temp_shape.y_axis = abs(end_point[1] - start_point[1])            
-                    self.temp_shape.x_center = start_point[0] + self.x_axis
-                    self.temp_shape.y_center = start_point[1] + self.y_axis
+                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
+                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
                     self.temp_shape.draw(wid.window, self.graphic_context)                    
-        elif action == "resize":
+        elif self.action == "resize":
             pass
-        elif action == "move":
+        elif self.action == "move":
             if self.moving_shape_started == False:
                 self.moving_shape = self.selected_shape
                 self.first_point = (event.x, event.y)
                 self.moving_shape_started = True
             else:
                 self.last_point = (event.x, event.y)
-                self.moving_shape.x_center += (self.last_point[0] - self.first_point[0])
-                self.moving_shape.y_center += (self.last_point[1] - self.first_point[1])
+                self.moving_shape.x_center += int(self.last_point[0] - self.first_point[0])
+                self.moving_shape.y_center += int(self.last_point[1] - self.first_point[1])
                 self.moving_shape.draw(wid.window, self.graphic_context)
+        wid.queue_draw()
     
-    def finish_shape(self, wid, event):
-        if action == "add":
+    def finish_shape(self, wid, event, model, area_name, treeview):
+        if self.action == "add":
             if self.composing_shape == True:
                 self.end_point = (event.x, event.y)            
+                # TODO: verify which point is closer to (0,0) before assign the values                
                 if self.shape_type == "rectangle":
-                    self.temp_shape.width = abs(end_point[0] - start_point[0])
-                    self.temp_shape.height = abs(end_point[0] - start_point[0])
-                    self.temp_shape.x_center = start_point[0] + self.temp_shape.width/2
-                    self.temp_shape.y_center = start_point[1] + self.temp_shape.height/2
+                    self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
+                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
                     self.temp_shape.draw(wid.window, self.graphic_context)
                 elif self.shape_type == "circle":
-                    self.temp_shape.radius = abs(end_point[0] - start_point[0])
-                    self.temp_shape.x_center = start_point[0] + self.radius
-                    self.temp_shape.y_center = start_point[1] + self.radius
-                    self.temp_shape.draw(wid.window, self.graphic_context)                    
-                else: # self.shape_type == "ellipse"
-                    self.temp_shape.x_axis = abs(end_point[0] - start_point[0])
-                    self.temp_shape.y_axis = abs(end_point[1] - start_point[1])            
-                    self.temp_shape.x_center = start_point[0] + self.x_axis
-                    self.temp_shape.y_center = start_point[1] + self.y_axis
+                    self.temp_shape.radius = int(abs(self.end_point[0] - self.start_point[0]))
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.radius)
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.radius)
+                    self.temp_shape.draw(wid.window, self.graphic_context)
+                else: # self.shape_type == "ellipse"                    
+                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
+                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
                     self.temp_shape.draw(wid.window, self.graphic_context)                    
                 self.composing_shape = False
                 #save temp_shape on the areas list
-        elif action == "resize":
+                name = area_name.get_text()
+                treeiter = model.append([name, self.temp_shape])
+        elif self.action == "resize":
             pass
-        elif action == "move":
+        elif self.action == "move":
             if self.moving_shape_started == True:
                 self.last_point = (event.x, event.y)
-                self.moving_shape.x_center += (self.last_point[0] - self.first_point[0])
-                self.moving_shape.y_center += (self.last_point[1] - self.first_point[1])
+                self.moving_shape.x_center += int(self.last_point[0] - self.first_point[0])
+                self.moving_shape.y_center += int(self.last_point[1] - self.first_point[1])
                 self.moving_shape.draw(wid.window, self.graphic_context)
                 self.moving_shape_started = False
+        wid.queue_draw()                
                
     def draw_expose(self, wid, event, areas_list):
         if not self.graphic_context:
-            self.graphic_context = gtk.gdk.GC(wid)
-        wid.draw_pixbuf(self.project.refimage)
+            self.graphic_context = gtk.gdk.GC(wid.window)
+        wid.window.draw_pixbuf(self.graphic_context, self.project.refimage, 
+                               0, 0, 0, 0,-1,-1, gtk.gdk.RGB_DITHER_NONE, 0, 0)   
         values = [ r[1] for r in areas_list ]
         for shape in values:
             shape.draw(wid.window, self.graphic_context)
@@ -278,10 +293,16 @@ class Interface(object):
         response = refimgDiag.run()
                 
         if response == gtk.RESPONSE_OK :
+            refImg = self.xml.get_widget("imageRefImg").get_pixbuf()
+            if refImg:
+                self.project.refimage = refImg
+                self.invalid_refimage = False
+            else:
+                self.invalid_refimage = True
             refimgDiag.hide_all()
             return True
         else:
-            refimgdiag.hide_all()            
+            refimgDiag.hide_all()            
             self.invalid_refimage = True
             return False
         
@@ -407,7 +428,6 @@ class Interface(object):
                
         self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)      
         self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
-       
         self.device_manager.sink.set_xwindow_id(
                                     self.device_manager.outputarea.window.xid)
                 
