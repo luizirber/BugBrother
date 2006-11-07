@@ -51,6 +51,7 @@ class shape(object):
     def draw(self, canvas):
         pass
 
+
 class rectangle(shape):
     """
     
@@ -82,28 +83,6 @@ class rectangle(shape):
                               self.y_center - self.height/2,
                               self.width, self.height)
         
-        
-class circle(shape):
-       
-    def __init__(self):
-        self.x_center = None
-        self.y_center = None
-        self.radius = None
-
-    def contains(self, value):
-        if pow(value.y - self.y_center, 2) + pow(value.x - self.x_center, 2) <= pow (self.radius, 2) :
-            return True
-        else:
-            return False
-        
-    def area(self):
-        return pi * pow(self.radius, 2)
-        
-    def draw(self, canvas, gc):
-        canvas.draw_arc(gc, False, self.x_center - self.radius,
-                        self.y_center - self.radius,
-                        self.radius * 2, self.radius * 2,
-                        0, 360)
                 
 class ellipse(shape):
     """ http://en.wikipedia.org/wiki/Ellipse#Area """
@@ -127,7 +106,7 @@ class ellipse(shape):
         canvas.draw_arc(gc, False, self.x_center - self.x_axis,
                         self.y_center - self.y_axis,
                         self.x_axis * 2, self.y_axis * 2,
-                        0, 360)    
+                        0, 360*64)    
     
     
 class area(object):

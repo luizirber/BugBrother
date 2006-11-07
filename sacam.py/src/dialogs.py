@@ -4,7 +4,7 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-from areas import circle, ellipse, rectangle, area
+from areas import ellipse, rectangle, area
 
 class prop_diag(object):
     
@@ -49,15 +49,19 @@ class prop_diag(object):
             propdiag.hide_all()            
             return False     
 
+
 class refimg_diag(object):
     
-    def run(self, wid, xml, project, interface):
-        refimgDiag = xml.get_widget("dialogRefImage");                 
+    def __init__(self, xml):
+        self.xml = xml
+    
+    def run(self, wid, project, interface):
+        refimgDiag = self.xml.get_widget("dialogRefImage");                 
         refimgDiag.show_all()        
         response = refimgDiag.run()
                 
         if response == gtk.RESPONSE_OK :
-            refImg = xml.get_widget("imageRefImg").get_pixbuf()
+            refImg = self.xml.get_widget("imageRefImg").get_pixbuf()
             if refImg:
                 project.refimage = refImg
                 interface.invalid_refimage = False
@@ -70,13 +74,14 @@ class refimg_diag(object):
             interface.invalid_refimage = True
             return False
 
-    def capture(self, widget, project, xml, device):
-        image = xml.get_widget('imageRefImg')
+    def capture(self, widget, project, device):
+        image = self.xml.get_widget('imageRefImg')
         project.refimage = device.get_current_frame()
         image.set_from_pixbuf(project.refimage)
 
-class areas_diag(object):
-    
+
+class areas_diag(object):    
+        
     def __init__(self, project, xml):
         self.xml = xml
         self.project = project
@@ -106,12 +111,12 @@ class areas_diag(object):
         #buttons to define the shape that will be drawn                                
         widget = self.xml.get_widget("buttonRectangle")
         widget.connect("clicked", self.set_shape, "rectangle")
-        
-        widget = self.xml.get_widget("buttonCircle")
-        widget.connect("clicked", self.set_shape, "circle")                      
                                 
         widget = self.xml.get_widget("buttonEllipse")
         widget.connect("clicked", self.set_shape, "ellipse")        
+                                
+        widget = self.xml.get_widget("buttonSetReleaseArea")
+        widget.connect("clicked", self.set_as_release_area)                                
                                 
         #default shape to be drawn
         self.shape_type = "rectangle"
@@ -120,38 +125,57 @@ class areas_diag(object):
         self.action = "add"
         self.composing_shape = False
         self.moving_shape_started = False
+        self.resizing_shape_started = False
         self.graphic_context = None
                                 
         edit = self.xml.get_widget("entryAreaName")
         widget = self.xml.get_widget("drawingareaAreas")
         widget.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
                           | gtk.gdk.BUTTON_RELEASE_MASK
-                          | gtk.gdk.BUTTON_MOTION_MASK)
+                          | gtk.gdk.BUTTON_MOTION_MASK
+                          | gtk.gdk.KEY_PRESS_MASK
+                          | gtk.gdk.KEY_RELEASE_MASK   )
         #what to do when the draw area is exposed        
-        widget.connect("expose_event", self.draw_expose, project, model)
+        widget.connect("expose_event", self.draw_expose, self.project, model)
         #these two are necessary to draw something in the draw area
         widget.connect("button-press-event", self.compose_shape)
         widget.connect("motion-notify-event", self.compose_shape)        
         widget.connect("button-release-event", self.finish_shape, model, edit, view)
             
-    def run(self, wid):
+    def run(self, wid, project, interface):
+        self.project = project
         areasDiag = self.xml.get_widget("dialogAreas"); 
         areasDiag.show_all()        
         response = areasDiag.run()
         if response == gtk.RESPONSE_OK :
             model = self.xml.get_widget("treeviewAreas").get_model()
             values = [ (r[0],r[1]) for r in model ]
-            self.project.current_experiment.areas_list = []
+            project.current_experiment.areas_list = []
             for name, shape in values:
                 temp_area = area(name, shape)
-                self.project.current_experiment.areas_list.append(area)
+                project.current_experiment.areas_list.append(area)
             areasDiag.hide_all()
             return True
         else:
             areasDiag.hide_all()
-            if self.project.current_experiment.areas_list == []:
-                self.invalid_areas = True
+            if project.current_experiment.areas_list == []:
+                interface.invalid_areas = True
             return False            
+            
+    def set_as_release_area(self, wid):
+        release = self.selected_shape
+        if isinstance(release, rectangle):
+            release_area = [ int(release.y_center - release.height/2),
+                             int(release.x_center - release.width/2 ),
+                             int(release.y_center + release.height/2),                             
+                             int(release.x_center + release.width/2 ) ]
+            self.project.current_experiment.release_area = release_area
+        elif isinstance(release, ellipse):
+            release_area = [ int(release.y_center - release.y_axis),
+                             int(release.x_center - release.x_axis ),
+                             int(release.y_center + release.y_axis),                             
+                             int(release.x_center + release.x_axis ) ]
+            self.project.current_experiment.release_area = release_area
             
     def select_area(self, wid):
         selection = wid.get_selection()
@@ -170,16 +194,21 @@ class areas_diag(object):
                 self.composing_shape = True     
                 if self.shape_type == "rectangle":
                     self.temp_shape = rectangle()
-                elif self.shape_type == "circle":
-                    self.temp_shape = circle()
-                else: # self.shape_type == "ellipse"
+                elif self.shape_type == "ellipse":
                     self.temp_shape = ellipse()        
                 self.start_point = (event.x, event.y)                
             else:
                 self.end_point = (event.x, event.y)
                 if self.shape_type == "rectangle":
                     self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.temp_shape.height = self.temp_shape.width
+                    else:
+                        self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                    #Static center
+#                    self.temp_shape.x_center = int(self.start_point[0])
+#                    self.temp_shape.y_center = int(self.start_point[1])
+                    #Moving center                                                            
                     if self.start_point[0] < self.end_point[0]:
                         self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
                     else:
@@ -188,21 +217,16 @@ class areas_diag(object):
                         self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
                     else:
                         self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.height/2)
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                elif self.shape_type == "circle":
-                    self.temp_shape.radius = int(abs(self.end_point[0] - self.start_point[0]))
-                    if self.start_point[0] < self.end_point[0]:
-                        self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.radius)
-                    else:
-                        self.temp_shape.x_center = int(self.end_point[0] + self.temp_shape.radius)
-                    if self.start_point[1] < self.end_point[1]:
-                        self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.radius)
-                    else:
-                        self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.radius)             
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                else: # self.shape_type == "ellipse"                    
-                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
+                elif self.shape_type == "ellipse":
+                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))                    
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.temp_shape.y_axis = self.temp_shape.x_axis
+                    else:                    
+                        self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
+                    #Static center
+#                    self.temp_shape.x_center = int(self.start_point[0])
+#                    self.temp_shape.y_center = int(self.start_point[1])
+                    #Moving center                                        
                     if self.start_point[0] < self.end_point[0]:
                         self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
                     else:
@@ -211,9 +235,31 @@ class areas_diag(object):
                         self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
                     else:
                         self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.y_axis)
-                    self.temp_shape.draw(wid.window, self.graphic_context)                    
+                self.temp_shape.draw(wid.window, self.graphic_context)                    
         elif self.action == "resize":
-            pass
+            if self.resizing_shape_started == False:
+                self.resizing_shape = self.selected_shape
+                self.initial_point = (event.x, event.y)
+                self.resizing_shape_started = True
+            else:
+                self.final_point = (event.x, event.y)
+                if isinstance(self.resizing_shape, rectangle):
+                    self.resizing_shape.width += int(self.final_point[0] - self.initial_point[0])
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.resizing_shape.height = self.resizing_shape.width
+                    else:
+                        self.resizing_shape.height += int(self.final_point[1] - self.initial_point[1])
+                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
+                elif isinstance(self.resizing_shape, ellipse):
+                    self.resizing_shape.x_axis += int(self.final_point[0] - self.initial_point[0])
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.resizing_shape.y_axis = self.resizing_shape.x_axis
+                    else:                    
+                        self.resizing_shape.y_axis += int(self.final_point[1] - self.initial_point[1])
+                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
+                self.resizing_shape.draw(wid.window, self.graphic_context)                    
         elif self.action == "move":
             if self.moving_shape_started == False:
                 self.moving_shape = self.selected_shape
@@ -232,7 +278,10 @@ class areas_diag(object):
                 self.end_point = (event.x, event.y)            
                 if self.shape_type == "rectangle":
                     self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.temp_shape.height = self.temp_shape.width
+                    else:                
+                        self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
                     if self.start_point[0] < self.end_point[0]:
                         self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
                     else:
@@ -241,21 +290,12 @@ class areas_diag(object):
                         self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
                     else:
                         self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.height/2)
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                elif self.shape_type == "circle":
-                    self.temp_shape.radius = int(abs(self.end_point[0] - self.start_point[0]))
-                    if self.start_point[0] < self.end_point[0]:
-                        self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.radius)
-                    else:
-                        self.temp_shape.x_center = int(self.end_point[0] + self.temp_shape.radius)
-                    if self.start_point[1] < self.end_point[1]:
-                        self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.radius)
-                    else:
-                        self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.radius)             
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                else: # self.shape_type == "ellipse"                    
+                elif self.shape_type == "ellipse":
                     self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.temp_shape.y_axis = self.temp_shape.x_axis
+                    else:                    
+                        self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
                     if self.start_point[0] < self.end_point[0]:
                         self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
                     else:
@@ -264,13 +304,32 @@ class areas_diag(object):
                         self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
                     else:
                         self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.y_axis)
-                    self.temp_shape.draw(wid.window, self.graphic_context)                    
+                self.temp_shape.draw(wid.window, self.graphic_context)                    
                 self.composing_shape = False
                 #save temp_shape on the areas list
                 name = area_name.get_text()
                 model.append([name, self.temp_shape])
         elif self.action == "resize":
-            pass
+            if self.resizing_shape_started == True:
+                self.final_point = (event.x, event.y)
+                if isinstance(self.resizing_shape, rectangle):
+                    self.resizing_shape.width += int(self.final_point[0] - self.initial_point[0])
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.resizing_shape.height = self.resizing_shape.width
+                    else:
+                        self.resizing_shape.height += int(self.final_point[1] - self.initial_point[1])
+                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
+                elif isinstance(self.resizing_shape, ellipse):
+                    self.resizing_shape.x_axis += int(self.final_point[0] - self.initial_point[0])
+                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                        self.resizing_shape.y_axis = self.resizing_shape.x_axis
+                    else:                    
+                        self.resizing_shape.y_axis += int(self.final_point[1] - self.initial_point[1])
+                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
+                self.resizing_shape.draw(wid.window, self.graphic_context)                            
+                self.resizing_shape_started = False
         elif self.action == "move":
             if self.moving_shape_started == True:
                 self.last_point = (event.x, event.y)

@@ -35,7 +35,7 @@ class Interface(object):
         proc_output = self.xml.get_widget("trackArea")
         self.device_manager = Device_manager(outputarea, proc_output)
         self.propdiag = prop_diag()
-        self.refimgdiag = refimg_diag()
+        self.refimgdiag = refimg_diag(self.xml)
         self.areasdiag = areas_diag(self.project, self.xml)
         
         widget = self.xml.get_widget("buttonNew")
@@ -63,17 +63,17 @@ class Interface(object):
         widget.connect("clicked", self.run_insect_size_diag)
                 
         widget = self.xml.get_widget("buttonRefImg")
-        widget.connect("clicked", self.refimgdiag.run, self.xml, self.project, self)
+        widget.connect("clicked", self.refimgdiag.run, self.project, self)
         
         widget = self.xml.get_widget("buttonProcess")
         widget.connect("clicked", self.process_lists)        
                                
         widget = self.xml.get_widget("buttonAreas")
-        widget.connect("clicked", self.areasdiag.run)
+        widget.connect("clicked", self.areasdiag.run, self.project, self)
                                         
         #refimg dialog callback
         widget = self.xml.get_widget('buttonConfirm')
-        widget.connect('clicked', self.refimgdiag.capture, self.project, self.xml, self.device_manager)
+        widget.connect('clicked', self.refimgdiag.capture, self.project, self.device_manager)
         
         #the "invalid_*" variables
         self.invalid_size = True
@@ -193,12 +193,12 @@ class Interface(object):
         self.device_manager.sink.set_xwindow_id(
                                     self.device_manager.outputarea.window.xid)
                 
-        response = self.refimg_diag.run(None, self.xml, self.project, self)
+        response = self.refimg_diag.run(None, self.project, self)
         if response == False :
             self.ready_state()            
             return
         
-        response = self.areasdiag.run(None)
+        response = self.areasdiag.run(None, self.project, sel)
         if response == False :
             self.ready_state()            
             return
