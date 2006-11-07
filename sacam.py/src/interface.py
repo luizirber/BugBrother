@@ -19,7 +19,7 @@ import gst
 
 from device_manager import Device_manager
 from project import project
-from areas import circle, ellipse, rectangle
+from dialogs import prop_diag, refimg_diag, areas_diag
 
 class Interface(object):
         
@@ -34,13 +34,15 @@ class Interface(object):
         outputarea = self.xml.get_widget("videoOutputArea")
         proc_output = self.xml.get_widget("trackArea")
         self.device_manager = Device_manager(outputarea, proc_output)
+        self.propdiag = prop_diag()
+        self.refimgdiag = refimg_diag()
+        self.areasdiag = areas_diag(self.project, self.xml)
         
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
         
         widget = self.xml.get_widget("buttonStart")
-        widget.connect("clicked", self.start_video, 
-                                  self.project)
+        widget.connect("clicked", self.start_video, self.project)
         
         widget = self.xml.get_widget("buttonPreferences")
         widget.connect("clicked", self.device_manager.show_window)
@@ -52,11 +54,8 @@ class Interface(object):
         widget.connect("clicked", self.load_project)
         
         widget = self.xml.get_widget("buttonProjProperties")
-        widget.connect("clicked", self.run_prop_diag)
-        
-        widget = self.xml.get_widget("buttonAreas")
-        widget.connect("clicked", self.run_areas_diag)
-        
+        widget.connect("clicked", self.propdiag.run, self.project, self.xml)
+                            
         widget = self.xml.get_widget("buttonScale")
         widget.connect("clicked", self.run_scale_diag)
         
@@ -64,68 +63,17 @@ class Interface(object):
         widget.connect("clicked", self.run_insect_size_diag)
                 
         widget = self.xml.get_widget("buttonRefImg")
-        widget.connect("clicked", self.run_refimg_diag)                   
+        widget.connect("clicked", self.refimgdiag.run, self.xml, self.project, self)
         
         widget = self.xml.get_widget("buttonProcess")
         widget.connect("clicked", self.process_lists)        
-                        
-        # setting up the areas treeview
-        view = self.xml.get_widget("treeviewAreas")
-        model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
-        view.set_model(model)
-        renderer = gtk.CellRendererText()
-        renderer.props.editable = True
-        column = gtk.TreeViewColumn("Area", renderer, text=0)
-        view.append_column(column)
-        view.connect("cursor_changed", self.select_area)
-        
-        #connecting the callbacks of the areasDiag
-        widget = self.xml.get_widget("buttonAddArea")
-        widget.connect("clicked", self.shape_action, "add")
-        
-        widget = self.xml.get_widget("buttonRemoveArea")
-        widget.connect("clicked", self.remove_area)
-        
-        widget = self.xml.get_widget("buttonResizeArea")
-        widget.connect("clicked", self.shape_action, "resize")
-                                
-        widget = self.xml.get_widget("buttonMoveArea")
-        widget.connect("clicked", self.shape_action, "move")
-                                
-        #buttons to define the shape that will be drawn                                
-        widget = self.xml.get_widget("buttonRectangle")
-        widget.connect("clicked", self.set_shape, "rectangle")
-        
-        widget = self.xml.get_widget("buttonCircle")
-        widget.connect("clicked", self.set_shape, "circle")                      
-                                
-        widget = self.xml.get_widget("buttonEllipse")
-        widget.connect("clicked", self.set_shape, "ellipse")
-                                
-        #default shape to be drawn
-        self.shape_type = "rectangle"
-        
-        #default action is to add an area
-        self.action = "add"
-        self.composing_shape = False
-        self.moving_shape_started = False
-        self.graphic_context = None
-                                
-        edit = self.xml.get_widget("entryAreaName")
-        widget = self.xml.get_widget("drawingareaAreas")
-        widget.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
-                          | gtk.gdk.BUTTON_RELEASE_MASK
-                          | gtk.gdk.BUTTON_MOTION_MASK)
-        #what to do when the draw area is exposed        
-        widget.connect("expose_event", self.draw_expose, model)
-        #these two are necessary to draw something in the draw area
-        widget.connect("button-press-event", self.compose_shape)
-        widget.connect("motion-notify-event", self.compose_shape)        
-        widget.connect("button-release-event", self.finish_shape, model, edit, view)
+                               
+        widget = self.xml.get_widget("buttonAreas")
+        widget.connect("clicked", self.areasdiag.run)
                                         
         #refimg dialog callback
         widget = self.xml.get_widget('buttonConfirm')
-        widget.connect('clicked', self.refimgCapture)
+        widget.connect('clicked', self.refimgdiag.capture, self.project, self.xml, self.device_manager)
         
         #the "invalid_*" variables
         self.invalid_size = True
@@ -134,196 +82,14 @@ class Interface(object):
         self.window.show()        
         
         return
-   
-    def select_area(self, wid):
-        selection = wid.get_selection()
-        selection.set_mode(gtk.SELECTION_SINGLE)
-        treemodel, treeiter = selection.get_selected()
-        self.selected_shape = treemodel.get_value(treeiter, 1)
-   
-    def set_shape(self, wid, shape_type):
-        self.shape_type = shape_type
-   
-    def compose_shape(self, wid, event):
-        if not self.graphic_context:
-            self.graphic_context = gtk.gdk.GC(wid.window)        
-        if self.action == "add":
-            if self.composing_shape == False:
-                self.composing_shape = True            
-                if self.shape_type == "rectangle":
-                    self.temp_shape = rectangle()
-                elif self.shape_type == "circle":
-                    self.temp_shape = circle()
-                else: # self.shape_type == "ellipse"
-                    self.temp_shape = ellipse()        
-                self.start_point = (event.x, event.y)                
-            else:
-                self.end_point = (event.x, event.y)
-                # TODO: verify which point is closer to (0,0) before assign the values
-                if self.shape_type == "rectangle":
-                    self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
-                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
-                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                elif self.shape_type == "circle":
-                    self.temp_shape.radius = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.radius)
-                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.radius)
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                else: # self.shape_type == "ellipse"                    
-                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
-                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
-                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
-                    self.temp_shape.draw(wid.window, self.graphic_context)                    
-        elif self.action == "resize":
-            pass
-        elif self.action == "move":
-            if self.moving_shape_started == False:
-                self.moving_shape = self.selected_shape
-                self.first_point = (event.x, event.y)
-                self.moving_shape_started = True
-            else:
-                self.last_point = (event.x, event.y)
-                self.moving_shape.x_center += int(self.last_point[0] - self.first_point[0])
-                self.moving_shape.y_center += int(self.last_point[1] - self.first_point[1])
-                self.moving_shape.draw(wid.window, self.graphic_context)
-        wid.queue_draw()
-    
-    def finish_shape(self, wid, event, model, area_name, treeview):
-        if self.action == "add":
-            if self.composing_shape == True:
-                self.end_point = (event.x, event.y)            
-                # TODO: verify which point is closer to (0,0) before assign the values                
-                if self.shape_type == "rectangle":
-                    self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
-                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
-                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                elif self.shape_type == "circle":
-                    self.temp_shape.radius = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.radius)
-                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.radius)
-                    self.temp_shape.draw(wid.window, self.graphic_context)
-                else: # self.shape_type == "ellipse"                    
-                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
-                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
-                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
-                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
-                    self.temp_shape.draw(wid.window, self.graphic_context)                    
-                self.composing_shape = False
-                #save temp_shape on the areas list
-                name = area_name.get_text()
-                treeiter = model.append([name, self.temp_shape])
-        elif self.action == "resize":
-            pass
-        elif self.action == "move":
-            if self.moving_shape_started == True:
-                self.last_point = (event.x, event.y)
-                self.moving_shape.x_center += int(self.last_point[0] - self.first_point[0])
-                self.moving_shape.y_center += int(self.last_point[1] - self.first_point[1])
-                self.moving_shape.draw(wid.window, self.graphic_context)
-                self.moving_shape_started = False
-        wid.queue_draw()                
-               
-    def draw_expose(self, wid, event, areas_list):
-        if not self.graphic_context:
-            self.graphic_context = gtk.gdk.GC(wid.window)
-        wid.window.draw_pixbuf(self.graphic_context, self.project.refimage, 
-                               0, 0, 0, 0,-1,-1, gtk.gdk.RGB_DITHER_NONE, 0, 0)   
-        values = [ r[1] for r in areas_list ]
-        for shape in values:
-            shape.draw(wid.window, self.graphic_context)
-    
-    def remove_area(self, wid):
-        pass
-    
-    def shape_action(self, wid, action):
-        self.action = action
-              
+                 
     def process_lists(self, wid):
         self.project.current_experiment.prepare_point_list()
         self.project.current_experiment.prepare_areas_list()
         self.project.current_experiment.prepare_stats()
-   
-    def run_prop_diag(self, wid):
-        propdiag = self.xml.get_widget("dialogProjProp"); 
-        propdiag.connect('delete-event', self.delete_diag)        
-        propdiag.show_all()
-        
-        entryBio = self.xml.get_widget("entryNameBio")
-        entryName = self.xml.get_widget("entryNameInsect")
-        entryComp = self.xml.get_widget("entryComp")
-        entryTemp = self.xml.get_widget("entryTemp")
-        
-        try: t = self.project.attributes["Name of the Project"]
-        except KeyError: entryBio.props.text = ""
-        else: entryBio.props.text = t
-        
-        try: t = self.project.attributes["Name of Insect"]
-        except KeyError: entryName.props.text = ""
-        else: entryName.props.text = t
-            
-        try: t = self.project.attributes["Compounds used"]
-        except KeyError: entryComp.props.text = ""
-        else: entryComp.props.text = t
-        
-        try: t = self.project.attributes["Temperature"]
-        except KeyError: entryTemp.props.text = ""
-        else: entryTemp.props.text = t
-            
-        response = propdiag.run()        
-        if response == gtk.RESPONSE_OK :
-            self.project.attributes["Name of the Project"] = entryBio.props.text
-            self.project.attributes["Name of Insect"] = entryName.props.text
-            self.project.attributes["Compounds used"] = entryComp.props.text
-            self.project.attributes["Temperature"] = entryTemp.props.text
-            propdiag.hide_all()
-            return True
-        else:
-            propdiag.hide_all()            
-            return False     
-     
-    def run_refimg_diag(self, wid):
-        refimgDiag = self.xml.get_widget("dialogRefImage");                 
-        refimgDiag.connect('delete-event', self.delete_diag)       
-        refimgDiag.show_all()        
-        response = refimgDiag.run()
                 
-        if response == gtk.RESPONSE_OK :
-            refImg = self.xml.get_widget("imageRefImg").get_pixbuf()
-            if refImg:
-                self.project.refimage = refImg
-                self.invalid_refimage = False
-            else:
-                self.invalid_refimage = True
-            refimgDiag.hide_all()
-            return True
-        else:
-            refimgDiag.hide_all()            
-            self.invalid_refimage = True
-            return False
-        
-    def run_areas_diag(self, wid):
-        areasDiag = self.xml.get_widget("dialogAreas"); 
-        areasDiag.connect('delete-event', self.delete_diag)        
-        areasDiag.show_all()        
-        #connect the callbacks for the areas dialog        
-        response = areasDiag.run()
-        
-        if response == gtk.RESPONSE_OK :
-            areasDiag.hide_all()
-            return True
-        else:
-            areasDiag.hide_all()            
-            self.invalid_areas = True
-            return False
-        
     def run_scale_diag(self, wid):
         scaleDiag = self.xml.get_widget("dialogScale"); 
-        scaleDiag.connect('delete-event', self.delete_diag)        
         scaleDiag.show_all()        
         #connect the callbacks for the scale dialog        
         response = scaleDiag.run()
@@ -337,9 +103,8 @@ class Interface(object):
             self.invalid_scale = True
             return False
         
-    def run_insect_size_diag(self, wid):
+    def run_insect_size_diag(self, wid):        
         insectSizeDiag = self.xml.get_widget("dialogInsectSize"); 
-        insectSizeDiag.connect('delete-event', self.delete_diag)        
         insectSizeDiag.show_all()
         #connect the callbacks for the insect size dialog        
         response = insectSizeDiag.run()
@@ -378,9 +143,6 @@ class Interface(object):
 
     def destroy(self, widget):
         gtk.main_quit()
-        
-    def delete_diag(self, diag, event):
-        diag.hide_all()
      
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
@@ -420,7 +182,7 @@ class Interface(object):
         self.project.name = filename
         self.project.filename = filepath + '/' + filename + '.exp'
         
-        response = self.run_prop_diag(None)
+        response = self.run_prop_diag(None, self.project, self.xml)
         
         if response == False :
             self.ready_state()            
@@ -431,12 +193,12 @@ class Interface(object):
         self.device_manager.sink.set_xwindow_id(
                                     self.device_manager.outputarea.window.xid)
                 
-        response = self.run_refimg_diag(None)
+        response = self.refimg_diag.run(None, self.xml, self.project, self)
         if response == False :
             self.ready_state()            
             return
         
-        response = self.run_areas_diag(None)
+        response = self.areasdiag.run(None)
         if response == False :
             self.ready_state()            
             return
@@ -477,12 +239,7 @@ class Interface(object):
             
         #take this out when release the code
         self.ready_state()            
-        
-    def refimgCapture(self, widget):
-        image = self.xml.get_widget('imageRefImg')
-        self.project.refimage = self.device_manager.get_current_frame()
-        image.set_from_pixbuf(self.project.refimage)
-        
+                
     def start_video(self, widget, project):
         notebook = self.xml.get_widget("mainNotebook")
         notebook.set_current_page(1)
@@ -518,6 +275,9 @@ class Interface(object):
         widget = self.xml.get_widget("buttonSave")
         widget.set_sensitive(False)        
 
+        widget = self.xml.get_widget("buttonAreas")
+        widget.set_sensitive(False)                
+        
         widget = self.xml.get_widget("buttonScale")
         widget.set_sensitive(False)
         

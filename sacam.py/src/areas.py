@@ -137,9 +137,9 @@ class area(object):
     and a name, to simplify the area identification for the user.
     """
     
-    def __init__(self):
-        self.shape = None
-        self.name = None
+    def __init__(self, name=None, shape=None):
+        self.shape = shape
+        self.name = name
         self.track_list = []
         self.started = False
     
