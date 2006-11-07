@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from math import pi
+from gtk import gdk
 
 class point(object):
     """
@@ -8,30 +9,30 @@ class point(object):
     the time that a insect stayed in the point (start_time - end_time)
     and in which areas the point is contained.
     """
-    
-    x = None
-    y = None
-    start_time = None
-    end_time = None
-    
+        
     def __init__(self):
-        pass
+        self.x = None
+        self.y = None
+        self.start_time = None
+        self.end_time = None
     
-class area(object):
-    """
-    This class represents an area. An area contains 3 attributes: 
-    an unique identification,
-    a shape,
-    and a name, to simplify the area identification for the user.
-    """
     
-    id = None
-    shape = None
-    name = None
-    
+class track(object):
     def __init__(self):
-        pass
+        point_list = []
+        angleSpeedQuadSum = 0
+        linSpeedQuadSum = 0
+        linSpeedSum = 0
+        track_lenght = 0
+        total_time = 0
+        totalTrackSections = 0
+        trackLinSpeedDeviation = 0
+        trackAngleSpeedDeviation = 0
+        tortuosity = 0
+        meanTrackLinSpeed = 0
+        meanTrackAngleSpeed = 0
     
+       
 class shape(object):
     """
     Abstract class. Defines basic functions needed by the video processor
@@ -44,87 +45,101 @@ class shape(object):
     def contains(self, Point = None):
         pass
     
-    def area():
+    def area(self):
+        pass
+
+    def draw(self, canvas):
         pass
 
 class rectangle(shape):
     """
     
     """
-    
-    x_center = None
-    y_center = None
-    height = None
-    width = None
-    
+        
     def __init__(self):
-        pass
+        self.x_center = None
+        self.y_center = None
+        self.height = None
+        self.width = None
     
     def contains(self, value):
-        if isinstance(value, point):
-            if value.x > self.x_center + self.width / 2 :
-                return False            
-            elif value.x < self.x_center - self.width / 2 :
-                return False
-            elif value.y > self.y_center + self.height / 2 :
-                return False
-            elif value.y < self.y_center - self.height / 2 :
-                return False
-            else:
-                return True
-        else:
+        if value.x > self.x_center + self.width / 2 :
+            return False            
+        elif value.x < self.x_center - self.width / 2 :
             return False
+        elif value.y > self.y_center + self.height / 2 :
+            return False
+        elif value.y < self.y_center - self.height / 2 :
+            return False
+        else:
+            return True
     
     def area(self):
         return self.height * self.width
+    
+    def draw(self, canvas, gc):
+        canvas.draw_rectangle(gc, False, self.x_center - self.width/2,
+                              self.y_center - self.height/2,
+                              self.width, self.height)
+        
         
 class circle(shape):
-    
-    x_center = None
-    y_center = None
-    radius = None
-    
+       
     def __init__(self):
-        pass
-    
+        self.x_center = None
+        self.y_center = None
+        self.radius = None
+
     def contains(self, value):
-        if isinstance(value, point):
-            if pow(value.y - self.y_center, 2) + pow(value.x - self.x_center, 2) <= pow (self.radius, 2) :
-                return True
-        return False
+        if pow(value.y - self.y_center, 2) + pow(value.x - self.x_center, 2) <= pow (self.radius, 2) :
+            return True
+        else:
+            return False
         
     def area(self):
         return pi * pow(self.radius, 2)
         
+    def draw(self, canvas, gc):
+        canvas.draw_arc(gc, True, self.x_center - self.radius,
+                        self.y_center - self.radius,
+                        self.radius * 2, self.radius * 2,
+                        0, 360*64)
+                
 class ellipse(shape):
-    
-    x_center = None
-    y_center = None
-    x_axis = None    
-    y_axis = None
-    
+    """ http://en.wikipedia.org/wiki/Ellipse#Area """
     def __init__(self):
-        pass
+        self.x_center = None
+        self.y_center = None
+        self.x_axis = None    
+        self.y_axis = None
     
     def contains(self, value):
-        if isinstance(value, point):
-            if pow(self.x_center - value.x, 2) / pow(self.x_axis, 2) + \
-               pow(self.y_center - value.y, 2) / pow(self.y_axis, 2) <= 1 :
-               return True
-        return False
+        if pow(self.x_center - value.x, 2) / pow(self.x_axis, 2) + \
+            pow(self.y_center - value.y, 2) / pow(self.y_axis, 2) <= 1 :
+            return True
+        else:
+            return False
         
     def area(self):
         return pi * self.x_axis * self.y_axis
-        
-class freeform(shape):
     
-    vertex = []
+    def draw(self, canvas, gc):
+        canvas.draw_arc(gc, False, self.x_center - self.x_axis,
+                        self.y_center - self.y_axis,
+                        self.x_axis * 2, self.y_axis * 2,
+                        0, 360)    
     
-    def __init__(self):
-        pass
     
-    def contains(self, value):
-        pass
+class area(object):
+    """
+    This class represents an area. An area contains 2 attributes: 
+    a shape,
+    and a name, to simplify the area identification for the user.
+    """
     
-    def area(self):
-        pass
+    def __init__(self, name=None, shape=None):
+        self.shape = shape
+        self.name = name
+        self.track_list = []
+        self.started = False
+    
