@@ -1,11 +1,20 @@
+INTERFACE:
 - Better Save/Load dialogs
+    - Default directory must be ~
 - Scale and Insect_Size dialogs
-- WORKING: Resize areas in Areas dialog
-- Track simulator (TIP: can borrow code from areas dialog)
 - DONE: Refactoring - put the dialogs-specific code in new classes (dialogs.py)
-- Put more experiments in a project (currently handles only one)
+- AREAS DIALOG:
+    - DONE: Resize areas in Areas dialog
+    - DONE: What is the best for drawing? make the center static at the start point and increase the size
+    - DONE: Circle is a subtype of Ellipse, and Square is a subtype of Rectangle. Unify the classes and 
+      put a key_press event (SHIFT) to determine is it must be "squarish" (square and circle)
+    - why the image don't show when the mouse isn't moving?      
+    - use the arrow keys to move the image
 - DONE: Put a slider in the ProjPropDiag to control the threshold
+- Track simulator (TIP: can borrow code from areas dialog)
+- Put more experiments in a project (currently handles only one)
 - Transfer all the callbacks to the glade file
+- DeviceManager: allow changes in the pipeline
+
+DEPLOYMENT:
 - Installation facility
-- DONE: What is the best for drawing? make the center static at the start point and increase the size
-- DONE: Circle is a subtype of Ellipse, and Square is a subtype of Rectangle. Unify the classes and put a key_press event (SHIFT) to determine is it must be "squarish" (square and circle)

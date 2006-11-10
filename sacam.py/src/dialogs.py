@@ -218,7 +218,7 @@ class areas_diag(object):
                     else:
                         self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.height/2)
                 elif self.shape_type == "ellipse":
-                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))                    
+                    self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
                     if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
                         self.temp_shape.y_axis = self.temp_shape.x_axis
                     else:                    
@@ -235,30 +235,49 @@ class areas_diag(object):
                         self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
                     else:
                         self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.y_axis)
+                wid.queue_draw()                
                 self.temp_shape.draw(wid.window, self.graphic_context)                    
         elif self.action == "resize":
             if self.resizing_shape_started == False:
                 self.resizing_shape = self.selected_shape
-                self.initial_point = (event.x, event.y)
+                if isinstance(self.resizing_shape, rectangle):                
+                    self.initial_point = (self.resizing_shape.x_center - self.resizing_shape.width/2,
+                                          self.resizing_shape.y_center - self.resizing_shape.height/2)
+                elif isinstance(self.resizing_shape, ellipse):
+                    self.initial_point = (self.resizing_shape.x_center - self.resizing_shape.x_axis,
+                                          self.resizing_shape.y_center - self.resizing_shape.y_axis)
                 self.resizing_shape_started = True
             else:
                 self.final_point = (event.x, event.y)
                 if isinstance(self.resizing_shape, rectangle):
-                    self.resizing_shape.width += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.width = int(abs(self.final_point[0] - self.initial_point[0]))
                     if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
                         self.resizing_shape.height = self.resizing_shape.width
                     else:
-                        self.resizing_shape.height += int(self.final_point[1] - self.initial_point[1])
-                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
-                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
+                        self.resizing_shape.height = int(abs(self.final_point[1] - self.initial_point[1]))
+                    if self.initial_point[0] < self.final_point[0]:
+                        self.resizing_shape.x_center = int(self.initial_point[0] + self.resizing_shape.width/2)
+                    else:
+                        self.resizing_shape.x_center = int(self.final_point[0] + self.resizing_shape.width/2)
+                    if self.initial_point[1] < self.final_point[1]:
+                        self.resizing_shape.y_center = int(self.initial_point[1] + self.resizing_shape.height/2)
+                    else:
+                        self.resizing_shape.y_center = int(self.final_point[1] + self.resizing_shape.height/2)
                 elif isinstance(self.resizing_shape, ellipse):
-                    self.resizing_shape.x_axis += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
                     if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
                         self.resizing_shape.y_axis = self.resizing_shape.x_axis
                     else:                    
-                        self.resizing_shape.y_axis += int(self.final_point[1] - self.initial_point[1])
-                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
-                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
+                        self.resizing_shape.y_axis = int(abs(self.final_point[1] - self.initial_point[1]))
+                    if self.initial_point[0] < self.final_point[0]:
+                        self.resizing_shape.x_center = int(self.initial_point[0] + self.resizing_shape.x_axis)
+                    else:
+                        self.resizing_shape.x_center = int(self.final_point[0] + self.resizing_shape.x_axis)
+                    if self.initial_point[1] < self.final_point[1]:
+                        self.resizing_shape.y_center = int(self.initial_point[1] + self.resizing_shape.y_axis)
+                    else:
+                        self.resizing_shape.y_center = int(self.final_point[1] + self.resizing_shape.y_axis)
+                wid.queue_draw()
                 self.resizing_shape.draw(wid.window, self.graphic_context)                    
         elif self.action == "move":
             if self.moving_shape_started == False:
@@ -267,10 +286,10 @@ class areas_diag(object):
                 self.moving_shape_started = True
             else:
                 self.last_point = (event.x, event.y)
-                self.moving_shape.x_center += int(self.last_point[0] - self.first_point[0])
-                self.moving_shape.y_center += int(self.last_point[1] - self.first_point[1])
+                self.moving_shape.x_center = int(self.last_point[0])
+                self.moving_shape.y_center = int(self.last_point[1])
+                wid.queue_draw()                
                 self.moving_shape.draw(wid.window, self.graphic_context)
-        wid.queue_draw()
     
     def finish_shape(self, wid, event, model, area_name, treeview):
         if self.action == "add":
@@ -313,28 +332,41 @@ class areas_diag(object):
             if self.resizing_shape_started == True:
                 self.final_point = (event.x, event.y)
                 if isinstance(self.resizing_shape, rectangle):
-                    self.resizing_shape.width += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.width = int(abs(self.final_point[0] - self.initial_point[0]))
                     if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
                         self.resizing_shape.height = self.resizing_shape.width
                     else:
-                        self.resizing_shape.height += int(self.final_point[1] - self.initial_point[1])
-                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
-                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
+                        self.resizing_shape.height = int(abs(self.final_point[1] - self.initial_point[1]))
+                    if self.initial_point[0] < self.final_point[0]:
+                        self.resizing_shape.x_center = int(self.initial_point[0] + self.resizing_shape.width/2)
+                    else:
+                        self.resizing_shape.x_center = int(self.final_point[0] + self.resizing_shape.width/2)
+                    if self.initial_point[1] < self.final_point[1]:
+                        self.resizing_shape.y_center = int(self.initial_point[1] + self.resizing_shape.height/2)
+                    else:
+                        self.resizing_shape.y_center = int(self.final_point[1] + self.resizing_shape.height/2)
                 elif isinstance(self.resizing_shape, ellipse):
-                    self.resizing_shape.x_axis += int(self.final_point[0] - self.initial_point[0])
+                    self.resizing_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
                     if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
                         self.resizing_shape.y_axis = self.resizing_shape.x_axis
                     else:                    
-                        self.resizing_shape.y_axis += int(self.final_point[1] - self.initial_point[1])
-                    self.resizing_shape.x_center += int(self.final_point[0] - self.initial_point[0])
-                    self.resizing_shape.y_center += int(self.final_point[1] - self.initial_point[1])
-                self.resizing_shape.draw(wid.window, self.graphic_context)                            
+                        self.resizing_shape.y_axis = int(abs(self.final_point[1] - self.initial_point[1]))
+                    if self.initial_point[0] < self.final_point[0]:
+                        self.resizing_shape.x_center = int(self.initial_point[0] + self.resizing_shape.x_axis)
+                    else:
+                        self.resizing_shape.x_center = int(self.final_point[0] + self.resizing_shape.x_axis)
+                    if self.initial_point[1] < self.final_point[1]:
+                        self.resizing_shape.y_center = int(self.initial_point[1] + self.resizing_shape.y_axis)
+                    else:
+                        self.resizing_shape.y_center = int(self.final_point[1] + self.resizing_shape.y_axis)
+                self.resizing_shape.draw(wid.window, self.graphic_context)
+                wid.queue_draw()
                 self.resizing_shape_started = False
         elif self.action == "move":
             if self.moving_shape_started == True:
                 self.last_point = (event.x, event.y)
-                self.moving_shape.x_center += int(self.last_point[0] - self.first_point[0])
-                self.moving_shape.y_center += int(self.last_point[1] - self.first_point[1])
+                self.moving_shape.x_center = int(self.last_point[0])
+                self.moving_shape.y_center = int(self.last_point[1])
                 self.moving_shape.draw(wid.window, self.graphic_context)
                 self.moving_shape_started = False
         wid.queue_draw()                
@@ -353,3 +385,55 @@ class areas_diag(object):
     
     def shape_action(self, wid, action):
         self.action = action
+
+class scale_diag(object):
+    def __init__(self, xml):
+        self.xml = xml
+        
+    def run(self, wid, interface):
+        scaleDiag = self.xml.get_widget("dialogScale"); 
+        scaleDiag.show_all()        
+        #connect the callbacks for the scale dialog        
+        response = scaleDiag.run()
+        
+        if response == gtk.RESPONSE_OK :
+            #save the scale
+            scaleDiag.hide_all()
+            return True
+        else:
+            scaleDiag.hide_all()            
+            interface.invalid_scale = True
+            return False
+
+class insectsize_diag(object):
+    def __init__(self, xml):
+        self.xml = xml
+    
+    def run(self, wid, interface):
+        insectSizeDiag = self.xml.get_widget("dialogInsectSize"); 
+        insectSizeDiag.show_all()
+        #connect the callbacks for the insect size dialog        
+        response = insectSizeDiag.run()
+        
+        if response == gtk.RESPONSE_OK :
+#            widget = self.xml.get_widget("entryInsectSize")
+#            try:
+#                size = float(widget.props.text)
+#            except ValueError:
+#                self.invalid_size = True
+#            else:
+#                self.project.bug_size = size
+#            
+#            widget = self.xml.get_widget("entryInsectSpeed")
+#            try:
+#                speed = float(widget.props.text)
+#            except ValueError:
+#                self.invalid_speed = True
+#            else:
+#                self.project.bug_max_velocity = speed           
+            insectSizeDiag.hide_all()
+            return True
+        else:
+            insectSizeDiag.hide_all()            
+            interface.invalid_size = True
+            return False

@@ -3,7 +3,6 @@
 import sys
 from os import makedirs
 
-import gc
 from datetime import datetime
 
 import pygtk
@@ -19,7 +18,7 @@ import gst
 
 from device_manager import Device_manager
 from project import project
-from dialogs import prop_diag, refimg_diag, areas_diag
+from dialogs import prop_diag, refimg_diag, areas_diag, scale_diag, insectsize_diag
 
 class Interface(object):
         
@@ -37,6 +36,8 @@ class Interface(object):
         self.propdiag = prop_diag()
         self.refimgdiag = refimg_diag(self.xml)
         self.areasdiag = areas_diag(self.project, self.xml)
+        self.scalediag = scale_diag(self.xml)
+        self.insectsizediag = insectsize_diag(self.xml)
         
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
@@ -57,10 +58,10 @@ class Interface(object):
         widget.connect("clicked", self.propdiag.run, self.project, self.xml)
                             
         widget = self.xml.get_widget("buttonScale")
-        widget.connect("clicked", self.run_scale_diag)
+        widget.connect("clicked", self.scalediag.run, self)
         
         widget = self.xml.get_widget("buttonInsectSize")
-        widget.connect("clicked", self.run_insect_size_diag)
+        widget.connect("clicked", self.insectsizediag.run, self)
                 
         widget = self.xml.get_widget("buttonRefImg")
         widget.connect("clicked", self.refimgdiag.run, self.project, self)
@@ -88,56 +89,12 @@ class Interface(object):
         self.project.current_experiment.prepare_areas_list()
         self.project.current_experiment.prepare_stats()
                 
-    def run_scale_diag(self, wid):
-        scaleDiag = self.xml.get_widget("dialogScale"); 
-        scaleDiag.show_all()        
-        #connect the callbacks for the scale dialog        
-        response = scaleDiag.run()
-        
-        if response == gtk.RESPONSE_OK :
-            #save the scale
-            scaleDiag.hide_all()
-            return True
-        else:
-            scaleDiag.hide_all()            
-            self.invalid_scale = True
-            return False
-        
-    def run_insect_size_diag(self, wid):        
-        insectSizeDiag = self.xml.get_widget("dialogInsectSize"); 
-        insectSizeDiag.show_all()
-        #connect the callbacks for the insect size dialog        
-        response = insectSizeDiag.run()
-        
-        if response == gtk.RESPONSE_OK :
-#            widget = self.xml.get_widget("entryInsectSize")
-#            try:
-#                size = float(widget.props.text)
-#            except ValueError:
-#                self.invalid_size = True
-#            else:
-#                self.project.bug_size = size
-#            
-#            widget = self.xml.get_widget("entryInsectSpeed")
-#            try:
-#                speed = float(widget.props.text)
-#            except ValueError:
-#                self.invalid_speed = True
-#            else:
-#                self.project.bug_max_velocity = speed           
-            insectSizeDiag.hide_all()
-            return True
-        else:
-            insectSizeDiag.hide_all()            
-            self.invalid_size = True
-            return False
-                
     def main(self):
         gtk.main()
 
     def save_project(self, widget):
         if self.invalid_path:
-            #handle this
+            #TODO: handle this
             pass
         self.project.save()
 
@@ -198,17 +155,17 @@ class Interface(object):
             self.ready_state()            
             return
         
-        response = self.areasdiag.run(None, self.project, sel)
+        response = self.areasdiag.run(None, self.project, self)
         if response == False :
             self.ready_state()            
             return
 
-        response = self.run_scale_diag(None)
+        response = self.scalediag.run(None, self)
         if response == False :
             self.ready_state()
             return
                 
-        response = self.run_insect_size_diag(None)
+        response = self.insectsizediag.run(None, self)
         if response == False :
             self.ready_state()            
             return
@@ -237,7 +194,7 @@ class Interface(object):
         if self.project.filename:
             self.project.load()
             
-        #take this out when release the code
+        #TODO: take this out when release the code
         self.ready_state()            
                 
     def start_video(self, widget, project):
@@ -258,7 +215,6 @@ class Interface(object):
         if self.running:
             while self.running:            
                 self.device_manager.start_video(widget, project)
-                gc.collect()
         else:
             self.ready_state()                
 
@@ -319,8 +275,8 @@ class Interface(object):
         widget = self.xml.get_widget("buttonSave")
         widget.set_sensitive(True)        
         
-        if len(self.project.current_experiment.point_list) == 0 or \
-           len(self.project.current_experiment.areas_list) == 0:
+        if self.project.current_experiment.point_list == [] or \
+           self.project.current_experiment.areas_list == []:
             pass
         else:
             widget = self.xml.get_widget("buttonTortuosity")
@@ -343,7 +299,10 @@ class Interface(object):
         widget.set_sensitive(True)
             
         widget = self.xml.get_widget("buttonAreas")
-        widget.set_sensitive(True)         
+        widget.set_sensitive(True)
+                 
+        widget = self.xml.get_widget("buttonRefImg")
+        widget.set_sensitive(True)                          
         
         widget = self.xml.get_widget("buttonProjProperties")
         widget.set_sensitive(True)         
