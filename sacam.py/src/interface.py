@@ -36,7 +36,7 @@ class Interface(object):
         self.propdiag = prop_diag()
         self.refimgdiag = refimg_diag(self.xml)
         self.areasdiag = areas_diag(self.project, self.xml)
-        self.scalediag = scale_diag(self.xml)
+        self.scalediag = scale_diag(self.xml, self.project)
         self.insectsizediag = insectsize_diag(self.xml)
         
         widget = self.xml.get_widget("buttonNew")
@@ -58,7 +58,7 @@ class Interface(object):
         widget.connect("clicked", self.propdiag.run, self.project, self.xml)
                             
         widget = self.xml.get_widget("buttonScale")
-        widget.connect("clicked", self.scalediag.run, self)
+        widget.connect("clicked", self.scalediag.run, self.project, self)
         
         widget = self.xml.get_widget("buttonInsectSize")
         widget.connect("clicked", self.insectsizediag.run, self)

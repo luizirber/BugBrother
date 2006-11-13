@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+from math import sqrt
+
 import pygtk
 pygtk.require('2.0')
 import gtk
 import gobject
 
-from areas import ellipse, rectangle, area
+from areas import ellipse, rectangle, area, line
 
 class prop_diag(object):
     
@@ -387,10 +389,37 @@ class areas_diag(object):
         self.action = action
 
 class scale_diag(object):
-    def __init__(self, xml):
+    def __init__(self, xml, project):
         self.xml = xml
+        self.project = project
         
-    def run(self, wid, interface):
+        widget = self.xml.get_widget("buttonCalculateScale")
+        widget.connect("clicked", self.calculate_scale)
+        
+        widget = self.xml.get_widget("comboboxentryUnit")
+        widget.connect("changed", self.set_label_unit)
+        
+        self.graphic_context = None
+                                
+        entryShapeXSize = self.xml.get_widget("entryShapeXSize")
+        entryShapeYSize = self.xml.get_widget("entryShapeYSize")        
+        widget = self.xml.get_widget("drawingareaScale")
+        widget.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
+                          | gtk.gdk.BUTTON_RELEASE_MASK
+                          | gtk.gdk.BUTTON_MOTION_MASK
+                          | gtk.gdk.KEY_PRESS_MASK
+                          | gtk.gdk.KEY_RELEASE_MASK   )
+        #what to do when the draw area is exposed        
+        widget.connect("expose_event", self.draw_expose, self.project)
+        #these two are necessary to draw something in the draw area
+        widget.connect("button-press-event", self.compose_shape)
+        widget.connect("motion-notify-event", self.compose_shape)        
+        widget.connect("button-release-event", self.finish_shape)
+        self.temp_shape = None
+        self.composing_shape = False
+        
+    def run(self, wid, project, interface):
+        self.project = project
         scaleDiag = self.xml.get_widget("dialogScale"); 
         scaleDiag.show_all()        
         #connect the callbacks for the scale dialog        
@@ -404,6 +433,153 @@ class scale_diag(object):
             scaleDiag.hide_all()            
             interface.invalid_scale = True
             return False
+        
+    def draw_expose(self, wid, event, project):
+        if not self.graphic_context:
+            self.graphic_context = gtk.gdk.GC(wid.window)
+        wid.window.draw_pixbuf(self.graphic_context, project.refimage, 
+                               0, 0, 0, 0,-1,-1, gtk.gdk.RGB_DITHER_NONE, 0, 0)       
+        if self.temp_shape:
+            self.temp_shape.draw(wid.window, self.graphic_context)
+
+    def compose_shape(self, wid, event):
+        if not self.graphic_context:
+            self.graphic_context = gtk.gdk.GC(wid.window)        
+        if self.composing_shape == False:
+            self.composing_shape = True     
+            self.start_point = (event.x, event.y)            
+            if self.xml.get_widget("radiobuttonEllipse").get_active():
+                self.temp_shape = ellipse()
+            elif self.xml.get_widget("radiobuttonRectangle").get_active():
+                self.temp_shape = rectangle()
+            elif self.xml.get_widget("radiobuttonLine").get_active():
+                self.temp_shape = line()
+                self.temp_shape.x_start = int(self.start_point[0])
+                self.temp_shape.y_start = int(self.start_point[1])                
+        else:
+            self.end_point = (event.x, event.y)
+            if isinstance(self.temp_shape, rectangle):
+                self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
+                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                    self.temp_shape.height = self.temp_shape.width
+                else:
+                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                if self.start_point[0] < self.end_point[0]:
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
+                else:
+                    self.temp_shape.x_center = int(self.end_point[0] + self.temp_shape.width/2)           
+                if self.start_point[1] < self.end_point[1]:
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
+                else:
+                    self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.height/2)
+            elif isinstance(self.temp_shape, ellipse):
+                self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
+                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                    self.temp_shape.y_axis = self.temp_shape.x_axis
+                else:                    
+                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
+                if self.start_point[0] < self.end_point[0]:
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
+                else:
+                    self.temp_shape.x_center = int(self.end_point[0] + self.temp_shape.x_axis)
+                if self.start_point[1] < self.end_point[1]:
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
+                else:
+                    self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.y_axis)
+            elif isinstance(self.temp_shape, line):
+                self.temp_shape.x_end = int(self.end_point[0])                    
+                self.temp_shape.y_end = int(self.end_point[1])
+            wid.queue_draw()                
+            self.temp_shape.draw(wid.window, self.graphic_context)                    
+
+    def finish_shape(self, wid, event):
+        if self.composing_shape == True:
+            self.end_point = (event.x, event.y)            
+            if isinstance(self.temp_shape, rectangle):
+                self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
+                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                    self.temp_shape.height = self.temp_shape.width
+                else:                
+                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                if self.start_point[0] < self.end_point[0]:
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
+                else:
+                    self.temp_shape.x_center = int(self.end_point[0] + self.temp_shape.width/2)           
+                if self.start_point[1] < self.end_point[1]:
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.height/2)
+                else:
+                    self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.height/2)
+            elif isinstance(self.temp_shape, ellipse):
+                self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
+                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                    self.temp_shape.y_axis = self.temp_shape.x_axis
+                else:                    
+                    self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
+                if self.start_point[0] < self.end_point[0]:
+                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.x_axis)
+                else:
+                    self.temp_shape.x_center = int(self.end_point[0] + self.temp_shape.x_axis)
+                if self.start_point[1] < self.end_point[1]:
+                    self.temp_shape.y_center = int(self.start_point[1] + self.temp_shape.y_axis)
+                else:
+                    self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.y_axis)
+            elif isinstance(self.temp_shape, line):                    
+                self.temp_shape.x_end = int(self.end_point[0])                    
+                self.temp_shape.y_end = int(self.end_point[1])
+            self.temp_shape.draw(wid.window, self.graphic_context)                    
+            self.composing_shape = False
+
+    def calculate_scale(self, wid):
+        #TODO: verify the values before the calculations are made
+        # if values are wrong, show a error message dialog 
+        invalid_value = False
+        
+        x_size = self.xml.get_widget("entryShapeXSize").get_text()
+        try: x_size = float(x_size)
+        except: invalid_value = True
+            
+        y_size = self.xml.get_widget("entryShapeYSize").get_text()
+        try: y_size = float(y_size)
+        except: invalid_value = True                
+        
+        if invalid_value:
+            #errormessage
+            print "error"
+        else:
+            if isinstance(self.temp_shape, rectangle):
+                x_shape_size = self.temp_shape.width
+                y_shape_size = self.temp_shape.height
+            elif isinstance(self.temp_shape, ellipse):
+                x_shape_size = self.temp_shape.x_axis * 2
+                y_shape_size = self.temp_shape.y_axis * 2
+            elif isinstance(self.temp_shape, line):            
+                x_shape_size = sqrt( pow(self.temp_shape.x_end - self.temp_shape.x_start, 2)
+                             + pow(self.temp_shape.y_end - self.temp_shape.y_start, 2) )
+                y_shape_size = x_shape_size
+            
+            x_scale = (x_shape_size) / float(x_size)
+            y_scale = (y_shape_size) / float(y_size)
+            
+            self.xml.get_widget("entryXAxis").set_text(str(x_scale))
+            self.xml.get_widget("entryYAxis").set_text(str(y_scale))
+            
+            self.project.current_experiment.x_scale_ratio = x_scale
+            self.project.current_experiment.y_scale_ratio = y_scale        
+
+    
+    def set_label_unit(self, wid):
+        wlist = []
+        wlist.append(self.xml.get_widget("labelUnitXSize"))
+        wlist.append(self.xml.get_widget("labelUnitYSize"))
+        for widget in wlist:
+            widget.set_label(wid.get_active_text())
+        
+        wlist = []            
+        wlist.append(self.xml.get_widget("labelUnitXAxis"))
+        wlist.append(self.xml.get_widget("labelUnitYAxis"))
+        for widget in wlist:
+            widget.set_label("pixels/" + wid.get_active_text())        
+            
 
 class insectsize_diag(object):
     def __init__(self, xml):

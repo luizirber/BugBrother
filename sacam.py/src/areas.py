@@ -108,6 +108,22 @@ class ellipse(shape):
                         self.x_axis * 2, self.y_axis * 2,
                         0, 360*64)    
     
+class line(shape):
+    def __init__(self):
+        self.x_start = None
+        self.y_start = None
+        self.x_end = None    
+        self.y_end = None
+    
+    def contains(self, value):
+        pass
+            
+    def area(self):
+        return 0
+    
+    def draw(self, canvas, gc):
+        canvas.draw_line(gc, self.x_start, self.y_start,
+                             self.x_end, self.y_end)
     
 class area(object):
     """

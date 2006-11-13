@@ -15,6 +15,16 @@ INTERFACE:
 - Put more experiments in a project (currently handles only one)
 - Transfer all the callbacks to the glade file
 - DeviceManager: allow changes in the pipeline
+- SCALE DIALOG:
+    - If shape is a line, disable Y_axis
+- INSECT SIZE DIALOG:
+    - Everything XD
 
 DEPLOYMENT:
 - Installation facility
+
+AREAS:
+- line methods
+
+EXPERIMENT:
+- verify the calculations, because of x_scale_ratio and y_scale_ratio

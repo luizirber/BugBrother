@@ -55,6 +55,8 @@ class experiment(object):
     extra_attributes = {}
     measurement_unit = None
     scale_ratio = None
+    x_scale_ratio = None
+    y_scale_ratio = None
     track = None
     experiment_name = None
     
