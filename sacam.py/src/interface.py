@@ -61,7 +61,7 @@ class Interface(object):
         widget.connect("clicked", self.scalediag.run, self.project, self)
         
         widget = self.xml.get_widget("buttonInsectSize")
-        widget.connect("clicked", self.insectsizediag.run, self)
+        widget.connect("clicked", self.insectsizediag.run, self.project, self)
                 
         widget = self.xml.get_widget("buttonRefImg")
         widget.connect("clicked", self.refimgdiag.run, self.project, self)
@@ -160,12 +160,12 @@ class Interface(object):
             self.ready_state()            
             return
 
-        response = self.scalediag.run(None, self)
+        response = self.scalediag.run(None, self.project, self)
         if response == False :
             self.ready_state()
             return
                 
-        response = self.insectsizediag.run(None, self)
+        response = self.insectsizediag.run(None, self.project, self)
         if response == False :
             self.ready_state()            
             return

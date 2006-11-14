@@ -426,7 +426,24 @@ class scale_diag(object):
         response = scaleDiag.run()
         
         if response == gtk.RESPONSE_OK :
-            #save the scale
+            interface.invalid_size = False            
+            try:
+                value = self.xml.get_widget("comboboxentryUnit").get_active_text()
+            except: 
+                interface.invalid_scale = True
+            else: 
+                self.project.current_experiment.measurement_unit = value
+            
+            try: 
+                self.project.current_experiment.x_scale_ratio = self.x_scale
+            except:
+                interface.invalid_scale = True
+                            
+            try:
+                self.project.current_experiment.y_scale_ratio = self.y_scale            
+            except:
+                interface.invalid_scale = True
+
             scaleDiag.hide_all()
             return True
         else:
@@ -530,8 +547,6 @@ class scale_diag(object):
             self.composing_shape = False
 
     def calculate_scale(self, wid):
-        #TODO: verify the values before the calculations are made
-        # if values are wrong, show a error message dialog 
         invalid_value = False
         
         x_size = self.xml.get_widget("entryShapeXSize").get_text()
@@ -543,8 +558,12 @@ class scale_diag(object):
         except: invalid_value = True                
         
         if invalid_value:
-            #errormessage
-            print "error"
+            error = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
+                                      gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, 
+                                      "Invalid values")
+            response = error.run()
+            if response == gtk.RESPONSE_OK:
+                error.destroy()
         else:
             if isinstance(self.temp_shape, rectangle):
                 x_shape_size = self.temp_shape.width
@@ -557,16 +576,12 @@ class scale_diag(object):
                              + pow(self.temp_shape.y_end - self.temp_shape.y_start, 2) )
                 y_shape_size = x_shape_size
             
-            x_scale = (x_shape_size) / float(x_size)
-            y_scale = (y_shape_size) / float(y_size)
+            self.x_scale = (x_shape_size) / float(x_size)
+            self.y_scale = (y_shape_size) / float(y_size)
             
-            self.xml.get_widget("entryXAxis").set_text(str(x_scale))
-            self.xml.get_widget("entryYAxis").set_text(str(y_scale))
-            
-            self.project.current_experiment.x_scale_ratio = x_scale
-            self.project.current_experiment.y_scale_ratio = y_scale        
-
-    
+            self.xml.get_widget("entryXAxis").set_text(str(self.x_scale))
+            self.xml.get_widget("entryYAxis").set_text(str(self.y_scale))
+                
     def set_label_unit(self, wid):
         wlist = []
         wlist.append(self.xml.get_widget("labelUnitXSize"))
@@ -585,28 +600,36 @@ class insectsize_diag(object):
     def __init__(self, xml):
         self.xml = xml
     
-    def run(self, wid, interface):
-        insectSizeDiag = self.xml.get_widget("dialogInsectSize"); 
-        insectSizeDiag.show_all()
-        #connect the callbacks for the insect size dialog        
-        response = insectSizeDiag.run()
+    def run(self, wid, project, interface):
+        self.project = project
+        insectSizeDiag = self.xml.get_widget("dialogInsectSize");
         
+        value = self.project.current_experiment.measurement_unit
+        labelSize = self.xml.get_widget("labelSize");
+        labelSize.set_label(value)
+        labelSpeed = self.xml.get_widget("labelSpeed");
+        labelSpeed.set_label(value + "/s")        
+        
+        insectSizeDiag.show_all()
+        response = insectSizeDiag.run()
         if response == gtk.RESPONSE_OK :
-#            widget = self.xml.get_widget("entryInsectSize")
-#            try:
-#                size = float(widget.props.text)
-#            except ValueError:
-#                self.invalid_size = True
-#            else:
-#                self.project.bug_size = size
-#            
-#            widget = self.xml.get_widget("entryInsectSpeed")
-#            try:
-#                speed = float(widget.props.text)
-#            except ValueError:
-#                self.invalid_speed = True
-#            else:
-#                self.project.bug_max_velocity = speed           
+            interface.invalid_size = False
+            widget = self.xml.get_widget("entryInsectSize")
+            try:
+                size = float(widget.props.text)
+            except ValueError:
+                interface.invalid_size = True
+            else:
+                self.project.bug_size = size
+            
+            widget = self.xml.get_widget("entryInsectSpeed")
+            try:
+                speed = float(widget.props.text)
+            except ValueError:
+                interface.invalid_speed = True
+            else:
+                self.project.bug_max_velocity = speed
+                
             insectSizeDiag.hide_all()
             return True
         else:

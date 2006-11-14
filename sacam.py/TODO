@@ -1,24 +1,25 @@
 INTERFACE:
+- Put the menubar to work...
+- Track simulator (TIP: can borrow code from areas dialog)
+- Put more experiments in a project (currently handles only one)
+- Transfer all the callbacks to the glade file (Is it viable?)
+- DeviceManager: allow changes in the pipeline
 - Better Save/Load dialogs
-    - Default directory must be ~
-- Scale and Insect_Size dialogs
+    - Default directory must be home
+- Strict order: only call another dialog if the previous one is defined
+    RefImg -> Scale -> Insect Size
+    RefImg -> Areas
 - DONE: Refactoring - put the dialogs-specific code in new classes (dialogs.py)
+- DONE: Put a slider in the ProjPropDiag to control the threshold
+- SCALE DIALOG:
+    - If shape is a line, disable Y_axis
 - AREAS DIALOG:
     - DONE: Resize areas in Areas dialog
     - DONE: What is the best for drawing? make the center static at the start point and increase the size
     - DONE: Circle is a subtype of Ellipse, and Square is a subtype of Rectangle. Unify the classes and 
       put a key_press event (SHIFT) to determine is it must be "squarish" (square and circle)
-    - why the image don't show when the mouse isn't moving?      
+    - DONE: why the image don't show when the mouse isn't moving?      
     - use the arrow keys to move the image
-- DONE: Put a slider in the ProjPropDiag to control the threshold
-- Track simulator (TIP: can borrow code from areas dialog)
-- Put more experiments in a project (currently handles only one)
-- Transfer all the callbacks to the glade file
-- DeviceManager: allow changes in the pipeline
-- SCALE DIALOG:
-    - If shape is a line, disable Y_axis
-- INSECT SIZE DIALOG:
-    - Everything XD
 
 DEPLOYMENT:
 - Installation facility
@@ -28,3 +29,6 @@ AREAS:
 
 EXPERIMENT:
 - verify the calculations, because of x_scale_ratio and y_scale_ratio
+
+VIDEOPROCESSORMODULE
+- add points to the list
