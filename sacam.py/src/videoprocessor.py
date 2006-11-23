@@ -22,7 +22,7 @@ class videoprocessor(object):
             self.window = project.current_experiment.release_area            
             self.middle_height = (self.window[2] + self.window[0])/2            
             self.middle_width = (self.window[3] + self.window[1])/2            
-            self.bug_size = project.bug_size * project.bug_max_velocity
+            self.bug_size = int(project.bug_size + project.bug_max_velocity)
                         
             self.graphic = gtk.gdk.GC(output.window)
             self.graphic.set_values(line_width = 5, line_style = gtk.gdk.LINE_ON_OFF_DASH)

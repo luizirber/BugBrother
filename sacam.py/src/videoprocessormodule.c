@@ -202,7 +202,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         
         bug_size = PyObject_GetAttrString(project, "bug_size");
         bug_max_velocity = PyObject_GetAttrString(project, "bug_max_velocity");
-        self->bug_size = PyInt_AsLong(bug_size) * PyInt_AsLong(bug_max_velocity);
+        self->bug_size = PyInt_AsLong(bug_size) + PyInt_AsLong(bug_max_velocity);
 
         self->gc = gdk_gc_new(GTK_WIDGET(output->obj)->window);
         gdk_gc_set_line_attributes (self->gc, 5, GDK_LINE_ON_OFF_DASH,

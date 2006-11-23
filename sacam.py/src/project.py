@@ -3,13 +3,14 @@
 from math import pi, sqrt, acos
 import cPickle
 from zlib import compress, decompress
+from csv import writer
 
 import pygtk
 pygtk.require('2.0')
 import gobject
 import gtk.gdk
 
-from areas import shape, point, track
+from areas import shape, point, track, rectangle, ellipse
 
 class project(object):
     """
@@ -18,13 +19,14 @@ class project(object):
     
     attributes = {}
     refimage = None
-    experiment_list = []
     filename = None
     
     def __init__(self):
-        self.current_experiment = experiment()
+        self.experiment_list = []
+        self.experiment_list.append(experiment())
+        self.current_experiment = self.experiment_list[-1]
         self.bug_max_velocity = 3
-        self.bug_size = 39 
+        self.bug_size = 39
     
     def save(self):
         temp = cPickle.dumps(self)
@@ -40,7 +42,24 @@ class project(object):
         projfile.close()
         proj = decompress(temp)
         self = cPickle.loads(proj)
+    
+    def export(self, filename):
+        fw = writer(open(filename, 'wb'), 'excel')
+        export_rows = []
         
+        # write the header of the file, with info about the project
+        for key in self.attributes:
+            export_rows.append( (key, self.attributes[key]) )
+            
+        # for each experiment, collect all the data needed            
+        for experiment in self.experiment_list:
+            experiment_rows = experiment.export()
+            for row in experiment_rows:
+                export_rows.append(row)
+                
+        # at last, save the rows in the file
+        fw.writerows(export_rows)
+
     
 class experiment(object):
     """
@@ -62,14 +81,48 @@ class experiment(object):
     
     def __init__(self):
         self.threshold = 0x30
-        self.release_area = [400, 400, 480, 640]
+        self.release_area = [0, 0, 480, 640]
         
     def save(self):
         pass
     
     def export(self):
-        # http://docs.python.org/lib/module-csv.html
-        pass
+        rows = []
+        
+        # for each area in the experiment, export name and shape
+        for area in self.areas_list:
+            rows.append( ("Area Name: ", area.name) )
+            if isinstance(area.shape, rectangle):
+                rows.append( ("Area Shape: ", "Rectangle") )
+            elif isinstance(area.shape, ellipse):
+                rows.append( ("Area Shape: ", "Ellipse") )
+            
+            #for each track in area, export the data needed
+            rows.append( ("Track List:") )
+            for track in area.track_list:
+                rows.append( ("Start Time: ", 1) )
+                rows.append( ("End Time: ", 2) )
+                rows.append( ("Residence: ", 3) )
+                rows.append( ("Tortuosity: ", 4) )
+                rows.append( ("Distance (" + self.measurement_unit + "): ", 5) )
+                rows.append( ("Mean Speed (" + self.measurement_unit + "/s): ", 6) )
+                rows.append( ("Standard Deviation :", 7) )
+                rows.append( ("Angular Mean Deviation :", 8) )
+            
+            rows.append( () )
+            rows.append( ("Resume:") )
+            rows.append( ("Residence: ", 3) )
+            rows.append( ("Residence (%): ", 3) )
+            rows.append( ("Tortuosity: ", 4) )
+            rows.append( ("Mean Distance (" + self.measurement_unit + "): ", 5) )
+            rows.append( ("Total Distance (" + self.measurement_unit + "): ", 5) )            
+            rows.append( ("Mean Speed (" + self.measurement_unit + "/s): ", 6) )
+            rows.append( ("Standard Deviation :", 7) )
+            rows.append( ("Angular Mean Deviation :", 8) )            
+                
+            rows.append( () )
+            
+        return rows
     
     def prepare_point_list(self):
         #discard the points where the insect didn't 
@@ -95,8 +148,8 @@ class experiment(object):
                     area.started = False                    
             
     def prepare_stats(self):
-        for area in areas_list:
-            for track in area.point_list:
+        for area in self.areas_list:
+            for track in area.track_list:
                 track.angleSpeedQuadSum = 0
                 track.linSpeedQuadSum = 0
                 track.linSpeedSum = 0

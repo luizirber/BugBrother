@@ -66,14 +66,16 @@ class refimg_diag(object):
             refImg = self.xml.get_widget("imageRefImg").get_pixbuf()
             if refImg:
                 project.refimage = refImg
-                interface.invalid_refimage = False
+                interface.invalid_refimg = False
             else:
-                interface.invalid_refimage = True
+                interface.invalid_refimg = True
             refimgDiag.hide_all()
+            interface.ready_state()            
             return True
         else:
             refimgDiag.hide_all()
-            interface.invalid_refimage = True
+            interface.invalid_refimg = True
+            interface.ready_state()            
             return False
 
     def capture(self, widget, project, device):
@@ -154,14 +156,16 @@ class areas_diag(object):
             values = [ (r[0],r[1]) for r in model ]
             project.current_experiment.areas_list = []
             for name, shape in values:
-                temp_area = area(name, shape)
-                project.current_experiment.areas_list.append(area)
+                project.current_experiment.areas_list.append(area(name, shape))
             areasDiag.hide_all()
+            interface.invalid_areas = False            
+            interface.ready_state()            
             return True
         else:
             areasDiag.hide_all()
             if project.current_experiment.areas_list == []:
                 interface.invalid_areas = True
+            interface.ready_state()                
             return False            
             
     def set_as_release_area(self, wid):
@@ -383,7 +387,12 @@ class areas_diag(object):
             shape.draw(wid.window, self.graphic_context)
     
     def remove_area(self, wid):
-        pass
+        view = self.xml.get_widget("treeviewAreas")
+        model, iter = view.get_selection().get_selected()
+        model.remove(iter)
+        
+        widget = self.xml.get_widget("drawingareaAreas")
+        widget.emit("expose_event", gtk.gdk.Event(gtk.gdk.NOTHING))        
     
     def shape_action(self, wid, action):
         self.action = action
@@ -426,7 +435,7 @@ class scale_diag(object):
         response = scaleDiag.run()
         
         if response == gtk.RESPONSE_OK :
-            interface.invalid_size = False            
+            interface.invalid_scale = False            
             try:
                 value = self.xml.get_widget("comboboxentryUnit").get_active_text()
             except: 
@@ -443,12 +452,14 @@ class scale_diag(object):
                 self.project.current_experiment.y_scale_ratio = self.y_scale            
             except:
                 interface.invalid_scale = True
-
+            
             scaleDiag.hide_all()
+            interface.ready_state()            
             return True
         else:
             scaleDiag.hide_all()            
             interface.invalid_scale = True
+            interface.ready_state()            
             return False
         
     def draw_expose(self, wid, event, project):
@@ -614,12 +625,20 @@ class insectsize_diag(object):
         response = insectSizeDiag.run()
         if response == gtk.RESPONSE_OK :
             interface.invalid_size = False
+            interface.invalid_speed = False
             widget = self.xml.get_widget("entryInsectSize")
             try:
                 size = float(widget.props.text)
             except ValueError:
                 interface.invalid_size = True
             else:
+                self.project.original_bug_size = size
+                x_scale = self.project.current_experiment.x_scale_ratio
+                y_scale = self.project.current_experiment.y_scale_ratio
+                if x_scale > y_scale:
+                    size *= self.project.current_experiment.x_scale_ratio
+                else:
+                    size *= self.project.current_experiment.y_scale_ratio
                 self.project.bug_size = size
             
             widget = self.xml.get_widget("entryInsectSpeed")
@@ -628,11 +647,20 @@ class insectsize_diag(object):
             except ValueError:
                 interface.invalid_speed = True
             else:
+                self.project.original_bug_speed = speed
+                x_scale = self.project.current_experiment.x_scale_ratio
+                y_scale = self.project.current_experiment.y_scale_ratio
+                if x_scale > y_scale:
+                    speed *= self.project.current_experiment.x_scale_ratio
+                else:
+                    speed *= self.project.current_experiment.y_scale_ratio
                 self.project.bug_max_velocity = speed
                 
             insectSizeDiag.hide_all()
+            interface.ready_state()            
             return True
         else:
             insectSizeDiag.hide_all()            
             interface.invalid_size = True
+            interface.ready_state()            
             return False

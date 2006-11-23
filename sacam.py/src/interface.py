@@ -1,7 +1,7 @@
  #!/usr/bin/env python
 
 import sys
-from os import makedirs
+import os
 
 from datetime import datetime
 
@@ -68,6 +68,9 @@ class Interface(object):
         
         widget = self.xml.get_widget("buttonProcess")
         widget.connect("clicked", self.process_lists)        
+        
+        widget = self.xml.get_widget("buttonReport")
+        widget.connect("clicked", self.report)        
                                
         widget = self.xml.get_widget("buttonAreas")
         widget.connect("clicked", self.areasdiag.run, self.project, self)
@@ -78,6 +81,10 @@ class Interface(object):
         
         #the "invalid_*" variables
         self.invalid_size = True
+        self.invalid_areas = True
+        self.invalid_scale = True
+        self.invalid_refimg = True
+        self.invalid_speed = True
         
         self.window.connect("destroy", self.destroy)
         self.window.show()        
@@ -103,15 +110,26 @@ class Interface(object):
      
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
-        
         fsdialog = gtk.FileChooserDialog("New Project", main,
                        gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT |
                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                        gtk.STOCK_OK, gtk.RESPONSE_OK) )
-                                
-        self.invalid_path = True
+                        gtk.STOCK_OK, gtk.RESPONSE_OK) )        
+        home = os.curdir
+        if 'HOME' in os.environ:
+            home = os.environ['HOME']
+        elif os.name == 'posix':
+            home = os.path.expanduser("~/")
+        elif os.name == 'nt':
+            if 'HOMEPATH' in os.environ:
+                if 'HOMEDRIVE' in os.environ:
+                    home = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
+                else:
+                    home = os.environ['HOMEPATH']
+        home = os.path.realpath(home) + os.sep        
+        fsdialog.set_current_folder(home)
         
+        self.invalid_path = True
         while self.invalid_path:
             response = fsdialog.run()                        
             if response == gtk.RESPONSE_OK :
@@ -119,7 +137,7 @@ class Interface(object):
                 filepath = fsdialog.get_filename()
                 filename = filepath[len(current) + 1:]
                 try:
-                    makedirs(filepath)
+                    os.makedirs(filepath)
                 except OSError, why:
                     errordiag = gtk.MessageDialog ( fsdialog, 
                                                     gtk.DIALOG_DESTROY_WITH_PARENT, 
@@ -139,7 +157,7 @@ class Interface(object):
         self.project.name = filename
         self.project.filename = filepath + '/' + filename + '.exp'
         
-        response = self.run_prop_diag(None, self.project, self.xml)
+        response = self.propdiag.run(None, self.project, self.xml)
         
         if response == False :
             self.ready_state()            
@@ -150,7 +168,7 @@ class Interface(object):
         self.device_manager.sink.set_xwindow_id(
                                     self.device_manager.outputarea.window.xid)
                 
-        response = self.refimg_diag.run(None, self.project, self)
+        response = self.refimgdiag.run(None, self.project, self)
         if response == False :
             self.ready_state()            
             return
@@ -182,7 +200,7 @@ class Interface(object):
                 
         response = fsdial.run()
         
-        if ( response != gtk.RESPONSE_OK ):
+        if response != gtk.RESPONSE_OK:
             fsdial.destroy()
         else:
             filepath = fsdial.get_current_folder()
@@ -216,7 +234,7 @@ class Interface(object):
             while self.running:            
                 self.device_manager.start_video(widget, project)
         else:
-            self.ready_state()                
+            self.ready_state()
 
     def capturing_state(self):
         widget = self.xml.get_widget("buttonStart")
@@ -259,7 +277,10 @@ class Interface(object):
         widget.set_sensitive(False)         
         
         widget = self.xml.get_widget("buttonProjProperties")
-        widget.set_sensitive(False)         
+        widget.set_sensitive(False)
+                 
+        widget = self.xml.get_widget("buttonRefImg")
+        widget.set_sensitive(False)
                            
     def ready_state(self):        
         self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
@@ -288,18 +309,24 @@ class Interface(object):
             widget = self.xml.get_widget("buttonPrint")
             widget.set_sensitive(True)
             
-            if not self.invalid_refimage:
+            if not self.invalid_refimg:
                 widget = self.xml.get_widget("buttonProcess")
                 widget.set_sensitive(True)
             
-        widget = self.xml.get_widget("buttonInsectSize")        
-        widget.set_sensitive(True)
-        
-        widget = self.xml.get_widget("buttonScale")        
-        widget.set_sensitive(True)
+        if self.invalid_refimg:
+            pass
+        else:
+            widget = self.xml.get_widget("buttonAreas")
+            widget.set_sensitive(True)
+                
+            widget = self.xml.get_widget("buttonScale")        
+            widget.set_sensitive(True)
             
-        widget = self.xml.get_widget("buttonAreas")
-        widget.set_sensitive(True)
+            if self.invalid_scale:
+                pass
+            else:
+                widget = self.xml.get_widget("buttonInsectSize")        
+                widget.set_sensitive(True)        
                  
         widget = self.xml.get_widget("buttonRefImg")
         widget.set_sensitive(True)                          
@@ -309,7 +336,7 @@ class Interface(object):
             
         widget = self.xml.get_widget("buttonStart")
         if self.invalid_size or self.invalid_areas or \
-           self.invalid_scale:
+           self.invalid_scale or self.invalid_speed:
             widget.set_sensitive(False)
         else:
             widget.set_sensitive(True)        
@@ -340,6 +367,12 @@ class Interface(object):
            #calcular para point_list do experimento 
             #TempoTotal
             #ComprimentoTotal
+            
+    def report(self, widget):
+        #TODO: ask for the filename, and call the experiment.export() function
+        filename = "teste.csv"
+        self.project.export(filename)
+        
 
 if __name__ == "__main__":
     base = Interface()
