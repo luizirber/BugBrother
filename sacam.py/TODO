@@ -25,6 +25,7 @@ INTERFACE:
     - DONE: Implement the Remove button
     - use the arrow keys to move the image
     - Allow the user to change the name of an area
+    - Select the last appended area
     - An area must be selected to allow "Set as Release Area" button to work.
     - FUTURE FEATURE: create a freeform shape, and allow the user to draw the track format. 
       Could be useful to the motion tracking, because you don't need to look at the parts

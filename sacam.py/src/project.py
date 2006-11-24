@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from math import pi, sqrt, acos
+from copy import copy
 import cPickle
 from zlib import compress, decompress
 from csv import writer
@@ -91,26 +92,30 @@ class experiment(object):
         
         # for each area in the experiment, export name and shape
         for area in self.areas_list:
-            rows.append( ("Area Name: ", area.name) )
+            rows.append( ("") )            
             if isinstance(area.shape, rectangle):
-                rows.append( ("Area Shape: ", "Rectangle") )
+                rows.append( ("Area Name: ", area.name, "Area Shape: ", "Rectangle") )
             elif isinstance(area.shape, ellipse):
-                rows.append( ("Area Shape: ", "Ellipse") )
+                rows.append( ("Area Name: ", area.name, "Area Shape: ", "Ellipse") )
             
             #for each track in area, export the data needed
-            rows.append( ("Track List:") )
+            rows.append( ("Track List: ", "") )
+            rows.append( ("", "Start Time ", "End Time ", 
+                          "Residence ", "Tortuosity ", 
+                          "Distance (" + self.measurement_unit + ") ", 
+                          "Average Speed (" + self.measurement_unit + "/s): ", 
+                          "Standard Deviation :",
+                          "Angular Average Deviation :") )
+            print area.track_list
             for track in area.track_list:
-                rows.append( ("Start Time: ", 1) )
-                rows.append( ("End Time: ", 2) )
-                rows.append( ("Residence: ", 3) )
-                rows.append( ("Tortuosity: ", 4) )
-                rows.append( ("Distance (" + self.measurement_unit + "): ", 5) )
-                rows.append( ("Mean Speed (" + self.measurement_unit + "/s): ", 6) )
-                rows.append( ("Standard Deviation :", 7) )
-                rows.append( ("Angular Mean Deviation :", 8) )
+                rows.append( (track.start_time, track.end_time, 
+                              track.end_time - track.start_time,
+                              track.tortuosity, track.distance,
+                              track.meanLinSpeed, track.LinSpeedDeviation,
+                              track.AngleSpeedDeviation) )
             
-            rows.append( () )
-            rows.append( ("Resume:") )
+            rows.append( ('') )
+            rows.append( ("Resume: ","") )
             rows.append( ("Residence: ", 3) )
             rows.append( ("Residence (%): ", 3) )
             rows.append( ("Tortuosity: ", 4) )
@@ -120,7 +125,8 @@ class experiment(object):
             rows.append( ("Standard Deviation :", 7) )
             rows.append( ("Angular Mean Deviation :", 8) )            
                 
-            rows.append( () )
+            rows.append( ('') )
+            rows.append( ('') )
             
         return rows
     
@@ -131,8 +137,8 @@ class experiment(object):
     
     def prepare_areas_list(self):
         for area in self.areas_list:
+            temp_list = []            
             for point in self.point_list:
-                temp_list = []
                 if area.shape.contains(point):
                     if not area.started:
                         temp_list.append(point)
@@ -142,10 +148,10 @@ class experiment(object):
                 else:
                     if area.started:
                         temp_track = track()
-                        temp_track.point_list = temp_list
+                        temp_track.point_list = copy(temp_list)
                         area.track_list.append(temp_track)
-                        temp_list = []                    
-                    area.started = False                    
+                        temp_list = []
+                    area.started = False  
             
     def prepare_stats(self):
         for area in self.areas_list:
