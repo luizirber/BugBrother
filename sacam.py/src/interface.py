@@ -1,4 +1,4 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
 
 import sys
 import os
@@ -111,8 +111,7 @@ class Interface(object):
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
         fsdialog = gtk.FileChooserDialog("New Project", main,
-                       gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT |
-                       gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                         gtk.STOCK_OK, gtk.RESPONSE_OK) )        
         home = os.curdir
@@ -193,8 +192,7 @@ class Interface(object):
     def load_project(self, widget):
         main = self.xml.get_widget("mainwindow")
         fsdial = gtk.FileChooserDialog("Load Project", main,
-                       gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT |
-                       gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                         gtk.STOCK_OK, gtk.RESPONSE_OK) )
                 

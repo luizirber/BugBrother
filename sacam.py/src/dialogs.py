@@ -333,7 +333,9 @@ class areas_diag(object):
                 self.composing_shape = False
                 #save temp_shape on the areas list
                 name = area_name.get_text()
-                model.append([name, self.temp_shape])
+                shape_iter = model.append([name, self.temp_shape])
+                treeview.set_cursor( model.get_path(shape_iter) )
+                self.select_area(treeview)
         elif self.action == "resize":
             if self.resizing_shape_started == True:
                 self.final_point = (event.x, event.y)
