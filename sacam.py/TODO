@@ -1,47 +1,59 @@
 INTERFACE:
-- Put the menubar to work
-- Track simulator (TIP: can borrow code from areas dialog)
-- Put more experiments in a project (currently handles only one)
-- Transfer all the callbacks to the glade file (Is it viable?)
-- DeviceManager: allow changes in the pipeline
-- Better Save/Load dialogs
-    - ALMOST: Default directory must be home (DONE in new_project)
-    - BUG: Why it doesn't create the first folder?
-- DONE: Strict order: only call another dialog if the previous one is defined
-    RefImg -> Scale -> Insect Size
-    RefImg -> Areas
-- DONE: Refactoring - put the dialogs-specific code in new classes (dialogs.py)
-- DONE: Put a slider in the ProjPropDiag to control the threshold
-- SCALE DIALOG:
-    - If shape is a line, disable Y_axis
-    - Must only calculate the scale if a shape was drawn
-- AREAS DIALOG:
-    - ALMOST: Resize areas in Areas dialog (still need to look at ellipse code)
-    - DONE: What is the best for drawing? make the center static at the start point and increase the size
-    - DONE: Circle is a subtype of Ellipse, and Square is a subtype of Rectangle. Unify the classes and 
-      put a key_press event (SHIFT) to determine is it must be "squarish" (square and circle)
-    - DONE: why the image don't show when the mouse isn't moving?      
-    - DONE: Remove the Circle button    
-    - DONE: Implement the Remove button
-    - use the arrow keys to move the image
-    - Allow the user to change the name of an area
-    - DONE: Select the last appended area
-    - An area must be selected to allow "Set as Release Area" button to work.
-    - FUTURE FEATURE: create a freeform shape, and allow the user to draw the track format. 
-      Could be useful to the motion tracking, because you don't need to look at the parts
-      of the arena that aren't accessible.
-- INSECT SIZE DIALOG
-    - DONE: Use the scale to convert the value to pixels instead of a metric unit.
+    - Put the menubar to work
+    - Change the icons of the dialogs for something more intuitive
+    - Disable VideoInput and TrackSimulator when doing the tracking
+    - Track simulator (TIP: can borrow code from areas dialog)
+    - Put more experiments in a project (currently handles only one)
+    - Transfer all the callbacks to the glade file (Is it viable?)
+    - DeviceManager: allow changes in the pipeline
+        - Video Input: I'm not happy with the way it is working. Try to find a better solution
+                       to the problem of putting a xvimagesink inside the program.
+    - Better Save/Load dialogs
+        - ALMOST: Default directory must be home (DONE in new_project)
+        - BUG: Why it doesn't create the first folder?
+    - DONE: Strict order: only call another dialog if the previous one is defined
+        RefImg -> Scale -> Insect Size
+        RefImg -> Areas
+    - DONE: Refactoring - put the dialogs-specific code in new classes (dialogs.py)
+    - DONE: Put a slider in the ProjPropDiag to control the threshold
+    - SCALE DIALOG:
+        - If shape is a line, disable Y_axis
+        - Must only calculate the scale if a shape was drawn
+        - Forbid counting pixels when mouse leave the image
+    - AREAS DIALOG:
+        - ALMOST: Resize areas in Areas dialog (still need to look at ellipse code)
+        - DONE: What is the best for drawing? make the center static at the start point and increase the size
+        - DONE: Circle is a subtype of Ellipse, and Square is a subtype of Rectangle. Unify the classes and 
+                put a key_press event (SHIFT) to determine is it must be "squarish" (square and circle)
+        - DONE: why the image don't show when the mouse isn't moving?      
+        - DONE: Remove the Circle button    
+        - DONE: Implement the Remove button
+        - DONE: Select the last appended area
+        - Forbid areas with the same name
+        - When an area is selected, redraw with a different color
+        - Put focus in area name when dialog is shown    
+        - use the arrow keys to move the image
+        - Allow the user to change the name of an area
+        - An area must be selected to allow "Set as Release Area" button to work.
+        - FUTURE FEATURE: create a freeform shape, and allow the user to draw the track format. 
+                Could be useful to the motion tracking, because you don't need to look at the parts
+                of the arena that aren't accessible.
+    - INSECT SIZE DIALOG
+        - DONE: Use the scale to convert the value to pixels instead of a metric unit.
 
 DEPLOYMENT:
-- Installation facility
+    - Installation facility
 
 AREAS:
-- line methods
+    - line methods
 
 EXPERIMENT:
-- verify the calculations, because of x_scale_ratio and y_scale_ratio
-- ALMOST: Generate reports in CSV format
+    - verify the calculations, because of x_scale_ratio and y_scale_ratio
+    - ALMOST: Generate reports in CSV format
 
 VIDEOPROCESSORMODULE
-- add points to the list
+    - add points to the list
+    - when experiment is stopped, begin another experiment and reset the values (threshold, scale, etc.)
+
+REPORT:
+    - Use ponderate average?

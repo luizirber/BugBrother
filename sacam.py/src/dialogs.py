@@ -97,6 +97,8 @@ class areas_diag(object):
         renderer.props.editable = True
         column = gtk.TreeViewColumn("Area", renderer, text=0)
         view.append_column(column)
+        selection = view.get_selection()
+        selection.set_mode(gtk.SELECTION_SINGLE)
         view.connect("cursor_changed", self.select_area)
         
         #connecting the callbacks of the areasDiag
@@ -185,7 +187,6 @@ class areas_diag(object):
             
     def select_area(self, wid):
         selection = wid.get_selection()
-        selection.set_mode(gtk.SELECTION_SINGLE)
         treemodel, treeiter = selection.get_selected()
         self.selected_shape = treemodel.get_value(treeiter, 1)
    
