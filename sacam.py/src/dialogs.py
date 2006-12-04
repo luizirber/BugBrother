@@ -89,6 +89,9 @@ class areas_diag(object):
     def __init__(self, project, xml):
         self.xml = xml
         self.project = project
+        
+        output = self.xml.get_widget("drawingareaAreas")
+                
         # setting up the areas treeview
         view = self.xml.get_widget("treeviewAreas")
         model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
@@ -99,7 +102,7 @@ class areas_diag(object):
         view.append_column(column)
         selection = view.get_selection()
         selection.set_mode(gtk.SELECTION_SINGLE)
-        view.connect("cursor_changed", self.select_area)
+        view.connect("cursor_changed", self.select_area, output)
         
         #connecting the callbacks of the areasDiag
         widget = self.xml.get_widget("buttonAddArea")
@@ -133,20 +136,20 @@ class areas_diag(object):
         self.moving_shape_started = False
         self.resizing_shape_started = False
         self.graphic_context = None
+        self.red_gc = None
                                 
         edit = self.xml.get_widget("entryAreaName")
-        widget = self.xml.get_widget("drawingareaAreas")
-        widget.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
+        output.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
                           | gtk.gdk.BUTTON_RELEASE_MASK
                           | gtk.gdk.BUTTON_MOTION_MASK
                           | gtk.gdk.KEY_PRESS_MASK
                           | gtk.gdk.KEY_RELEASE_MASK   )
         #what to do when the draw area is exposed        
-        widget.connect("expose_event", self.draw_expose, self.project, model)
-        #these two are necessary to draw something in the draw area
-        widget.connect("button-press-event", self.compose_shape)
-        widget.connect("motion-notify-event", self.compose_shape)        
-        widget.connect("button-release-event", self.finish_shape, model, edit, view)
+        output.connect("expose_event", self.draw_expose, self.project, model)
+        #these three are necessary to draw something in the draw area
+        output.connect("button-press-event", self.compose_shape)
+        output.connect("motion-notify-event", self.compose_shape)        
+        output.connect("button-release-event", self.finish_shape, model, edit, view)
             
     def run(self, wid, project, interface):
         self.project = project
@@ -185,10 +188,15 @@ class areas_diag(object):
                              int(release.x_center + release.x_axis ) ]
             self.project.current_experiment.release_area = release_area
             
-    def select_area(self, wid):
+    def select_area(self, wid, output):
         selection = wid.get_selection()
         treemodel, treeiter = selection.get_selected()
         self.selected_shape = treemodel.get_value(treeiter, 1)
+        if self.red_gc == None:
+            color = gtk.gdk.color_parse("red")
+            self.red_gc = output.window.new_gc(color, color)
+        self.selected_shape.draw(output.window, self.red_gc)                    
+        output.queue_draw()                
    
     def set_shape(self, wid, shape_type):
         self.shape_type = shape_type
@@ -336,7 +344,7 @@ class areas_diag(object):
                 name = area_name.get_text()
                 shape_iter = model.append([name, self.temp_shape])
                 treeview.set_cursor( model.get_path(shape_iter) )
-                self.select_area(treeview)
+                self.select_area(treeview, wid)
         elif self.action == "resize":
             if self.resizing_shape_started == True:
                 self.final_point = (event.x, event.y)
@@ -574,7 +582,7 @@ class scale_diag(object):
         if invalid_value:
             error = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
                                       gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, 
-                                      "Invalid values")
+                                      _("Invalid values"))
             response = error.run()
             if response == gtk.RESPONSE_OK:
                 error.destroy()

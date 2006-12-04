@@ -1,0 +1,255 @@
+# SACAM - Sistema de Analise Comportamental de Animais em Movimento.
+# Copyright (C) 2006 Embrapa Instrumentação Agropecuária
+# This file is distributed under the same license as the SACAM package.
+# Luiz Irber luiz.irber@gmail.com  2006.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: luiz.irber@gmail.com\n"
+"POT-Creation-Date: 2006-12-04 17:47-0200\n"
+"PO-Revision-Date: 2006-12-04 17:47-0200\n"
+"Last-Translator: luiz.irber@gmail.com\n"
+"Language-Team: luiz.irber@gmail.com\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: dialogs.py:585
+msgid "Invalid values"
+msgstr ""
+
+#: interface.py:113
+msgid "New Project"
+msgstr ""
+
+#: interface.py:194
+msgid "Load Project"
+msgstr ""
+
+#: project.py:98 project.py:101
+msgid "Area Name: "
+msgstr ""
+
+#: project.py:99 project.py:102
+msgid "Area Shape: "
+msgstr ""
+
+#: project.py:99 interface/sacam.glade.h:18
+msgid "Rectangle"
+msgstr ""
+
+#: project.py:102 interface/sacam.glade.h:10
+msgid "Ellipse"
+msgstr ""
+
+#: project.py:106
+msgid "Insect didn't entered in this area, no data available"
+msgstr ""
+
+#: project.py:108
+msgid "Track List: "
+msgstr ""
+
+#: project.py:109
+msgid "Start Time "
+msgstr ""
+
+#: project.py:109
+msgid "End Time "
+msgstr ""
+
+#: project.py:110
+msgid "Residence "
+msgstr ""
+
+#: project.py:110
+msgid "Tortuosity "
+msgstr ""
+
+#: project.py:111
+msgid "Lenght ("
+msgstr ""
+
+#: project.py:112 project.py:135
+msgid "Average Speed ("
+msgstr ""
+
+#: project.py:113 project.py:137
+msgid "Standard Deviation :"
+msgstr ""
+
+#: project.py:114 project.py:138
+msgid "Angular Average Deviation :"
+msgstr ""
+
+#: project.py:124
+msgid "Resume: "
+msgstr ""
+
+#: project.py:125
+msgid "Residence: "
+msgstr ""
+
+#: project.py:126
+msgid "Residence (%): "
+msgstr ""
+
+#: project.py:127
+msgid "Tortuosity: "
+msgstr ""
+
+#: project.py:128
+msgid "Average Lenght ("
+msgstr ""
+
+#: project.py:130
+msgid "Total Lenght ("
+msgstr ""
+
+#: interface/sacam.glade.h:1
+msgid "Add"
+msgstr ""
+
+#: interface/sacam.glade.h:2
+msgid "Area Name:"
+msgstr ""
+
+#: interface/sacam.glade.h:3
+msgid "Areas"
+msgstr ""
+
+#: interface/sacam.glade.h:4
+msgid "Calculate the scale"
+msgstr ""
+
+#: interface/sacam.glade.h:5
+msgid "Capture Image"
+msgstr ""
+
+#: interface/sacam.glade.h:6
+msgid "Channel"
+msgstr ""
+
+#: interface/sacam.glade.h:7
+msgid "Compounds used:"
+msgstr ""
+
+#: interface/sacam.glade.h:8
+msgid "Device"
+msgstr ""
+
+#: interface/sacam.glade.h:9
+msgid "Device Manager"
+msgstr ""
+
+#: interface/sacam.glade.h:11
+msgid "Insect Max Speed:"
+msgstr ""
+
+#: interface/sacam.glade.h:12
+msgid "Insect Size"
+msgstr ""
+
+#: interface/sacam.glade.h:13
+msgid "Insect Size:"
+msgstr ""
+
+#: interface/sacam.glade.h:14
+msgid "Line"
+msgstr ""
+
+#: interface/sacam.glade.h:15
+msgid "Measurement unit:"
+msgstr ""
+
+#: interface/sacam.glade.h:16
+msgid "Move"
+msgstr ""
+
+#: interface/sacam.glade.h:17
+msgid "Norm"
+msgstr ""
+
+#: interface/sacam.glade.h:19
+msgid "Reference Image"
+msgstr ""
+
+#: interface/sacam.glade.h:20
+msgid "Remove"
+msgstr ""
+
+#: interface/sacam.glade.h:21
+msgid "Resize"
+msgstr ""
+
+#: interface/sacam.glade.h:22
+msgid "Scale"
+msgstr ""
+
+#: interface/sacam.glade.h:23
+msgid "Set as Release Area"
+msgstr ""
+
+#: interface/sacam.glade.h:24
+msgid "Size of shape (X Axis):"
+msgstr ""
+
+#: interface/sacam.glade.h:25
+msgid "Size of shape (Y Axis):"
+msgstr ""
+
+#: interface/sacam.glade.h:26
+msgid "Temperature:"
+msgstr ""
+
+#: interface/sacam.glade.h:27
+msgid "Threshold:"
+msgstr ""
+
+#: interface/sacam.glade.h:28
+msgid "Track Simulator"
+msgstr ""
+
+#: interface/sacam.glade.h:29
+msgid "Tracking Display"
+msgstr ""
+
+#: interface/sacam.glade.h:30
+msgid "Video Input"
+msgstr ""
+
+#: interface/sacam.glade.h:31
+msgid "What is the name of the insect:"
+msgstr ""
+
+#: interface/sacam.glade.h:32
+msgid "What is the name of the project: "
+msgstr ""
+
+#: interface/sacam.glade.h:33
+msgid "Which shape do you want to draw?"
+msgstr ""
+
+#: interface/sacam.glade.h:34
+msgid "X Axis:"
+msgstr ""
+
+#: interface/sacam.glade.h:35
+msgid "Y Axis:"
+msgstr ""
+
+#: interface/sacam.glade.h:36
+msgid "gtk-cancel"
+msgstr ""
+
+#: interface/sacam.glade.h:37
+msgid "gtk-ok"
+msgstr ""
+
+#: interface/sacam.glade.h:38
+msgid ""
+"mm\n"
+"cm"
+msgstr ""

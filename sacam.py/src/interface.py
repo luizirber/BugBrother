@@ -26,7 +26,7 @@ class Interface(object):
         gladefile = "interface/sacam.glade"
         windowname = "mainwindow"
         
-        self.xml = gtk.glade.XML(gladefile)
+        self.xml = gtk.glade.XML(gladefile, domain=APP)
         self.window = self.xml.get_widget(windowname)
         self.project = project()
         
@@ -95,10 +95,7 @@ class Interface(object):
         self.project.current_experiment.prepare_point_list()
         self.project.current_experiment.prepare_areas_list()
         self.project.current_experiment.prepare_stats()
-                
-    def main(self):
-        gtk.main()
-
+               
     def save_project(self, widget):
         if self.invalid_path:
             #TODO: handle this
@@ -110,7 +107,7 @@ class Interface(object):
      
     def new_project(self, widget):
         main = self.xml.get_widget("mainwindow")
-        fsdialog = gtk.FileChooserDialog("New Project", main,
+        fsdialog = gtk.FileChooserDialog(_("New Project"), main,
                         gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                         gtk.STOCK_OK, gtk.RESPONSE_OK) )        
@@ -191,7 +188,7 @@ class Interface(object):
                 
     def load_project(self, widget):
         main = self.xml.get_widget("mainwindow")
-        fsdial = gtk.FileChooserDialog("Load Project", main,
+        fsdial = gtk.FileChooserDialog(_("Load Project"), main,
                         gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                         gtk.STOCK_OK, gtk.RESPONSE_OK) )
@@ -279,6 +276,12 @@ class Interface(object):
                  
         widget = self.xml.get_widget("buttonRefImg")
         widget.set_sensitive(False)
+        
+        widget = self.xml.get_widget("mainNotebook")
+        widget.get_nth_page(0).set_sensitive(False)                
+                           
+        widget = self.xml.get_widget("mainNotebook")
+        widget.get_nth_page(0).set_sensitive(False)                
                            
     def ready_state(self):        
         self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
@@ -342,6 +345,12 @@ class Interface(object):
         widget = self.xml.get_widget("toggleTimer")
         widget.set_sensitive(True)     
         
+        widget = self.xml.get_widget("mainNotebook")
+        widget.get_nth_page(0).set_sensitive(True)        
+        
+        widget = self.xml.get_widget("mainNotebook")
+        widget.get_nth_page(2).set_sensitive(True)                
+        
     def process(self, widget):
         pass
          #PrepararGradeApresentacaoEstatisticas
@@ -371,7 +380,11 @@ class Interface(object):
         filename = "teste.csv"
         self.project.export(filename)
         
+    def main(self, argv):
+        gtk.main()
+        
 
 if __name__ == "__main__":
     base = Interface()
     base.main()
+

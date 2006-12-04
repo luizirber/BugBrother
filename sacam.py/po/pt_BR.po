@@ -1,0 +1,255 @@
+# SACAM - Sistema de Analise Comportamental de Animais em Movimento.
+# Copyright (C) 2006 Embrapa Instrumentação Agropecuária
+# This file is distributed under the same license as the SACAM package.
+# Luiz Irber luiz.irber@gmail.com  2006.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0\n"
+"Report-Msgid-Bugs-To: luiz.irber@gmail.com\n"
+"POT-Creation-Date: 2006-12-04 17:47-0200\n"
+"PO-Revision-Date: 2006-12-04 17:56-0200\n"
+"Last-Translator: Luiz Irber <luiz.irber@gmail.com>\n"
+"Language-Team: luiz.irber@gmail.com\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: dialogs.py:585
+msgid "Invalid values"
+msgstr "Valores inválidos"
+
+#: interface.py:113
+msgid "New Project"
+msgstr "Novo Projeto"
+
+#: interface.py:194
+msgid "Load Project"
+msgstr "Carregar Projeto"
+
+#: project.py:98 project.py:101
+msgid "Area Name: "
+msgstr "Nome da Área: "
+
+#: project.py:99 project.py:102
+msgid "Area Shape: "
+msgstr "Forma da Área: "
+
+#: project.py:99 interface/sacam.glade.h:18
+msgid "Rectangle"
+msgstr "Retângulo"
+
+#: project.py:102 interface/sacam.glade.h:10
+msgid "Ellipse"
+msgstr "Elipse"
+
+#: project.py:106
+msgid "Insect didn't entered in this area, no data available"
+msgstr "O inseto não entrou nessa área, dados não disponíveis"
+
+#: project.py:108
+msgid "Track List: "
+msgstr "Lista de trajetos: "
+
+#: project.py:109
+msgid "Start Time "
+msgstr "Tempo inicial "
+
+#: project.py:109
+msgid "End Time "
+msgstr "Tempo Final "
+
+#: project.py:110
+msgid "Residence "
+msgstr "Residência "
+
+#: project.py:110
+msgid "Tortuosity "
+msgstr "Tortuosidade "
+
+#: project.py:111
+msgid "Lenght ("
+msgstr "Distância ("
+
+#: project.py:112 project.py:135
+msgid "Average Speed ("
+msgstr "Velocidade Média ("
+
+#: project.py:113 project.py:137
+msgid "Standard Deviation :"
+msgstr "Desvio Padrão: "
+
+#: project.py:114 project.py:138
+msgid "Angular Average Deviation :"
+msgstr "Desvio Angular Padrão"
+
+#: project.py:124
+msgid "Resume: "
+msgstr "Resumo: "
+
+#: project.py:125
+msgid "Residence: "
+msgstr "Residência: "
+
+#: project.py:126
+msgid "Residence (%): "
+msgstr "Residência (%): "
+
+#: project.py:127
+msgid "Tortuosity: "
+msgstr "Tortuosidade: "
+
+#: project.py:128
+msgid "Average Lenght ("
+msgstr "Distância Média: "
+
+#: project.py:130
+msgid "Total Lenght ("
+msgstr "Distância Total ("
+
+#: interface/sacam.glade.h:1
+msgid "Add"
+msgstr "Adicionar"
+
+#: interface/sacam.glade.h:2
+msgid "Area Name:"
+msgstr "Nome da Área:"
+
+#: interface/sacam.glade.h:3
+msgid "Areas"
+msgstr "Areas"
+
+#: interface/sacam.glade.h:4
+msgid "Calculate the scale"
+msgstr "Calcular a Escala"
+
+#: interface/sacam.glade.h:5
+msgid "Capture Image"
+msgstr "Capturar Imagem"
+
+#: interface/sacam.glade.h:6
+msgid "Channel"
+msgstr "Canal"
+
+#: interface/sacam.glade.h:7
+msgid "Compounds used:"
+msgstr "Compostos usados:"
+
+#: interface/sacam.glade.h:8
+msgid "Device"
+msgstr "Dispositivo"
+
+#: interface/sacam.glade.h:9
+msgid "Device Manager"
+msgstr "Gerenciador de Dispositivos"
+
+#: interface/sacam.glade.h:11
+msgid "Insect Max Speed:"
+msgstr "Velocidade Máxima do Inseto:"
+
+#: interface/sacam.glade.h:12
+msgid "Insect Size"
+msgstr "Tamanho do Inseto"
+
+#: interface/sacam.glade.h:13
+msgid "Insect Size:"
+msgstr "Tamanho do Inseto:"
+
+#: interface/sacam.glade.h:14
+msgid "Line"
+msgstr "Linha"
+
+#: interface/sacam.glade.h:15
+msgid "Measurement unit:"
+msgstr "Unidade de medida:"
+
+#: interface/sacam.glade.h:16
+msgid "Move"
+msgstr "Mover"
+
+#: interface/sacam.glade.h:17
+msgid "Norm"
+msgstr "Norma"
+
+#: interface/sacam.glade.h:19
+msgid "Reference Image"
+msgstr "Imagem de Referência"
+
+#: interface/sacam.glade.h:20
+msgid "Remove"
+msgstr "Remover"
+
+#: interface/sacam.glade.h:21
+msgid "Resize"
+msgstr "Redimensionar"
+
+#: interface/sacam.glade.h:22
+msgid "Scale"
+msgstr "Escala"
+
+#: interface/sacam.glade.h:23
+msgid "Set as Release Area"
+msgstr "É Área de Liberação"
+
+#: interface/sacam.glade.h:24
+msgid "Size of shape (X Axis):"
+msgstr "Tamanho da forma (Eixo X):"
+
+#: interface/sacam.glade.h:25
+msgid "Size of shape (Y Axis):"
+msgstr "Tamanho da forma (Eixo Y):"
+
+#: interface/sacam.glade.h:26
+msgid "Temperature:"
+msgstr "Temperatura:"
+
+#: interface/sacam.glade.h:27
+msgid "Threshold:"
+msgstr "Tolerância:"
+
+#: interface/sacam.glade.h:28
+msgid "Track Simulator"
+msgstr "Simulator de Trajetos"
+
+#: interface/sacam.glade.h:29
+msgid "Tracking Display"
+msgstr "Visualizador de Detecção"
+
+#: interface/sacam.glade.h:30
+msgid "Video Input"
+msgstr "Entrada de Vídeo"
+
+#: interface/sacam.glade.h:31
+msgid "What is the name of the insect:"
+msgstr "Qual é o nome do inseto:"
+
+#: interface/sacam.glade.h:32
+msgid "What is the name of the project: "
+msgstr "Qual é o nome do projeto: "
+
+#: interface/sacam.glade.h:33
+msgid "Which shape do you want to draw?"
+msgstr "Qual forma você deseja desenhar?"
+
+#: interface/sacam.glade.h:34
+msgid "X Axis:"
+msgstr "Eixo X:"
+
+#: interface/sacam.glade.h:35
+msgid "Y Axis:"
+msgstr "Eixo Y:"
+
+#: interface/sacam.glade.h:36
+msgid "gtk-cancel"
+msgstr ""
+
+#: interface/sacam.glade.h:37
+msgid "gtk-ok"
+msgstr ""
+
+#: interface/sacam.glade.h:38
+msgid ""
+"mm\n"
+"cm"
+msgstr ""
