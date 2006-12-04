@@ -1,40 +1,40 @@
-import locale
-import gettext
-APP_NAME = "sacam"
+#!/usr/bin/env python
+#
+# Copyright (C) 2006 by Embrapa Instrumentacao Agricola
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+#
+# Contains code from Gazpacho
+# Copyright (C) 2005 by Async Open Source
 
-#Translation stuff
+import os
 
-#Get the local directory since we are not installing anything
-self.local_path = os.path.realpath(os.path.dirname(sys.argv[0]))
-print self.local_path
-# Init the list of languages to support
-langs = []
-#Check the default locale
-lc, encoding = locale.getdefaultlocale()
-if (lc):
-    #If we have a default, it's the first in the list
-    langs = [lc]
-# Now lets get all of the supported languages on the system
-language = os.environ.get('LANGUAGE', None)
-if (language):
-    """langage comes back something like en_CA:en_US:en_GB:en
-    on linuxy systems, on Win32 it's nothing, so we need to
-    split it up into a list"""
-    langs += language.split(":")
-"""Now add on to the back of the list the translations that we
-know that we have, our defaults"""
-langs += ["pt_BR"]
+from kiwi.environ import Library
 
-"""Now langs is a list of all of the languages that we are going
-to try to use.  First we check the default, then what the system
-told us, and finally the 'known' list"""
+dirname = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
-gettext.bindtextdomain(APP_NAME, self.local_path)
-gettext.textdomain(APP_NAME)
-# Get the language to use
-self.lang = gettext.translation(APP_NAME, self.local_path,
-                                languages=langs, fallback = True)
-"""Install the language, map _() (which we marked our
-strings to translate with) to self.lang.gettext() which will
-translate them."""
-_ = self.lang.gettext
+lib = Library('sacam', root=dirname)
+if lib.uninstalled:
+    lib.add_global_resource('glade', 'glade')
+    lib.add_global_resource('resource', 'resources')
+    lib.add_global_resource('doc', '.')
+    lib.add_global_resource('pixmap', 'pixmaps')
+    lib.add_global_resource('pixmap', 'pixmaps/kiwi')
+    lib.add_global_resource('plugins', 'plugins')
+lib.enable_translation()
+
+__version__ = "0.6.6"
+
