@@ -17,6 +17,8 @@ import pygst
 pygst.require('0.10')
 import gst
 
+from kiwi.environ import environ
+
 from videoprocessor import videoprocessor
 
 class Device_manager(object):
@@ -34,7 +36,7 @@ class Device_manager(object):
            
     def __init__(self, video_output, processor_output):
         
-        gladefile = "interface/sacam.glade"
+        gladefile = environ.find_resource('glade', 'sacam.glade')
         windowname = "devicemanager"
         self.xml = gtk.glade.XML(gladefile, windowname)
         self.devicewindow = self.xml.get_widget(windowname)

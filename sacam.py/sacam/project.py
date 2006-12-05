@@ -12,6 +12,7 @@ pygtk.require('2.0')
 import gobject
 import gtk.gdk
 
+from sacam.i18n import _
 from areas import shape, point, track, rectangle, ellipse
 
 class project(object):

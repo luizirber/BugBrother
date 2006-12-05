@@ -16,17 +16,23 @@ import pygst
 pygst.require('0.10')
 import gst
 
+from kiwi.environ import environ
+
 from device_manager import Device_manager
 from project import project
 from dialogs import prop_diag, refimg_diag, areas_diag, scale_diag, insectsize_diag
 
+from sacam.i18n import _
+
 class Interface(object):
         
     def __init__(self):
-        gladefile = "interface/sacam.glade"
+                
+        gladefile = environ.find_resource('glade', 'sacam.glade')
+	print gladefile
         windowname = "mainwindow"
         
-        self.xml = gtk.glade.XML(gladefile, domain=APP)
+        self.xml = gtk.glade.XML(gladefile)#, windowname)#, domain=APP_NAME)
         self.window = self.xml.get_widget(windowname)
         self.project = project()
         

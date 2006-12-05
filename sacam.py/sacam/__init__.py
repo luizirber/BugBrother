@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# Contains code from Gazpacho
+# This file contains code from Gazpacho
 # Copyright (C) 2005 by Async Open Source
 
 import os
@@ -29,12 +29,7 @@ dirname = os.path.abspath(
 lib = Library('sacam', root=dirname)
 if lib.uninstalled:
     lib.add_global_resource('glade', 'glade')
-    lib.add_global_resource('resource', 'resources')
-    lib.add_global_resource('doc', '.')
-    lib.add_global_resource('pixmap', 'pixmaps')
-    lib.add_global_resource('pixmap', 'pixmaps/kiwi')
-    lib.add_global_resource('plugins', 'plugins')
+    lib.add_global_resource('doc', 'doc')
+    lib.add_global_resource('pixmap', 'pixmap')
 lib.enable_translation()
-
-__version__ = "0.6.6"
 
