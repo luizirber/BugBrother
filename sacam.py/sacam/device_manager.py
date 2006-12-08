@@ -48,32 +48,32 @@ class Device_manager(object):
         self.frame_format = None
         
         device = '/dev/video0'
-        width, height = 640, 480
+        width, height = 320, 240
         
         pipeline_string = (
-            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
-            'videorate ! identity name=null ! fakesink'
-
-#            'v4lsrc device=/dev/video0 name=source ! '
-#            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
+#            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
 #            'videorate ! identity name=null ! fakesink'
+
+            'v4lsrc device=%s name=source ! '
+            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
+            'videorate ! identity name=null ! fakesink'
 
 #           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
 #             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
 #             'tee. ! video/x-raw-yuv,format=(fourcc)YUY2,width=640,height=480 ! xvimagesink name=sink force-aspect-ratio=true \n'
 #             'tee. ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true \n'
 
-           )
-                          
+           )%(device,width, height)
+        
         pipeline_string2 = (
-#           'v4lsrc device=/dev/video0 name=source ! xvimagesink name=sink force-aspect-ratio=true'
-           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
-        )
-                          
+           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
+#           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
+        )%(device)
+                  
         pipeline = gst.parse_launch(pipeline_string)
         self.pipeline_play = gst.parse_launch(pipeline_string2)
         self.source = pipeline.get_by_name("source")
-        
+      
         self.null = pipeline.get_by_name("null")
         self.null.connect("handoff", self.frame_setter)
         self.sink = self.pipeline_play.get_by_name("sink")
@@ -94,7 +94,7 @@ class Device_manager(object):
         
         bus = pipeline.get_bus()
         bus.add_signal_watch()
-        
+
         self.pipeline_capture = pipeline
         self.pipeline_capture.set_state(gst.STATE_READY)
         self.pipeline_play.set_state(gst.STATE_READY)
@@ -102,6 +102,11 @@ class Device_manager(object):
 #        chan = self.source.find_channel_by_name('Composite1')
 #        self.source.set_channel(chan)       
 #        print [param.name for param in self.sink.props]        
+
+#	src = self.pipeline_play.get_by_name("source")
+#	chan = src.find_channel_by_name("Composite1")
+#	src.set_channel(chan)
+
 
 #        cell = gtk.CellRendererText()
         
@@ -132,7 +137,7 @@ class Device_manager(object):
             
         
     def frame_setter(self, element, buf):
-        for structure in buf.caps:
+         for structure in buf.caps:
             if structure["format"]=="RGB24":
                 if self.frame_format == None:
                     self.frame_format = structure["format"]            

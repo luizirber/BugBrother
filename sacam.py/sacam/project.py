@@ -131,6 +131,7 @@ class experiment(object):
                 rows.append( (_("Total Lenght (") + self.measurement_unit + "): ", area.total_lenght) )
                 
                 #TODO: this value is different from the calculated in the track. Hum.
+		#TODO2: division by zero! verify
                 value = area.total_lenght / \
                         (float(area.residence.seconds) + float(area.residence.microseconds/1000000))
                 rows.append( (_("Average Speed (") + self.measurement_unit + "/s): ", value) )

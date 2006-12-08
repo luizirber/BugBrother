@@ -29,7 +29,6 @@ class Interface(object):
     def __init__(self):
                 
         gladefile = environ.find_resource('glade', 'sacam.glade')
-	print gladefile
         windowname = "mainwindow"
         
         self.xml = gtk.glade.XML(gladefile)#, windowname)#, domain=APP_NAME)

@@ -8,6 +8,7 @@ INTERFACE:
     - DeviceManager: allow changes in the pipeline
         - Video Input: I'm not happy with the way it is working. Try to find a better solution
                        to the problem of putting a xvimagesink inside the program.
+        - Need to handle errors in the pipeline
     - Better Save/Load dialogs
         - ALMOST: Default directory must be home (DONE in new_project)
         - BUG: Why it doesn't create the first folder?
@@ -41,11 +42,23 @@ INTERFACE:
     - INSECT SIZE DIALOG
         - DONE: Use the scale to convert the value to pixels instead of a metric unit.
 
+    - VIDEOINPUT
+        - Draw the track when tracking
+	- Only draw the point where the insect is, don't draw the boxes (tracking area, i.e.)
+
 DEPLOYMENT:
     - Installation facility
 
 AREAS:
     - line methods
+
+PROJECT:
+    - Project contains N experiments: each experiment has his own properties. When the
+      experiment is stopped, begin another experiment, with the same properties. Allow
+      changes in these properties for the new experiment.
+    - Save each experiment in a separated file, with two images: refimg+areas, refimg+tracks
+      Inside the experiment save the point_list, the area_list and the track_list
+    - XML, when possible. Nowadays is just a pickled object.
 
 EXPERIMENT:
     - verify the calculations, because of x_scale_ratio and y_scale_ratio
@@ -54,6 +67,14 @@ EXPERIMENT:
 VIDEOPROCESSORMODULE
     - add points to the list
     - when experiment is stopped, begin another experiment and reset the values (threshold, scale, etc.)
+    - allow clicks in the image to change the point where the insect is
+    - need some corrections with parameter bug_size, sometimes it don't catch the insect.
 
 REPORT:
-    - Use ponderate average?
+    - DONE: Use ponderate average? NO!
+    - Put date in separate cell
+    - Put all times in seconds
+    - angular average deviation -> angular standard deviation
+    - Resume: put a resume before the areas, resuming all the experiments
+    - Allow extra variables in the report (put in Track Simulator)
+    - In every division, verify if the divisor isn't ZERO!
