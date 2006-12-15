@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import sys
 import os
-
-from datetime import datetime
 
 import pygtk
 pygtk.require('2.0')
@@ -17,12 +14,11 @@ pygst.require('0.10')
 import gst
 
 from kiwi.environ import environ
+from sacam.i18n import _
 
 from device_manager import Device_manager
 from project import project
 from dialogs import prop_diag, refimg_diag, areas_diag, scale_diag, insectsize_diag
-
-from sacam.i18n import _
 
 class Interface(object):
         

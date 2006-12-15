@@ -8,6 +8,8 @@ import gobject
 
 from areas import ellipse, rectangle, area, line
 
+from sacam.i18n import _
+
 class prop_diag(object):
     
     def run(self, wid, project, xml):

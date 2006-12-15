@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 from commands import getoutput
-from kiwi.dist import setup, listfiles, listpackages
+from kiwi.dist import setup, listfiles
 from distutils.core import Extension
 
-from kiwi.dist import KiwiInstallLib, TemplateInstallLib
+from kiwi.dist import TemplateInstallLib
 
 class InstallLib(TemplateInstallLib):
    name = 'sacam'
@@ -52,4 +52,3 @@ setup(name='SACAM',
                   ('share/sacam/pixmap',
                   listfiles('pixmap', '*.png'))],
       cmdclass=dict(install_lib=InstallLib))
-    

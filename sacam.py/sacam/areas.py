@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from math import pi
-from gtk import gdk
 
 class point(object):
     """
@@ -137,4 +136,3 @@ class area(object):
         self.name = name
         self.track_list = []
         self.started = False
-    

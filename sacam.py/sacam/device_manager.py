@@ -1,14 +1,11 @@
 #/usr/bin/env python
 
-from sys import platform
-from random import choice
 import gc
 gc.set_threshold(100)
 
 import pygtk
 pygtk.require('2.0')
 import gtk
-from gtk import gdk
 import gtk.glade
 import gobject
 gobject.threads_init()
@@ -18,6 +15,8 @@ pygst.require('0.10')
 import gst
 
 from kiwi.environ import environ
+
+from sacam.i18n import _
 
 from videoprocessor import videoprocessor
 

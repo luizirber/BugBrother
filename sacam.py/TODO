@@ -2,7 +2,8 @@ INTERFACE:
     - Put the menubar to work
     - Change the icons of the dialogs for something more intuitive
     - Disable VideoInput and TrackSimulator when doing the tracking
-    - Track simulator (TIP: can borrow code from areas dialog)
+    - TRACK SIMULATOR (TIP: can borrow code from areas dialog)
+        - Don't change directly the data. Changes generate new tracks.
     - Put more experiments in a project (currently handles only one)
     - Transfer all the callbacks to the glade file (Is it viable?)
     - DeviceManager: allow changes in the pipeline
@@ -12,6 +13,7 @@ INTERFACE:
     - Better Save/Load dialogs
         - ALMOST: Default directory must be home (DONE in new_project)
         - BUG: Why it doesn't create the first folder?
+        - New project window isn't working.
     - DONE: Strict order: only call another dialog if the previous one is defined
         RefImg -> Scale -> Insect Size
         RefImg -> Areas
@@ -41,24 +43,31 @@ INTERFACE:
                 of the arena that aren't accessible.
     - INSECT SIZE DIALOG
         - DONE: Use the scale to convert the value to pixels instead of a metric unit.
-
+    - PROJECT PROPERTIES
+        - Allow user to enter the name of the experiment.
     - VIDEOINPUT
         - Draw the track when tracking
 	- Only draw the point where the insect is, don't draw the boxes (tracking area, i.e.)
+    - VIDEO TRACKING
+        - Put a small counter, with time and current X and Y coordinates.
+        - Show the track, not the bounding boxes.
+        
 
 DEPLOYMENT:
     - Installation facility
 
 AREAS:
     - line methods
+    - Put a description attribute in areas, so the user can write down what the area represents
 
 PROJECT:
     - Project contains N experiments: each experiment has his own properties. When the
       experiment is stopped, begin another experiment, with the same properties. Allow
       changes in these properties for the new experiment.
-    - Save each experiment in a separated file, with two images: refimg+areas, refimg+tracks
+    - Save each experiment in a separated file, with three images: refimg+areas, refimg+tracks and refimg
       Inside the experiment save the point_list, the area_list and the track_list
     - XML, when possible. Nowadays is just a pickled object.
+    - Implements the extra_properties attribute
 
 EXPERIMENT:
     - verify the calculations, because of x_scale_ratio and y_scale_ratio

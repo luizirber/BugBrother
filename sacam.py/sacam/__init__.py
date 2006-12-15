@@ -31,5 +31,5 @@ if lib.uninstalled:
     lib.add_global_resource('glade', 'glade')
     lib.add_global_resource('doc', 'doc')
     lib.add_global_resource('pixmap', 'pixmap')
-lib.enable_translation()
+#lib.enable_translation("sacam")
 
