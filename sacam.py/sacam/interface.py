@@ -14,7 +14,7 @@ pygst.require('0.10')
 import gst
 
 from kiwi.environ import environ
-from sacam.i18n import _
+from sacam.i18n import _, APP_NAME
 
 from device_manager import Device_manager
 from project import project
@@ -27,7 +27,7 @@ class Interface(object):
         gladefile = environ.find_resource('glade', 'sacam.glade')
         windowname = "mainwindow"
         
-        self.xml = gtk.glade.XML(gladefile)#, windowname)#, domain=APP_NAME)
+        self.xml = gtk.glade.XML(gladefile, domain=APP_NAME)
         self.window = self.xml.get_widget(windowname)
         self.project = project()
         
@@ -104,6 +104,7 @@ class Interface(object):
         self.project.save()
 
     def destroy(self, widget):
+        self.device_manager.pipeline.set_state(gst.STATE_NULL)
         gtk.main_quit()
      
     def new_project(self, widget):
@@ -160,10 +161,7 @@ class Interface(object):
             self.ready_state()            
             return
                
-        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)      
-        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
-        self.device_manager.sink.set_xwindow_id(
-                                    self.device_manager.outputarea.window.xid)
+        self.device_manager.pipeline.set_state(gst.STATE_PLAYING)      
                 
         response = self.refimgdiag.run(None, self.project, self)
         if response == False :
@@ -217,8 +215,8 @@ class Interface(object):
         
         self.capturing_state()
         
-        if self.device_manager.pipeline_capture.get_state() != gst.STATE_PLAYING:
-            self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
+        if self.device_manager.pipeline.get_state() != gst.STATE_PLAYING:
+            self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
         
 #        if ( widget.get_active() ):        
 #            self.device_manager.start_video(widget, project)
@@ -285,9 +283,7 @@ class Interface(object):
         widget.get_nth_page(0).set_sensitive(False)                
                            
     def ready_state(self):        
-        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
-        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)        
-        self.device_manager.sink.set_xwindow_id(self.device_manager.outputarea.window.xid)                
+        self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
         
         widget = self.xml.get_widget("buttonNew")
         widget.set_sensitive(True)        
