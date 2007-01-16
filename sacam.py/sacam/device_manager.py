@@ -43,7 +43,7 @@ class Device_manager(object):
         
         self.processor = videoprocessor()         
         self.outputarea = video_output
-        self.outputarea.connect("expose-event", self.expose_cb, self.sink)
+        self.outputarea.connect("expose-event", self.expose_cb)
         self.processor_output = processor_output
         self.frame_format = None
         
@@ -51,77 +51,28 @@ class Device_manager(object):
         device = '/dev/video0'
         width, height = 320, 240
         
-        self.pipeline = gst.Pipeline("pipeline")
-#        self.source = gst.element_factory_make("v4lsrc", "source")
-        self.source = gst.element_factory_make("videotestsrc", "source")        
-        self.pipeline.add(self.source)
-        
-        flt = gst.element_factory_make("capsfilter", "flt")
-        self.pipeline.add(flt)
-        
-        csp = gst.element_factory_make("ffmpegcolorspace", "csp")
-        self.pipeline.add(csp)
-        
-        caps1 = gst.element_factory_make("capsfilter", "caps1")
-        caps1.props.caps = gst.caps_from_string(
-            ("video/x-raw-rgb,width=%s,height=%s,bpp=24,depth=24,framerate=15/1")%(width,height) )
-        self.pipeline.add(caps1)
-        
-        csp2 = gst.element_factory_make("ffmpegcolorspace", "csp2")
-        self.pipeline.add(csp2)
-        
-        caps2 = gst.element_factory_make("capsfilter", "caps2")
-        caps2.props.caps = gst.caps_from_string("video/x-raw-yuv")
-        self.pipeline.add(caps2)
-        
-        self.sink = gst.element_factory_make("xvimagesink", "sink")
-        self.pipeline.add(self.sink)
-        
-        pad = self.source.get_pad('src')
-        pad.add_buffer_probe(self.frame_setter)
-        
-        self.source.link(flt)
-        flt.link(csp)
-        csp.link(caps1)
-        caps1.link(csp2)
-        csp2.link(caps2)
-        caps2.link(self.sink)
-        
-        self.pipeline.set_state(gst.STATE_READY)
-        
-        
-        
-        
-        
-        
-        
-#        pipeline_string = (
-#            'videotestsrc ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! '
-#            'videorate ! identity name=null ! fakesink'
-
-#            'v4lsrc device=%s name=source ! '
-#            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
-#            'videorate ! identity name=null ! fakesink'
-
-#           'v4lsrc device=/dev/video0 name=source ! tee name=tee \n'
-#             'tee. ! video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=640,height=480 ! identity name=null ! fakesink \n'
-#             'tee. ! video/x-raw-yuv,format=(fourcc)YUY2,width=640,height=480 ! xvimagesink name=sink force-aspect-ratio=true \n'
-#             'tee. ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true \n'
-
-#           )%(device,width, height)
+        #TODO: merge the pipelines
+        pipeline_string = (
+            'videotestsrc name=source ! ffmpegcolorspace ! '        
+#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
+            'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
+           )%(width, height)
+#           )%(device,width, height)           
         
 #        pipeline_string2 = (
-#           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
 #           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
+#           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
 #        )%(device)
                   
-#        pipeline = gst.parse_launch(pipeline_string)
+        pipeline = gst.parse_launch(pipeline_string)
 #        self.pipeline_play = gst.parse_launch(pipeline_string2)
-#        self.source = pipeline.get_by_name("source")
+        self.pipeline_play = pipeline
+        self.source = pipeline.get_by_name("source")
 #      
-#        self.null = pipeline.get_by_name("null")
-#        self.null.connect("handoff", self.frame_setter)
-#        self.sink = self.pipeline_play.get_by_name("sink")
+        self.null = pipeline.get_by_name("null")
+        self.null.connect("handoff", self.frame_setter)
+        self.sink = self.pipeline_play.get_by_name("sink")
         
 #        self.source = gst.element_factory_make('v4lsrc', "source")
 #        self.source.props.device = device
@@ -137,12 +88,13 @@ class Device_manager(object):
 #        pipeline.add(self.source, self.null, colorspace, self.sink) 
 #        gst.element_link_many(self.source, self.null, colorspace, self.sink)
         
-#        bus = pipeline.get_bus()
-#        bus.add_signal_watch()
+        bus = pipeline.get_bus()
+        bus.add_signal_watch()
 
 #        self.pipeline_capture = pipeline
-#        self.pipeline_capture.set_state(gst.STATE_READY)
-#        self.pipeline_play.set_state(gst.STATE_READY)
+        self.pipeline_capture = self.pipeline_play
+        self.pipeline_capture.set_state(gst.STATE_READY)
+        self.pipeline_play.set_state(gst.STATE_READY)
 
 #        chan = self.source.find_channel_by_name('Composite1')
 #        self.source.set_channel(chan)       
@@ -179,12 +131,15 @@ class Device_manager(object):
 #        norms = [norm.label for norm in self.source.list_norms()]
 #        for item in norms:
 #            combonorm.append_text(item)
+                    
+#        self.pipeline.set_state(gst.STATE_PLAYING)
+
             
-    def expose_cb(self, wid, event, sink):
-        self.sink.set_xwindow_id(wid.window.xid)   
+    def expose_cb(self, wid, event):
+        self.sink.set_xwindow_id(self.outputarea.window.xid)   
         
     def frame_setter(self, element, buf):
-         for structure in buf.caps:
+        for structure in buf.caps:
             if structure["format"]=="RGB24":
                 if self.frame_format == None:
                     self.frame_format = structure["format"]            

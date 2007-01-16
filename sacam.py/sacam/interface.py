@@ -104,7 +104,8 @@ class Interface(object):
         self.project.save()
 
     def destroy(self, widget):
-        self.device_manager.pipeline.set_state(gst.STATE_NULL)
+        self.device_manager.pipeline_capture.set_state(gst.STATE_NULL)                    
+        self.device_manager.pipeline_play.set_state(gst.STATE_NULL)
         gtk.main_quit()
      
     def new_project(self, widget):
@@ -161,7 +162,8 @@ class Interface(object):
             self.ready_state()            
             return
                
-        self.device_manager.pipeline.set_state(gst.STATE_PLAYING)      
+        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)               
+        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)      
                 
         response = self.refimgdiag.run(None, self.project, self)
         if response == False :
@@ -215,8 +217,8 @@ class Interface(object):
         
         self.capturing_state()
         
-        if self.device_manager.pipeline.get_state() != gst.STATE_PLAYING:
-            self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
+        if self.device_manager.pipeline_capture.get_state() != gst.STATE_PLAYING:
+            self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
         
 #        if ( widget.get_active() ):        
 #            self.device_manager.start_video(widget, project)
@@ -283,7 +285,8 @@ class Interface(object):
         widget.get_nth_page(0).set_sensitive(False)                
                            
     def ready_state(self):        
-        self.device_manager.pipeline.set_state(gst.STATE_PLAYING)
+        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
+        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)            
         
         widget = self.xml.get_widget("buttonNew")
         widget.set_sensitive(True)        
@@ -348,30 +351,7 @@ class Interface(object):
         widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(2).set_sensitive(True)                
         
-    def process(self, widget):
-        pass
-         #PrepararGradeApresentacaoEstatisticas
-             #Para cada area
-                #HoraInicio
-                #HoraFim
-                #Permanencia (Fim - Inicio)
-                #Trajeto
-                #VelLinearMedia
-                #DesvPadrao - VelLinear
-                #VelAngularMedia
-                #DesvPadrao - VelAngular
-                #Tortuosidade
-                
-         #PrepararGradeApresentacaoSintese
-            #Area
-            #Tempo de permanencia
-            #Tempo(%)
-            #TrajetoTotal (cm)
-            #Trajeto (%)
-           #calcular para point_list do experimento 
-            #TempoTotal
-            #ComprimentoTotal
-            
+           
     def report(self, widget):
         #TODO: ask for the filename, and call the experiment.export() function
         filename = "teste.csv"

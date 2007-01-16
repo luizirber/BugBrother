@@ -22,19 +22,19 @@ class prop_diag(object):
         entryTemp = xml.get_widget("entryTemp")
         hscaleThreshold = xml.get_widget("hscaleThreshold")
         
-        try: t = project.attributes["Name of the Project"]
+        try: t = project.attributes[_("Name of the Project")]
         except KeyError: entryBio.props.text = ""
         else: entryBio.props.text = t
         
-        try: t = project.attributes["Name of Insect"]
+        try: t = project.attributes[_("Name of Insect")]
         except KeyError: entryName.props.text = ""
         else: entryName.props.text = t
             
-        try: t = project.attributes["Compounds used"]
+        try: t = project.attributes[_("Compounds used")]
         except KeyError: entryComp.props.text = ""
         else: entryComp.props.text = t
         
-        try: t = project.attributes["Temperature"]
+        try: t = project.attributes[_("Temperature")]
         except KeyError: entryTemp.props.text = ""
         else: entryTemp.props.text = t
             
@@ -42,10 +42,10 @@ class prop_diag(object):
             
         response = propdiag.run()        
         if response == gtk.RESPONSE_OK :
-            project.attributes["Name of the Project"] = entryBio.props.text
-            project.attributes["Name of Insect"] = entryName.props.text
-            project.attributes["Compounds used"] = entryComp.props.text
-            project.attributes["Temperature"] = entryTemp.props.text
+            project.attributes[_("Name of the Project")] = entryBio.props.text
+            project.attributes[_("Name of Insect")] = entryName.props.text
+            project.attributes[_("Compounds used")] = entryComp.props.text
+            project.attributes[_("Temperature")] = entryTemp.props.text
             project.current_experiment.threshold = hscaleThreshold.get_value()
             propdiag.hide_all()
             return True

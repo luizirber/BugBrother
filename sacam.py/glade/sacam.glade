@@ -7,18 +7,17 @@
     <property name="window_position">GTK_WIN_POS_CENTER</property>
     <property name="default_width">800</property>
     <property name="default_height">550</property>
-    <property name="icon">sacam.png</property>
     <property name="gravity">GDK_GRAVITY_CENTER</property>
     <child>
       <widget class="GtkVBox" id="mainvbox">
         <property name="visible">True</property>
         <child>
           <widget class="GtkMenuBar" id="mainmenubar">
-            <property name="visible">True</property>
+            <property name="sensitive">False</property>
             <child>
               <widget class="GtkMenuItem" id="menuitemFile">
                 <property name="visible">True</property>
-                <property name="label">_File</property>
+                <property name="label" translatable="yes">_File</property>
                 <property name="use_underline">True</property>
                 <child>
                   <widget class="GtkMenu" id="menuitemFile_menu">
@@ -169,7 +168,7 @@
                       <widget class="GtkButton" id="buttonNew">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">New</property>
+                        <property name="tooltip" translatable="yes">New</property>
                         <child>
                           <widget class="GtkImage" id="image1">
                             <property name="visible">True</property>
@@ -189,7 +188,7 @@
                       <widget class="GtkButton" id="buttonOpen">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Open</property>
+                        <property name="tooltip" translatable="yes">Open</property>
                         <child>
                           <widget class="GtkImage" id="image2">
                             <property name="visible">True</property>
@@ -210,7 +209,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Save</property>
+                        <property name="tooltip" translatable="yes">Save</property>
                         <child>
                           <widget class="GtkImage" id="image3">
                             <property name="visible">True</property>
@@ -231,7 +230,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Print</property>
+                        <property name="tooltip" translatable="yes">Print</property>
                         <child>
                           <widget class="GtkImage" id="image4">
                             <property name="visible">True</property>
@@ -252,13 +251,12 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Timer</property>
+                        <property name="tooltip" translatable="yes">Timer</property>
                         <child>
                           <widget class="GtkImage" id="image34">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
-                            <property name="pixbuf">clock.png</property>
                             <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
@@ -285,7 +283,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Project Information</property>
+                        <property name="tooltip" translatable="yes">Project Information</property>
                         <child>
                           <widget class="GtkImage" id="image5">
                             <property name="visible">True</property>
@@ -323,7 +321,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Areas</property>
+                        <property name="tooltip" translatable="yes">Areas</property>
                         <child>
                           <widget class="GtkImage" id="image7">
                             <property name="visible">True</property>
@@ -344,13 +342,12 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Scale</property>
+                        <property name="tooltip" translatable="yes">Scale</property>
                         <child>
                           <widget class="GtkImage" id="image24">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
-                            <property name="pixbuf">scale.png</property>
                             <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
@@ -366,13 +363,12 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Insect Size</property>
+                        <property name="tooltip" translatable="yes">Insect Size</property>
                         <child>
                           <widget class="GtkImage" id="image6">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
-                            <property name="pixbuf">insectsize.png</property>
                             <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
@@ -399,7 +395,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Start</property>
+                        <property name="tooltip" translatable="yes">Start</property>
                         <child>
                           <widget class="GtkImage" id="image20">
                             <property name="visible">True</property>
@@ -422,7 +418,7 @@
                           <widget class="GtkButton" id="buttonPreferences">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip">Preferences</property>
+                            <property name="tooltip" translatable="yes">Preferences</property>
                             <child>
                               <widget class="GtkImage" id="image30">
                                 <property name="visible">True</property>
@@ -456,7 +452,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Process</property>
+                        <property name="tooltip" translatable="yes">Process</property>
                         <child>
                           <widget class="GtkImage" id="image21">
                             <property name="visible">True</property>
@@ -477,13 +473,12 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
-                        <property name="tooltip">Tortuosity</property>
+                        <property name="tooltip" translatable="yes">Tortuosity</property>
                         <child>
                           <widget class="GtkImage" id="image23">
                             <property name="visible">True</property>
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
-                            <property name="pixbuf">tortuosity.png</property>
                             <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
@@ -1780,39 +1775,12 @@ cm</property>
               <placeholder/>
             </child>
             <child>
-              <widget class="GtkLabel" id="label9">
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Insect Size:</property>
-              </widget>
-            </child>
-            <child>
-              <widget class="GtkEntry" id="entryInsectSize">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="max_length">10</property>
-              </widget>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="labelSize">
+              <widget class="GtkLabel" id="labelSpeed">
                 <property name="visible">True</property>
               </widget>
               <packing>
                 <property name="left_attach">2</property>
                 <property name="right_attach">3</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="label13">
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Insect Max Speed:</property>
-              </widget>
-              <packing>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
               </packing>
@@ -1831,15 +1799,42 @@ cm</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="labelSpeed">
+              <widget class="GtkLabel" id="label13">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Insect Max Speed:</property>
+              </widget>
+              <packing>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="labelSize">
                 <property name="visible">True</property>
               </widget>
               <packing>
                 <property name="left_attach">2</property>
                 <property name="right_attach">3</property>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
               </packing>
+            </child>
+            <child>
+              <widget class="GtkEntry" id="entryInsectSize">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="max_length">10</property>
+              </widget>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label9">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Insect Size:</property>
+              </widget>
             </child>
           </widget>
           <packing>
