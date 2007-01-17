@@ -8,7 +8,7 @@ from csv import writer
 from datetime import timedelta
 
 from sacam.i18n import _
-from areas import track, rectangle, ellipse
+from sacam.areas import track, rectangle, ellipse
 
 class project(object):
     """
@@ -25,21 +25,17 @@ class project(object):
         self.current_experiment = self.experiment_list[-1]
         self.bug_max_velocity = 3
         self.bug_size = 39
+        self.attributes[_("Name of the Project")] = _("Default Project")
     
     def save(self):
-        temp = cPickle.dumps(self)
-        proj = compress(temp)
-        print self.filename
-        projfile = file(self.filename,"w")
-        projfile.write(proj)
+        projfile = file(self.filename,"w")        
+        cPickle.dump(self, projfile, 2)
         projfile.close()
     
     def load(self):
         projfile = file(self.filename,"r")
-        temp = projfile.read()
+        temp = cPickle.load(projfile)
         projfile.close()
-        proj = decompress(temp)
-        self = cPickle.loads(proj)
     
     def export(self, filename):
         fw = writer(open(filename, 'wb'), 'excel')

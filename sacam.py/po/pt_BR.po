@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-01-16 18:11-0200\n"
+"POT-Creation-Date: 2007-01-17 18:24-0200\n"
 "PO-Revision-Date: 2007-01-16 18:22-0200\n"
 "Last-Translator: Luiz Irber <luiz.irber@gmail.com>\n"
 "Language-Team: luiz.irber@gmail.com\n"
@@ -16,7 +16,8 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: sacam/dialogs.py:25 sacam/dialogs.py:45
+#: sacam/dialogs.py:25 sacam/dialogs.py:45 sacam/dialogs.py:52
+#: sacam/interface.py:93 sacam/project.py:28
 #, fuzzy
 msgid "Name of the Project"
 msgstr "Nome do Projeto"
@@ -35,95 +36,105 @@ msgstr "Compostos usados:"
 msgid "Temperature"
 msgstr "Temperatura:"
 
-#: sacam/dialogs.py:587
+#: sacam/dialogs.py:589
 msgid "Invalid values"
 msgstr "Valores inválidos"
 
-#: sacam/interface.py:113
-msgid "New Project"
+#: sacam/interface.py:107
+#, fuzzy
+msgid "Save Project"
 msgstr "Novo Projeto"
 
-#: sacam/interface.py:192
+#: sacam/interface.py:169
+msgid "Do you want to save the current project?"
+msgstr "Você deseja salvar o projeto atual?"
+
+#: sacam/interface.py:213
 msgid "Load Project"
 msgstr "Carregar Projeto"
 
-#: sacam/project.py:94 sacam/project.py:97
+#: sacam/project.py:28
+#, fuzzy
+msgid "Default Project"
+msgstr "Projeto Padrão"
+
+#: sacam/project.py:90 sacam/project.py:93
 msgid "Area Name: "
 msgstr "Nome da Área: "
 
-#: sacam/project.py:95 sacam/project.py:98
+#: sacam/project.py:91 sacam/project.py:94
 msgid "Area Shape: "
 msgstr "Forma da Área: "
 
-#: sacam/project.py:95 glade/sacam.glade.h:24
+#: sacam/project.py:91 glade/sacam.glade.h:24
 msgid "Rectangle"
 msgstr "Retângulo"
 
-#: sacam/project.py:98 glade/sacam.glade.h:10
+#: sacam/project.py:94 glade/sacam.glade.h:10
 msgid "Ellipse"
 msgstr "Elipse"
 
-#: sacam/project.py:102
+#: sacam/project.py:98
 msgid "Insect didn't entered in this area, no data available"
 msgstr "O inseto não entrou nessa área, dados não disponíveis"
 
-#: sacam/project.py:104
+#: sacam/project.py:100
 msgid "Track List: "
 msgstr "Lista de trajetos: "
 
-#: sacam/project.py:105
+#: sacam/project.py:101
 msgid "Start Time "
 msgstr "Tempo inicial "
 
-#: sacam/project.py:105
+#: sacam/project.py:101
 msgid "End Time "
 msgstr "Tempo Final "
 
-#: sacam/project.py:106
+#: sacam/project.py:102
 msgid "Residence "
 msgstr "Residência "
 
-#: sacam/project.py:106
+#: sacam/project.py:102
 msgid "Tortuosity "
 msgstr "Tortuosidade "
 
-#: sacam/project.py:107
+#: sacam/project.py:103
 msgid "Lenght ("
 msgstr "Distância ("
 
-#: sacam/project.py:108 sacam/project.py:132
+#: sacam/project.py:104 sacam/project.py:128
 msgid "Average Speed ("
 msgstr "Velocidade Média ("
 
-#: sacam/project.py:109 sacam/project.py:134
+#: sacam/project.py:105 sacam/project.py:130
 msgid "Standard Deviation :"
 msgstr "Desvio Padrão: "
 
-#: sacam/project.py:110 sacam/project.py:135
+#: sacam/project.py:106 sacam/project.py:131
 msgid "Angular Average Deviation :"
 msgstr "Desvio Angular Padrão"
 
-#: sacam/project.py:120
+#: sacam/project.py:116
 msgid "Resume: "
 msgstr "Resumo: "
 
-#: sacam/project.py:121
+#: sacam/project.py:117
 msgid "Residence: "
 msgstr "Residência: "
 
-#: sacam/project.py:122
+#: sacam/project.py:118
 msgid "Residence (%): "
 msgstr "Residência (%): "
 
-#: sacam/project.py:123
+#: sacam/project.py:119
 msgid "Tortuosity: "
 msgstr "Tortuosidade: "
 
-#: sacam/project.py:124
+#: sacam/project.py:120
 msgid "Average Lenght ("
 msgstr "Distância Média: "
 
-#: sacam/project.py:126
+#: sacam/project.py:122
 msgid "Total Lenght ("
 msgstr "Distância Total ("
 
@@ -231,7 +242,7 @@ msgstr "Redimensionar"
 #: glade/sacam.glade.h:28
 #, fuzzy
 msgid "Save"
-msgstr "Escala"
+msgstr "Salvar"
 
 #: glade/sacam.glade.h:29
 msgid "Scale"

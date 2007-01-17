@@ -16,9 +16,9 @@ import gst
 from kiwi.environ import environ
 from sacam.i18n import _, APP_NAME
 
-from device_manager import Device_manager
-from project import project
-from dialogs import prop_diag, refimg_diag, areas_diag, scale_diag, insectsize_diag
+from sacam.device_manager import Device_manager
+from sacam.project import project
+from sacam.dialogs import prop_diag, refimg_diag, areas_diag, scale_diag, insectsize_diag
 
 class Interface(object):
         
@@ -29,6 +29,7 @@ class Interface(object):
         
         self.xml = gtk.glade.XML(gladefile, domain=APP_NAME)
         self.window = self.xml.get_widget(windowname)
+        
         self.project = project()
         
         outputarea = self.xml.get_widget("videoOutputArea")
@@ -86,34 +87,9 @@ class Interface(object):
         self.invalid_scale = True
         self.invalid_refimg = True
         self.invalid_speed = True
+        self.invalid_path = True
         
-        self.window.connect("destroy", self.destroy)
-        self.window.show()        
-        
-        return
-                 
-    def process_lists(self, wid):
-        self.project.current_experiment.prepare_point_list()
-        self.project.current_experiment.prepare_areas_list()
-        self.project.current_experiment.prepare_stats()
-               
-    def save_project(self, widget):
-        if self.invalid_path:
-            #TODO: handle this
-            pass
-        self.project.save()
-
-    def destroy(self, widget):
-        self.device_manager.pipeline_capture.set_state(gst.STATE_NULL)                    
-        self.device_manager.pipeline_play.set_state(gst.STATE_NULL)
-        gtk.main_quit()
-     
-    def new_project(self, widget):
-        main = self.xml.get_widget("mainwindow")
-        fsdialog = gtk.FileChooserDialog(_("New Project"), main,
-                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
-                       (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                        gtk.STOCK_OK, gtk.RESPONSE_OK) )        
+        #home dir
         home = os.curdir
         if 'HOME' in os.environ:
             home = os.environ['HOME']
@@ -125,36 +101,82 @@ class Interface(object):
                     home = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
                 else:
                     home = os.environ['HOMEPATH']
-        home = os.path.realpath(home) + os.sep        
-        fsdialog.set_current_folder(home)
+        self.home = os.path.realpath(home) + os.sep        
         
-        self.invalid_path = True
-        while self.invalid_path:
-            response = fsdialog.run()                        
-            if response == gtk.RESPONSE_OK :
-                current = fsdialog.get_current_folder()     
-                filepath = fsdialog.get_filename()
-                filename = filepath[len(current) + 1:]
-                try:
-                    os.makedirs(filepath)
-                except OSError, why:
-                    errordiag = gtk.MessageDialog ( fsdialog, 
-                                                    gtk.DIALOG_DESTROY_WITH_PARENT, 
-                                                    gtk.MESSAGE_ERROR, 
-                                                    gtk.BUTTONS_OK,
-                                                    why.args[1] )
-                    errordiag.run()
-                    errordiag.destroy()                                        
-                else:                    
-                    self.invalid_path = False
-                    fsdialog.destroy()                                        
-            else:                
-                self.invalid_path = True                 
-                fsdialog.destroy()
-                return
+        self.window.connect("destroy", self.destroy)
+        self.window.set_title( ("SACAM - %s") % ( self.project.attributes[_("Name of the Project")] ) )
+        self.window.show()        
         
-        self.project.name = filename
-        self.project.filename = filepath + '/' + filename + '.exp'
+        self.ready_state()        
+        
+        return
+                 
+    def process_lists(self, wid):
+        self.project.current_experiment.prepare_point_list()
+        self.project.current_experiment.prepare_areas_list()
+        self.project.current_experiment.prepare_stats()
+               
+    def save_project(self, widget):
+        if self.invalid_path:
+            fsdialog = gtk.FileChooserDialog(_("Save Project"), self.window,
+                         gtk.FILE_CHOOSER_ACTION_SAVE,
+                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                         gtk.STOCK_OK, gtk.RESPONSE_OK) )        
+            fsdialog.set_current_folder(self.home)
+            
+            self.invalid_path = True
+            while self.invalid_path:
+                response = fsdialog.run()                        
+                if response == gtk.RESPONSE_OK :
+                    current = fsdialog.get_current_folder()     
+                    filepath = fsdialog.get_filename()
+                    filename = filepath[len(current) + 1:]
+                    try:
+                        os.makedirs(filepath)
+                    except OSError, why:
+                        errordiag = gtk.MessageDialog ( fsdialog, 
+                                                        gtk.DIALOG_DESTROY_WITH_PARENT, 
+                                                        gtk.MESSAGE_ERROR, 
+                                                        gtk.BUTTONS_OK,
+                                                        why.args[1] )
+                        errordiag.run()
+                        errordiag.destroy()                                        
+                    else:                    
+                        self.invalid_path = False
+                        fsdialog.destroy()                                        
+                else:                
+                    self.invalid_path = True                 
+                    fsdialog.destroy()
+                    return
+            
+            self.project.name = filename
+            self.project.filename = filepath + '/' + filename + '.exp'
+            
+            self.project.save()
+        else:
+            self.project.save()
+
+    def destroy(self, widget):
+        self.device_manager.pipeline_capture.set_state(gst.STATE_NULL)                    
+        self.device_manager.pipeline_play.set_state(gst.STATE_NULL)
+        gtk.main_quit()
+     
+    def new_project(self, widget):
+        if self.project:
+            diag = gtk.MessageDialog ( self.window, 
+                                       gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, 
+                                       gtk.MESSAGE_QUESTION, 
+                                       gtk.BUTTONS_YES_NO,
+                                       _("Do you want to save the current project?") )
+            response = diag.run()
+            
+            if response == gtk.RESPONSE_YES:
+                diag.destroy()                
+                self.save_project(None)
+                self.project = project()
+            else:
+                diag.destroy()                
+                self.project = project()
         
         response = self.propdiag.run(None, self.project, self.xml)
         
@@ -190,27 +212,23 @@ class Interface(object):
     def load_project(self, widget):
         main = self.xml.get_widget("mainwindow")
         fsdial = gtk.FileChooserDialog(_("Load Project"), main,
-                        gtk.FILE_CHOOSER_ACTION_SELECT_FOLDER,
+                        gtk.FILE_CHOOSER_ACTION_OPEN,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                         gtk.STOCK_OK, gtk.RESPONSE_OK) )
+        fsdial.set_current_folder(self.home)
                 
         response = fsdial.run()
         
         if response != gtk.RESPONSE_OK:
             fsdial.destroy()
         else:
-            filepath = fsdial.get_current_folder()
-            filename = fsdial.get_filename()[len(filepath) + 1:]
-            self.project.filename = filepath + '/' + filename + '/' + filename + '.exp'
+            self.project.filename = fsdial.get_filename()
             self.ready_state()            
         fsdial.destroy()
         
         if self.project.filename:
-            self.project.load()
-            
-        #TODO: take this out when release the code
-        self.ready_state()            
-                
+            self.project = self.project.load()
+               
     def start_video(self, widget, project):
         notebook = self.xml.get_widget("mainNotebook")
         notebook.set_current_page(1)
@@ -353,10 +371,23 @@ class Interface(object):
         
            
     def report(self, widget):
-        #TODO: ask for the filename, and call the experiment.export() function
-        filename = "teste.csv"
-        self.project.export(filename)
+        fsdialog = gtk.FileChooserDialog(_("Save Report"), self.window,
+                     gtk.FILE_CHOOSER_ACTION_SAVE,
+                    (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                     gtk.STOCK_OK, gtk.RESPONSE_OK) )        
+        if self.project.filename:             
+            fsdialog.set_current_folder(self.project.filename)
+        else:
+            fsdialog.set_current_folder(self.home)
         
+        response = fsdialog.run()
+        
+        if response == gtk.RESPONSE_OK:
+            filename = fsdialog.get_filename()
+            self.project.export(filename)            
+        fsdial.destroy()
+        #TODO: show a message saying that the report generation is complete.
+    
     def main(self, argv):
         gtk.main()
         

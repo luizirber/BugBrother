@@ -18,7 +18,7 @@ from kiwi.environ import environ
 
 from sacam.i18n import _, APP_NAME
 
-from videoprocessor import videoprocessor
+from sacam.videoprocessor import videoprocessor
 
 class Device_manager(object):
    

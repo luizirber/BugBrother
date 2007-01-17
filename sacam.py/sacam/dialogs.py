@@ -6,7 +6,7 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-from areas import ellipse, rectangle, area, line
+from sacam.areas import ellipse, rectangle, area, line
 
 from sacam.i18n import _
 
@@ -48,11 +48,13 @@ class prop_diag(object):
             project.attributes[_("Temperature")] = entryTemp.props.text
             project.current_experiment.threshold = hscaleThreshold.get_value()
             propdiag.hide_all()
+            window = xml.get_widget("mainwindow")
+            window.set_title( ("SACAM - %s") % ( project.attributes[_("Name of the Project")] ) )
             return True
         else:
             propdiag.hide_all()            
-            return False     
-
+            return False
+        
 
 class refimg_diag(object):
     

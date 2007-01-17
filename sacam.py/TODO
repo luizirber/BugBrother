@@ -7,13 +7,13 @@ INTERFACE:
     - Put more experiments in a project (currently handles only one)
     - Transfer all the callbacks to the glade file (Is it viable?)
     - DeviceManager: allow changes in the pipeline
-        - Video Input: I'm not happy with the way it is working. Try to find a better solution
+        - DONE: Video Input: I'm not happy with the way it is working. Try to find a better solution
                        to the problem of putting a xvimagesink inside the program.
         - Need to handle errors in the pipeline
     - Better Save/Load dialogs
-        - ALMOST: Default directory must be home (DONE in new_project)
-        - BUG: Why it doesn't create the first folder?
-        - New project window isn't working.
+        - DONE: Default directory must be home
+        - DONE: BUG: Why it doesn't create the first folder?
+        - DONE: New project window isn't working.
     - DONE: Strict order: only call another dialog if the previous one is defined
         RefImg -> Scale -> Insect Size
         RefImg -> Areas
@@ -68,14 +68,14 @@ PROJECT:
       Inside the experiment save the point_list, the area_list and the track_list
     - XML, when possible. Nowadays is just a pickled object.
     - Implements the extra_properties attribute
+    - Save and Loading isn't working.
 
 EXPERIMENT:
     - verify the calculations, because of x_scale_ratio and y_scale_ratio
-    - ALMOST: Generate reports in CSV format
+    - DONE: Generate reports in CSV format
 
 VIDEOPROCESSORMODULE
     - add points to the list
-    - when experiment is stopped, begin another experiment and reset the values (threshold, scale, etc.)
     - allow clicks in the image to change the point where the insect is
     - need some corrections with parameter bug_size, sometimes it don't catch the insect.
 
