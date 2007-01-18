@@ -6,10 +6,12 @@ INTERFACE:
         - Don't change directly the data. Changes generate new tracks.
     - Put more experiments in a project (currently handles only one)
     - Transfer all the callbacks to the glade file (Is it viable?)
-    - DeviceManager: allow changes in the pipeline
+    - DeviceManager: 
+        - allow changes in the pipeline
         - DONE: Video Input: I'm not happy with the way it is working. Try to find a better solution
                        to the problem of putting a xvimagesink inside the program.
         - Need to handle errors in the pipeline
+        - Pipeline is too CPU-intensive. Find a better one.
     - Better Save/Load dialogs
         - DONE: Default directory must be home
         - DONE: BUG: Why it doesn't create the first folder?
@@ -28,15 +30,14 @@ INTERFACE:
         - DONE: What is the best for drawing? make the center static at the start point and increase the size
         - DONE: Circle is a subtype of Ellipse, and Square is a subtype of Rectangle. Unify the classes and 
                 put a key_press event (SHIFT) to determine is it must be "squarish" (square and circle)
-        - DONE: why the image don't show when the mouse isn't moving?      
+        - why the image don't show when the mouse isn't moving?      
         - DONE: Remove the Circle button    
         - DONE: Implement the Remove button
         - DONE: Select the last appended area
-        - Forbid areas with the same name
         - When an area is selected, redraw with a different color
-        - Put focus in area name when dialog is shown    
+        - DONE: Put focus in area name when dialog is shown    
         - use the arrow keys to move the image
-        - Allow the user to change the name of an area
+        - DONE: Allow the user to change the name of an area
         - An area must be selected to allow "Set as Release Area" button to work.
         - FUTURE FEATURE: create a freeform shape, and allow the user to draw the track format. 
                 Could be useful to the motion tracking, because you don't need to look at the parts
@@ -47,7 +48,7 @@ INTERFACE:
         - Allow user to enter the name of the experiment.
     - VIDEOINPUT
         - Draw the track when tracking
-	- Only draw the point where the insect is, don't draw the boxes (tracking area, i.e.)
+	    - Only draw the point where the insect is, don't draw the boxes (tracking area, i.e.)
     - VIDEO TRACKING
         - Put a small counter, with time and current X and Y coordinates.
         - Show the track, not the bounding boxes.

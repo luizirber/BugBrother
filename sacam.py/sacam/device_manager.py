@@ -49,16 +49,16 @@ class Device_manager(object):
         
         #TODO: look for these values, don't hardcode then
         device = '/dev/video0'
-        width, height = 320, 240
+        width, height = 640, 480
         
         #TODO: merge the pipelines
         pipeline_string = (
-            'videotestsrc name=source ! ffmpegcolorspace ! '        
-#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+#            'videotestsrc name=source ! ffmpegcolorspace ! '        
+            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
             'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
-           )%(width, height)
-#           )%(device,width, height)           
+#           )%(width, height)
+           )%(device,width, height)           
         
 #        pipeline_string2 = (
 #           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           

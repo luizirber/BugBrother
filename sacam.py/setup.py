@@ -48,7 +48,5 @@ setup(name='SACAM',
       packages = ['sacam'],
       package_dir = { 'sacam': 'sacam' },
       data_files=[('share/sacam/glade',
-                  listfiles('glade', '*.glade')), 
-                  ('share/sacam/pixmap',
-                  listfiles('pixmap', '*.png'))],
+                  listfiles('glade', '*.glade', '*.png'))],
       cmdclass=dict(install_lib=InstallLib))

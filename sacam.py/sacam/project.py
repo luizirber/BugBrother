@@ -25,7 +25,7 @@ class project(object):
         self.current_experiment = self.experiment_list[-1]
         self.bug_max_velocity = 3
         self.bug_size = 39
-        self.attributes[_("Name of the Project")] = _("Default Project")
+        self.attributes[_("Project Name")] = _("Project")
     
     def save(self):
         projfile = file(self.filename,"w")        
@@ -65,7 +65,7 @@ class experiment(object):
     areas_list = []
     start_time = None
     end_time = None
-    extra_attributes = {}
+    attributes = {}
     measurement_unit = None
     scale_ratio = None
     x_scale_ratio = None
@@ -76,6 +76,7 @@ class experiment(object):
     def __init__(self):
         self.threshold = 0x30
         self.release_area = [0, 0, 480, 640]
+        self.attributes[_("Experiment Name")] = _("Experiment")
         
     def save(self):
         pass
@@ -83,9 +84,12 @@ class experiment(object):
     def export(self):
         rows = []
         
+        for key in self.attributes:
+            rows.append( (key, self.attributes[key]) )
+        
         # for each area in the experiment, export name and shape
         for area in self.areas_list:
-            rows.append( ("") )            
+            rows.append( ("") )
             if isinstance(area.shape, rectangle):
                 rows.append( (_("Area Name: "), area.name) )
                 rows.append( (_("Area Shape: "), _("Rectangle")) )
@@ -122,7 +126,7 @@ class experiment(object):
                 rows.append( (_("Total Lenght (") + self.measurement_unit + "): ", area.total_lenght) )
                 
                 #TODO: this value is different from the calculated in the track. Hum.
-		#TODO2: division by zero! verify
+         		#TODO2: division by zero! verify
                 value = area.total_lenght / \
                         (float(area.residence.seconds) + float(area.residence.microseconds/1000000))
                 rows.append( (_("Average Speed (") + self.measurement_unit + "/s): ", value) )

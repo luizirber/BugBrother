@@ -104,7 +104,9 @@ class Interface(object):
         self.home = os.path.realpath(home) + os.sep        
         
         self.window.connect("destroy", self.destroy)
-        self.window.set_title( ("SACAM - %s") % ( self.project.attributes[_("Name of the Project")] ) )
+        self.window.set_title( ("SACAM - %s - %s") % 
+                               ( self.project.attributes[_("Project Name")],
+                                 self.project.current_experiment.attributes[_("Experiment Name")] ) )
         self.window.show()        
         
         self.ready_state()        
@@ -149,9 +151,7 @@ class Interface(object):
                     fsdialog.destroy()
                     return
             
-            self.project.name = filename
             self.project.filename = filepath + '/' + filename + '.exp'
-            
             self.project.save()
         else:
             self.project.save()
@@ -383,10 +383,16 @@ class Interface(object):
         response = fsdialog.run()
         
         if response == gtk.RESPONSE_OK:
-            filename = fsdialog.get_filename()
+            filename = fsdialog.get_filename() + '.csv'
             self.project.export(filename)            
-        fsdial.destroy()
-        #TODO: show a message saying that the report generation is complete.
+        fsdialog.destroy()
+        msg = gtk.MessageDialog ( self.window, 
+                                  gtk.DIALOG_DESTROY_WITH_PARENT, 
+                                  gtk.MESSAGE_INFO, 
+                                  gtk.BUTTONS_OK,
+                                  _("Report generated.") )
+        msg.run()
+        msg.destroy()
     
     def main(self, argv):
         gtk.main()

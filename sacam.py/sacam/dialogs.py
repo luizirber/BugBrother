@@ -15,18 +15,24 @@ class prop_diag(object):
     def run(self, wid, project, xml):
         propdiag = xml.get_widget("dialogProjProp"); 
         propdiag.show_all()
+        experiment = project.current_experiment
         
-        entryBio = xml.get_widget("entryNameBio")
+        entryBio = xml.get_widget("entryNameProject")
+        entryExp = xml.get_widget("entryNameExperiment")
         entryName = xml.get_widget("entryNameInsect")
         entryComp = xml.get_widget("entryComp")
         entryTemp = xml.get_widget("entryTemp")
         hscaleThreshold = xml.get_widget("hscaleThreshold")
         
-        try: t = project.attributes[_("Name of the Project")]
+        try: t = project.attributes[_("Project Name")]
         except KeyError: entryBio.props.text = ""
         else: entryBio.props.text = t
         
-        try: t = project.attributes[_("Name of Insect")]
+        try: t = experiment.attributes[_("Experiment Name")]
+        except KeyError: entryExp.props.text = ""
+        else: entryExp.props.text = t
+        
+        try: t = project.attributes[_("Insect Name")]
         except KeyError: entryName.props.text = ""
         else: entryName.props.text = t
             
@@ -42,14 +48,17 @@ class prop_diag(object):
             
         response = propdiag.run()        
         if response == gtk.RESPONSE_OK :
-            project.attributes[_("Name of the Project")] = entryBio.props.text
-            project.attributes[_("Name of Insect")] = entryName.props.text
+            project.attributes[_("Project Name")] = entryBio.props.text
+            project.attributes[_("Insect Name")] = entryName.props.text
             project.attributes[_("Compounds used")] = entryComp.props.text
             project.attributes[_("Temperature")] = entryTemp.props.text
-            project.current_experiment.threshold = hscaleThreshold.get_value()
+            experiment.attributes[_("Experiment Name")] = entryExp.props.text                        
+            experiment.threshold = hscaleThreshold.get_value()
             propdiag.hide_all()
             window = xml.get_widget("mainwindow")
-            window.set_title( ("SACAM - %s") % ( project.attributes[_("Name of the Project")] ) )
+            window.set_title( ("SACAM - %s - %s") %
+                              ( project.attributes[_("Project Name")] ,
+                                experiment.attributes[_("Experiment Name")] ) )
             return True
         else:
             propdiag.hide_all()            
@@ -94,19 +103,36 @@ class areas_diag(object):
         self.xml = xml
         self.project = project
         
+        # widgets to be used
         output = self.xml.get_widget("drawingareaAreas")
+        area_name = self.xml.get_widget("entryAreaName")    
+        area_desc = self.xml.get_widget("entryAreaDesc")
                 
         # setting up the areas treeview
         view = self.xml.get_widget("treeviewAreas")
-        model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_PYOBJECT)
+        
+        # model columns: area name, area shape, area description
+        model = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_PYOBJECT, gobject.TYPE_STRING)
         view.set_model(model)
+        
+        # renderer of the first column
         renderer = gtk.CellRendererText()
         renderer.props.editable = True
-        column = gtk.TreeViewColumn("Area", renderer, text=0)
+        renderer.connect("edited", self.edited_cb, area_name, view.get_model(), 0)
+        column = gtk.TreeViewColumn(_("Name"), renderer, text=0)
         view.append_column(column)
+        
+        # renderer of the second column
+        renderer = gtk.CellRendererText()
+        renderer.props.editable = True
+        renderer.connect("edited", self.edited_cb, area_desc, view.get_model(), 2)
+        column = gtk.TreeViewColumn(_("Description"), renderer, text=2)
+        view.append_column(column)
+        
+        # To treat single selection only
         selection = view.get_selection()
         selection.set_mode(gtk.SELECTION_SINGLE)
-        view.connect("cursor_changed", self.select_area, output)
+        view.connect("cursor_changed", self.select_area, output, area_name, area_desc)
         
         #connecting the callbacks of the areasDiag
         widget = self.xml.get_widget("buttonAddArea")
@@ -142,7 +168,6 @@ class areas_diag(object):
         self.graphic_context = None
         self.red_gc = None
                                 
-        edit = self.xml.get_widget("entryAreaName")
         output.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
                           | gtk.gdk.BUTTON_RELEASE_MASK
                           | gtk.gdk.BUTTON_MOTION_MASK
@@ -153,54 +178,71 @@ class areas_diag(object):
         #these three are necessary to draw something in the draw area
         output.connect("button-press-event", self.compose_shape)
         output.connect("motion-notify-event", self.compose_shape)        
-        output.connect("button-release-event", self.finish_shape, model, edit, view)
+        output.connect("button-release-event", self.finish_shape, model, area_name, area_desc, view)
             
+    def edited_cb(self, cell, path, new_text, edit_view, model, column):
+        model[path][column] = new_text
+        edit_view.set_text(new_text)
+    
     def run(self, wid, project, interface):
         self.project = project
-        areasDiag = self.xml.get_widget("dialogAreas"); 
-        areasDiag.show_all()        
-        response = areasDiag.run()
+        self.window = self.xml.get_widget("dialogAreas"); 
+        self.window.show_all()
+        response = self.window.run()
         if response == gtk.RESPONSE_OK :
             model = self.xml.get_widget("treeviewAreas").get_model()
             values = [ (r[0],r[1]) for r in model ]
             project.current_experiment.areas_list = []
             for name, shape in values:
                 project.current_experiment.areas_list.append(area(name, shape))
-            areasDiag.hide_all()
+            self.window.hide_all()
             interface.invalid_areas = False            
             interface.ready_state()            
             return True
         else:
-            areasDiag.hide_all()
+            self.window.hide_all()
             if project.current_experiment.areas_list == []:
                 interface.invalid_areas = True
             interface.ready_state()                
             return False            
             
     def set_as_release_area(self, wid):
-        release = self.selected_shape
-        if isinstance(release, rectangle):
-            release_area = [ int(release.y_center - release.height/2),
-                             int(release.x_center - release.width/2 ),
-                             int(release.y_center + release.height/2),                             
-                             int(release.x_center + release.width/2 ) ]
-            self.project.current_experiment.release_area = release_area
-        elif isinstance(release, ellipse):
-            release_area = [ int(release.y_center - release.y_axis),
-                             int(release.x_center - release.x_axis ),
-                             int(release.y_center + release.y_axis),                             
-                             int(release.x_center + release.x_axis ) ]
-            self.project.current_experiment.release_area = release_area
+        try:
+            release = self.selected_shape
+        except:
+            diag = gtk.MessageDialog ( self.window, 
+                                       gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, 
+                                       gtk.MESSAGE_ERROR, 
+                                       gtk.BUTTONS_OK,
+                                       _("An area must be selected") )
+            diag.run()
+            diag.destroy()
+        else:
+            if isinstance(release, rectangle):
+                release_area = [ int(release.y_center - release.height/2),
+                                int(release.x_center - release.width/2 ),
+                                int(release.y_center + release.height/2),                             
+                                int(release.x_center + release.width/2 ) ]
+                self.project.current_experiment.release_area = release_area
+            elif isinstance(release, ellipse):
+                release_area = [ int(release.y_center - release.y_axis),
+                                int(release.x_center - release.x_axis ),
+                                int(release.y_center + release.y_axis),                             
+                                int(release.x_center + release.x_axis ) ]
+                self.project.current_experiment.release_area = release_area
             
-    def select_area(self, wid, output):
+    def select_area(self, wid, output, area_name, area_desc):
         selection = wid.get_selection()
         treemodel, treeiter = selection.get_selected()
         self.selected_shape = treemodel.get_value(treeiter, 1)
+        area_name.set_text(treemodel.get_value(treeiter, 0))
+        area_desc.set_text(treemodel.get_value(treeiter, 2))
         if self.red_gc == None:
             color = gtk.gdk.color_parse("red")
             self.red_gc = output.window.new_gc(color, color)
         self.selected_shape.draw(output.window, self.red_gc)                    
-        output.queue_draw()                
+        output.queue_draw()
+        
    
     def set_shape(self, wid, shape_type):
         self.shape_type = shape_type
@@ -310,7 +352,7 @@ class areas_diag(object):
                 wid.queue_draw()                
                 self.moving_shape.draw(wid.window, self.graphic_context)
     
-    def finish_shape(self, wid, event, model, area_name, treeview):
+    def finish_shape(self, wid, event, model, area_name, area_desc, treeview):
         if self.action == "add":
             if self.composing_shape == True:
                 self.end_point = (event.x, event.y)            
@@ -346,9 +388,10 @@ class areas_diag(object):
                 self.composing_shape = False
                 #save temp_shape on the areas list
                 name = area_name.get_text()
-                shape_iter = model.append([name, self.temp_shape])
+                desc = area_desc.get_text()
+                shape_iter = model.append([name, self.temp_shape, desc])
                 treeview.set_cursor( model.get_path(shape_iter) )
-                self.select_area(treeview, wid)
+                self.select_area(treeview, wid, area_name, area_desc)
         elif self.action == "resize":
             if self.resizing_shape_started == True:
                 self.final_point = (event.x, event.y)

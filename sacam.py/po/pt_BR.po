@@ -284,7 +284,7 @@ msgstr "Tortuosidade "
 
 #: glade/sacam.glade.h:38
 msgid "Track Simulator"
-msgstr "Simulator de Trajetos"
+msgstr "Simulador de Trajetos"
 
 #: glade/sacam.glade.h:39
 msgid "Tracking Display"
