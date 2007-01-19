@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-01-17 18:24-0200\n"
+"POT-Creation-Date: 2007-01-18 18:38-0200\n"
 "PO-Revision-Date: 2007-01-16 18:22-0200\n"
 "Last-Translator: Luiz Irber <luiz.irber@gmail.com>\n"
 "Language-Team: luiz.irber@gmail.com\n"
@@ -16,318 +16,378 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: sacam/dialogs.py:25 sacam/dialogs.py:45 sacam/dialogs.py:52
-#: sacam/interface.py:93 sacam/project.py:28
+#: sacam/dialogs.py:27 sacam/dialogs.py:51 sacam/dialogs.py:60
+#: sacam/interface.py:108 sacam/project.py:28
 #, fuzzy
-msgid "Name of the Project"
+msgid "Project Name"
 msgstr "Nome do Projeto"
 
-#: sacam/dialogs.py:29 sacam/dialogs.py:46
-msgid "Name of Insect"
-msgstr "Nome do Inseto"
+#: sacam/dialogs.py:31 sacam/dialogs.py:55 sacam/dialogs.py:61
+#: sacam/interface.py:109 sacam/project.py:79
+msgid "Experiment Name"
+msgstr "Nome do Experimento"
 
-#: sacam/dialogs.py:33 sacam/dialogs.py:47
+#: sacam/dialogs.py:35 sacam/dialogs.py:52
+#, fuzzy
+msgid "Insect Name"
+msgstr "Tamanho do Inseto"
+
+#: sacam/dialogs.py:39 sacam/dialogs.py:53
 #, fuzzy
 msgid "Compounds used"
 msgstr "Compostos usados:"
 
-#: sacam/dialogs.py:37 sacam/dialogs.py:48
+#: sacam/dialogs.py:43 sacam/dialogs.py:54
 #, fuzzy
 msgid "Temperature"
 msgstr "Temperatura:"
 
-#: sacam/dialogs.py:589
+#: sacam/dialogs.py:122
+msgid "Name"
+msgstr "Nome"
+
+#: sacam/dialogs.py:129
+msgid "Description"
+msgstr "Descrição"
+
+#: sacam/dialogs.py:217
+msgid "An area must be selected"
+msgstr "Uma área deve ser selecionada"
+
+#: sacam/dialogs.py:632
 msgid "Invalid values"
 msgstr "Valores inválidos"
 
-#: sacam/interface.py:107
+#: sacam/interface.py:123
 #, fuzzy
 msgid "Save Project"
-msgstr "Novo Projeto"
+msgstr "Salvar Projeto"
 
-#: sacam/interface.py:169
+#: sacam/interface.py:170
 msgid "Do you want to save the current project?"
 msgstr "Você deseja salvar o projeto atual?"
 
-#: sacam/interface.py:213
+#: sacam/interface.py:214
 msgid "Load Project"
 msgstr "Carregar Projeto"
 
+#: sacam/interface.py:374
+#, fuzzy
+msgid "Save Report"
+msgstr "Salvar Relatório"
+
+#: sacam/interface.py:393
+msgid "Report generated."
+msgstr "Relatório gerado."
+
 #: sacam/project.py:28
 #, fuzzy
-msgid "Default Project"
-msgstr "Projeto Padrão"
+msgid "Project"
+msgstr "Projeto"
 
-#: sacam/project.py:90 sacam/project.py:93
+#: sacam/project.py:79
+msgid "Experiment"
+msgstr "Experimento"
+
+#: sacam/project.py:94 sacam/project.py:97
 msgid "Area Name: "
 msgstr "Nome da Área: "
 
-#: sacam/project.py:91 sacam/project.py:94
+#: sacam/project.py:95 sacam/project.py:98
 msgid "Area Shape: "
 msgstr "Forma da Área: "
 
-#: sacam/project.py:91 glade/sacam.glade.h:24
+#: sacam/project.py:95 glade/sacam.glade.h:27
 msgid "Rectangle"
 msgstr "Retângulo"
 
-#: sacam/project.py:94 glade/sacam.glade.h:10
+#: sacam/project.py:98 glade/sacam.glade.h:12
 msgid "Ellipse"
 msgstr "Elipse"
 
-#: sacam/project.py:98
+#: sacam/project.py:102
 msgid "Insect didn't entered in this area, no data available"
 msgstr "O inseto não entrou nessa área, dados não disponíveis"
 
-#: sacam/project.py:100
+#: sacam/project.py:104
 msgid "Track List: "
 msgstr "Lista de trajetos: "
 
-#: sacam/project.py:101
+#: sacam/project.py:105
 msgid "Start Time "
 msgstr "Tempo inicial "
 
-#: sacam/project.py:101
+#: sacam/project.py:105
 msgid "End Time "
 msgstr "Tempo Final "
 
-#: sacam/project.py:102
+#: sacam/project.py:106
 msgid "Residence "
 msgstr "Residência "
 
-#: sacam/project.py:102
+#: sacam/project.py:106
 msgid "Tortuosity "
 msgstr "Tortuosidade "
 
-#: sacam/project.py:103
+#: sacam/project.py:107
 msgid "Lenght ("
 msgstr "Distância ("
 
-#: sacam/project.py:104 sacam/project.py:128
+#: sacam/project.py:108 sacam/project.py:132
 msgid "Average Speed ("
 msgstr "Velocidade Média ("
 
-#: sacam/project.py:105 sacam/project.py:130
+#: sacam/project.py:109 sacam/project.py:134
 msgid "Standard Deviation :"
 msgstr "Desvio Padrão: "
 
-#: sacam/project.py:106 sacam/project.py:131
+#: sacam/project.py:110 sacam/project.py:135
 msgid "Angular Average Deviation :"
 msgstr "Desvio Angular Padrão"
 
-#: sacam/project.py:116
+#: sacam/project.py:120
 msgid "Resume: "
 msgstr "Resumo: "
 
-#: sacam/project.py:117
+#: sacam/project.py:121
 msgid "Residence: "
 msgstr "Residência: "
 
-#: sacam/project.py:118
+#: sacam/project.py:122
 msgid "Residence (%): "
 msgstr "Residência (%): "
 
-#: sacam/project.py:119
+#: sacam/project.py:123
 msgid "Tortuosity: "
 msgstr "Tortuosidade: "
 
-#: sacam/project.py:120
+#: sacam/project.py:124
 msgid "Average Lenght ("
 msgstr "Distância Média: "
 
-#: sacam/project.py:122
+#: sacam/project.py:126
 msgid "Total Lenght ("
 msgstr "Distância Total ("
 
 #: glade/sacam.glade.h:1
+msgid "<b>Areas</b>"
+msgstr "<b>Áreas</b>"
+
+#: glade/sacam.glade.h:2
+msgid "<b>Shapes</b>"
+msgstr "<b>Formas</b>"
+
+#: glade/sacam.glade.h:3
 msgid "Add"
 msgstr "Adicionar"
 
-#: glade/sacam.glade.h:2
-msgid "Area Name:"
-msgstr "Nome da Área:"
-
-#: glade/sacam.glade.h:3
-msgid "Areas"
-msgstr "Areas"
-
 #: glade/sacam.glade.h:4
+msgid "Areas"
+msgstr "Áreas"
+
+#: glade/sacam.glade.h:5
 msgid "Calculate the scale"
 msgstr "Calcular a Escala"
 
-#: glade/sacam.glade.h:5
+#: glade/sacam.glade.h:6
 msgid "Capture Image"
 msgstr "Capturar Imagem"
 
-#: glade/sacam.glade.h:6
+#: glade/sacam.glade.h:7
 msgid "Channel"
 msgstr "Canal"
 
-#: glade/sacam.glade.h:7
+#: glade/sacam.glade.h:8
 msgid "Compounds used:"
 msgstr "Compostos usados:"
 
-#: glade/sacam.glade.h:8
+#: glade/sacam.glade.h:9
+msgid "Description:"
+msgstr "Descrição:"
+
+#: glade/sacam.glade.h:10
 msgid "Device"
 msgstr "Dispositivo"
 
-#: glade/sacam.glade.h:9
+#: glade/sacam.glade.h:11
 msgid "Device Manager"
 msgstr "Gerenciador de Dispositivos"
 
-#: glade/sacam.glade.h:11
+#: glade/sacam.glade.h:13
 msgid "Insect Max Speed:"
 msgstr "Velocidade Máxima do Inseto:"
 
-#: glade/sacam.glade.h:12
+#: glade/sacam.glade.h:14
 msgid "Insect Size"
 msgstr "Tamanho do Inseto"
 
-#: glade/sacam.glade.h:13
+#: glade/sacam.glade.h:15
 msgid "Insect Size:"
 msgstr "Tamanho do Inseto:"
 
-#: glade/sacam.glade.h:14
+#: glade/sacam.glade.h:16
 msgid "Line"
 msgstr "Linha"
 
-#: glade/sacam.glade.h:15
+#: glade/sacam.glade.h:17
 msgid "Measurement unit:"
 msgstr "Unidade de medida:"
 
-#: glade/sacam.glade.h:16
+#: glade/sacam.glade.h:18
 msgid "Move"
 msgstr "Mover"
 
-#: glade/sacam.glade.h:17
+#: glade/sacam.glade.h:19
+#, fuzzy
+msgid "Name:"
+msgstr "Nome:"
+
+#: glade/sacam.glade.h:20
 msgid "New"
 msgstr "Novo"
 
-#: glade/sacam.glade.h:18
+#: glade/sacam.glade.h:21
 msgid "Norm"
 msgstr "Norma"
 
-#: glade/sacam.glade.h:19
+#: glade/sacam.glade.h:22
 msgid "Open"
 msgstr "Abrir"
 
-#: glade/sacam.glade.h:20
+#: glade/sacam.glade.h:23
 #, fuzzy
 msgid "Preferences"
-msgstr "Imagem de Referência"
+msgstr "Preferências"
 
-#: glade/sacam.glade.h:21
+#: glade/sacam.glade.h:24
 msgid "Print"
 msgstr "Imprimir"
 
-#: glade/sacam.glade.h:22
+#: glade/sacam.glade.h:25
 msgid "Process"
 msgstr "Processar"
 
-#: glade/sacam.glade.h:23
+#: glade/sacam.glade.h:26
 msgid "Project Information"
 msgstr "Informações do Projeto"
 
-#: glade/sacam.glade.h:25
+#: glade/sacam.glade.h:28
 msgid "Reference Image"
 msgstr "Imagem de Referência"
 
-#: glade/sacam.glade.h:26
+#: glade/sacam.glade.h:29
 msgid "Remove"
 msgstr "Remover"
 
-#: glade/sacam.glade.h:27
+#: glade/sacam.glade.h:30
 msgid "Resize"
 msgstr "Redimensionar"
 
-#: glade/sacam.glade.h:28
+#: glade/sacam.glade.h:31
 #, fuzzy
 msgid "Save"
 msgstr "Salvar"
 
-#: glade/sacam.glade.h:29
+#: glade/sacam.glade.h:32
 msgid "Scale"
 msgstr "Escala"
 
-#: glade/sacam.glade.h:30
+#: glade/sacam.glade.h:33
 msgid "Set as Release Area"
 msgstr "É Área de Liberação"
 
-#: glade/sacam.glade.h:31
+#: glade/sacam.glade.h:34
 msgid "Size of shape (X Axis):"
 msgstr "Tamanho da forma (Eixo X):"
 
-#: glade/sacam.glade.h:32
+#: glade/sacam.glade.h:35
 msgid "Size of shape (Y Axis):"
 msgstr "Tamanho da forma (Eixo Y):"
 
-#: glade/sacam.glade.h:33
+#: glade/sacam.glade.h:36
 #, fuzzy
 msgid "Start"
-msgstr "Tempo inicial "
+msgstr "Iniciar"
 
-#: glade/sacam.glade.h:34
+#: glade/sacam.glade.h:37
 msgid "Temperature:"
 msgstr "Temperatura:"
 
-#: glade/sacam.glade.h:35
+#: glade/sacam.glade.h:38
 msgid "Threshold:"
 msgstr "Tolerância:"
 
-#: glade/sacam.glade.h:36
+#: glade/sacam.glade.h:39
 msgid "Timer"
 msgstr ""
 
-#: glade/sacam.glade.h:37
+#: glade/sacam.glade.h:40
 #, fuzzy
 msgid "Tortuosity"
 msgstr "Tortuosidade "
 
-#: glade/sacam.glade.h:38
+#: glade/sacam.glade.h:41
 msgid "Track Simulator"
 msgstr "Simulador de Trajetos"
 
-#: glade/sacam.glade.h:39
+#: glade/sacam.glade.h:42
 msgid "Tracking Display"
 msgstr "Visualizador de Detecção"
 
-#: glade/sacam.glade.h:40
+#: glade/sacam.glade.h:43
 msgid "Video Input"
 msgstr "Entrada de Vídeo"
 
-#: glade/sacam.glade.h:41
+#: glade/sacam.glade.h:44
+#, fuzzy
+msgid "What is the name of the experiment: "
+msgstr "Qual é o nome do experimento: "
+
+#: glade/sacam.glade.h:45
 msgid "What is the name of the insect:"
 msgstr "Qual é o nome do inseto:"
 
-#: glade/sacam.glade.h:42
+#: glade/sacam.glade.h:46
 msgid "What is the name of the project: "
 msgstr "Qual é o nome do projeto: "
 
-#: glade/sacam.glade.h:43
+#: glade/sacam.glade.h:47
 msgid "Which shape do you want to draw?"
 msgstr "Qual forma você deseja desenhar?"
 
-#: glade/sacam.glade.h:44
+#: glade/sacam.glade.h:48
 msgid "X Axis:"
 msgstr "Eixo X:"
 
-#: glade/sacam.glade.h:45
+#: glade/sacam.glade.h:49
 msgid "Y Axis:"
 msgstr "Eixo Y:"
 
-#: glade/sacam.glade.h:46
+#: glade/sacam.glade.h:50
 msgid "_File"
 msgstr "Arquivo"
 
-#: glade/sacam.glade.h:47
+#: glade/sacam.glade.h:51
 msgid "gtk-cancel"
 msgstr ""
 
-#: glade/sacam.glade.h:48
+#: glade/sacam.glade.h:52
 msgid "gtk-ok"
 msgstr ""
 
-#: glade/sacam.glade.h:49
+#: glade/sacam.glade.h:53
 msgid ""
 "mm\n"
 "cm"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Name of the Project"
+#~ msgstr "Nome do Projeto"
+
+#~ msgid "Name of Insect"
+#~ msgstr "Nome do Inseto"
+
+#, fuzzy
+#~ msgid "Default Project"
+#~ msgstr "Projeto Padrão"

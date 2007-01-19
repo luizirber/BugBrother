@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+from datetime import datetime
 
 import pygtk
 pygtk.require('2.0')
@@ -233,6 +234,11 @@ class Interface(object):
         notebook = self.xml.get_widget("mainNotebook")
         notebook.set_current_page(1)
         
+        x, y = self.device_manager.outputarea.window.get_position()
+        self.device_manager.outputarea.size_allocate( gtk.gdk.Rectangle(x, y, 
+                                                      self.device_manager.frame_width,
+                                                      self.device_manager.frame_height) )
+        
         self.capturing_state()
         
         if self.device_manager.pipeline_capture.get_state() != gst.STATE_PLAYING:
@@ -245,8 +251,21 @@ class Interface(object):
             
         self.running = widget.get_active()
         if self.running:
-            while self.running:            
+            while self.running:
                 self.device_manager.start_video(widget, project)
+                
+                widget = self.xml.get_widget("labelTime")
+                now = datetime(1,1,1).now()
+                time = now - project.current_experiment.start_time
+                widget.set_text(str(time))
+                
+                widget = self.xml.get_widget("labelXPos")
+                try: widget.set_text(str(project.current_experiment.point_list[-1].x))
+                except: pass
+                
+                widget = self.xml.get_widget("labelYPos")
+                try: widget.set_text(str(project.current_experiment.point_list[-1].y))
+                except: pass
         else:
             self.ready_state()
 
@@ -300,7 +319,7 @@ class Interface(object):
         widget.get_nth_page(0).set_sensitive(False)                
                            
         widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(0).set_sensitive(False)                
+        widget.get_nth_page(2).set_sensitive(False)
                            
     def ready_state(self):        
         self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)

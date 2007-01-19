@@ -160,7 +160,6 @@ class Device_manager(object):
 #        self.timeout_id = gobject.timeout_add(200, self.processor.process_video,
 #                                    self.get_current_frame(),
 #                                    self.processor_output, project)
-        
         self.processor.process_video(self.get_current_frame(), 
                                      self.processor_output, project)
         return True 

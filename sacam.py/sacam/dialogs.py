@@ -626,6 +626,8 @@ class scale_diag(object):
         try: y_size = float(y_size)
         except: invalid_value = True                
         
+        #TODO: verify if a shape was drawn
+        
         if invalid_value:
             error = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
                                       gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, 

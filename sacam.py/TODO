@@ -1,4 +1,5 @@
 INTERFACE:
+    - Before closing the main window, ask if the project should be saved.
     - Put the menubar to work
     - Change the icons of the dialogs for something more intuitive
     - Disable VideoInput and TrackSimulator when doing the tracking
@@ -46,12 +47,10 @@ INTERFACE:
         - DONE: Use the scale to convert the value to pixels instead of a metric unit.
     - PROJECT PROPERTIES
         - Allow user to enter the name of the experiment.
-    - VIDEOINPUT
-        - Draw the track when tracking
-	    - Only draw the point where the insect is, don't draw the boxes (tracking area, i.e.)
     - VIDEO TRACKING
-        - Put a small counter, with time and current X and Y coordinates.
-        - Show the track, not the bounding boxes.
+        - DONE: Put a small counter, with time and current X and Y coordinates.
+        - Draw the track when tracking
+        - Only draw the point where the insect is, don't draw the boxes (tracking area, i.e.)
         
 
 DEPLOYMENT:
@@ -67,7 +66,7 @@ PROJECT:
       changes in these properties for the new experiment.
     - Save each experiment in a separated file, with three images: refimg+areas, refimg+tracks and refimg
       Inside the experiment save the point_list, the area_list and the track_list
-    - XML, when possible. Nowadays is just a pickled object.
+    - XML, when possible. Nowadays is just a pickled object. And it don't work well.
     - Implements the extra_properties attribute
     - Save and Loading isn't working.
 
@@ -88,3 +87,83 @@ REPORT:
     - Resume: put a resume before the areas, resuming all the experiments
     - Allow extra variables in the report (put in Track Simulator)
     - In every division, verify if the divisor isn't ZERO!
+
+
+Relatório SACAM-LINUX 
+
+Implementações para o SACAM discutidas com o Luís Carlos, Lucio e Carol nos dias 6 e 7 de dezembro de 2006. 
+
+Interface
+
+1. Alterar ícones – Usar ícones que estejam correlacionados com a tarefa que será executada pelo mesmo.
+
+   1. Na janela NEW PROJECT- Permitir ao usuário entrar com o nome do projeto e do primeiro experimento. Por  exemplo:  Projeto Joaninha e os experimentos 1,2 e etc...
+   2. Na janela load project abro um projeto já existente de forma que posso usar os parâmetros daquele projeto. É isto Luis Carlos, Isso no final não ficou muito claro. Nesta janela. Na verdade não consigo ver muita diferença nas janelas  New project e Load  project. Luis Carlos acho melho deixar uma única janela com a opcçao de criar um novo projeto, como está funcionado na janela New project.
+   DONE: 3. Colocar um ícone no TIMER um relógio qualquer.
+   DONE: 4. Project properties está ótimo. O ícone está legal.
+   DONE: 5. Reference image OK. Como sugestão use um ícone de uma filmadora ou uma máquina fotográfica.
+   6. Na janela áreas, o resize e o move estão funcionando bem. Só tiraria o botão área de liberação como obrigatório para prosseguir para os próximos passos. Explico abaixo. 
+   DONE: 6.1. Mudar o ícone. Coloque um ícone coomo o ícone de desenho do WORDou algo parecido.
+   DONE: 7. Scale. . Use um ícone de uma régua.
+   DONE: 8. No scale insect. O ícone que o Rogério usou está bom.
+   9. O ícone do start está ótimo, só mude para um quadrado para o usuário encerrar o experimento.
+  10. ìcones de Device e  Process estão OK. Implementar a parte de device. Deixe o mais amplo possível. De forma, que possamos usar com diferentes  placas de aquisição de som e camaras . Sei que é impossível para todos, mas deixar o mais geral possível.
+
+ 
+
+DONE: 2. Colocar na janela de aquisição um timer, que deve ser inicializado quando o botão start é acionado. Neste timer poderia ser mostrado em real time as coordenadas X e Y da posição do inseto e o tempo corrido do experimento durante a aquisição.
+
+ 
+
+3. A janela de aquisição com a imagem em tempo de real poderia mostrar o inseto e o ponto que o software está usando para seguir o inseto, mostrar a trilha que está sendo criada em tempo real.
+
+ 
+
+4. Organização dos arquivos. Será criado um projeto no qual o usuário definirá o sistema de captura a ser usado (webcam, câmara de vídeo, máquina digital e etc...),a resolução (tamanho da tela), as áreas e as características do inseto. Dentro do projeto o usuário poderá salvar quantos experimentos quiser. Dentro da pasta prpjeto estará armazenada a imagem referência e a imagem com a trilha após a captura, o relatório criado e um arquivo contendo a lista de dados gerados.
+
+ 
+
+5. O software salvará o projeto e os experimentos automaticamente. Assim que o usuário clicar no pause ou terminar o experimento a planilha contendo os eixos X e Y poderiam se salva automaticamente, da mesma forma que as imagens de referência e a iamgem com a trilha. Luis Carlos, não esquecer que cada experimento deve ter uma imagem de referência e uma imagen coma trilha salva. Não será por projeto e sim por experimento.
+
+ 
+
+6. O software permitirá a criação de novas variáveis pelo usuário como sexo, cor do inseto entre outras,
+
+ 
+
+DONE: 7. Quatro tipos de desenhos geométricos (retângulo, quadrado, elipse e círculo) permitirão criar diferentes áreas, as quais podem ser redimensionadas e reposicionadas pelo usuário após terem sido desenhadas. (Já está implementado). Cada área deve ser nomeada pelo usuário. Luis poderíamos colocar uma janela onde poderímos entrar com informações do que estará sendo testado em cada área?
+
+ 
+ 
+
+Obs: Neste item sugiro desvincular a necessidade de criar uma área de liberação para liberar os próximos passos do software. Como muitos insetos são muitos rápidos fica difícil delimitar esta área de liberação. O botão da área de liberação pode ser deixado como está, mas acho que seria muito interessante implementar o algoritmo para que o usuário possa clicar sobre o inseto onde quer que ele esteja dentro do olfatômetro.  Inclusive, em alguns experimentos a área de liberação não necessariamente existirá. Por exemplo, quando fazemos experimentos numa arena circular, onde somente uma área grande é criada.  
+
+8. Verificar o algoritmo para a aquisição de imagem. Rever o número de frames de captura por segundo. Observamos durante os testes que o ponto que segue o inseto não está bem no centro do inseto.
+
+ 
+
+9. Implementar a ferramenta que permite o usuário clicar sobre o inseto para iniciar a captura, não importando a área de liberaçao, para que funcione nas três condições, isto é, quano o usuario clicar em paude, quando inicar um novo experimento e quando fechar e abrir o SACAM.
+
+ 
+
+10. Implementar a parte de simulação de dados. Para que o usuário possa abrir posteriormente a trilha do experimento e possa adionar ou deletar pontos da trilha e salver e reprocessr os cálculos com esta nova triha. Permitir que o usuário possa salver esta nova trilha com um nome diferente de forma que os dados brutos sejam preservados.
+
+ 
+
+11. Implementar a tortuosidade usando a fórmula sugerida pelo Collaza. Usar o sistema de segmentos. Por exemplo, poderíamos classificar casa segmento como sendo uma linha contínua com mudança de ângulo inferior a 45o. Quando a inclinação for maior que 22,5o podemos considerar como um segundo segmento e passamos a calcular a tortuosidade em um segundo segmento. Desta forma, teríamos a tortuosidade calculada para cada segmento e a média dos vários segmentos pode ser calculada para obter a tortuosidade total em cada área.  Índice de tortuosidade ,  onde mp é a projeção da trilha num segmento reto, e tl é o comprimento total da trilha. O valor pode alcançar de 0 até 1.
+
+ 
+
+12. Implementar o cálculo de mudança de direção. Deve ser considerada a mudança de direção quando o inseto move-se num ângulo de 100  ou superior e permanece nesta nova direção em linha reta num comprimento maior ou igual a três vezes o seu tamanho.
+
+ 
+
+13. Criar no relatório um resumo geral, isto é , as médias de todos as áreas., resumo para cada área poderia ser apresentado e os valores que geraram essas meias. Esses dois últimos itens já estão implementados.
+
+ 
+
+14. Preparar um pacote para ser colocado no sourceforge.net até final de janeiro.
+
+ 
+
+15. Preparar a visita do Luís Carlos a Embrapa Cenargen para janeiro ou fevereiro.
