@@ -160,7 +160,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         PyObject *initial;
         PyObject *final;
         PyObject *bug_size;
-        PyObject *bug_max_velocity;
+        PyObject *bug_max_speed;
         
         current_experiment = PyObject_GetAttrString(project, 
                                                 "current_experiment");
@@ -201,8 +201,8 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         self->middle_width = (PyInt_AsLong(initial) + PyInt_AsLong(final))/2;
         
         bug_size = PyObject_GetAttrString(project, "bug_size");
-        bug_max_velocity = PyObject_GetAttrString(project, "bug_max_velocity");
-        self->bug_size = PyInt_AsLong(bug_size) + PyInt_AsLong(bug_max_velocity);
+        bug_max_speed = PyObject_GetAttrString(project, "bug_max_speed");
+        self->bug_size = PyInt_AsLong(bug_size) + PyInt_AsLong(bug_max_speed);
 
         self->gc = gdk_gc_new(GTK_WIDGET(output->obj)->window);
         gdk_gc_set_line_attributes (self->gc, 5, GDK_LINE_ON_OFF_DASH,
@@ -212,7 +212,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         Py_XDECREF(current_experiment);
         Py_XDECREF(threshold); 
         Py_XDECREF(bug_size);
-        Py_XDECREF(bug_max_velocity);
+        Py_XDECREF(bug_max_speed);
 
         Videoprocessor_setcurrent(self, source, NULL);
         Videoprocessor_setprevious(self, source, NULL);

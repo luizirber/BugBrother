@@ -714,7 +714,7 @@ class insectsize_diag(object):
                     speed *= self.project.current_experiment.x_scale_ratio
                 else:
                     speed *= self.project.current_experiment.y_scale_ratio
-                self.project.bug_max_velocity = speed
+                self.project.bug_max_speed = speed
                 
             insectSizeDiag.hide_all()
             interface.ready_state()            

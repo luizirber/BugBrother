@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SACAM project file. -->
+<grammar ns="http://cnpdia.embrapa.br/ns" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <ref name="project"/>
+  </start>
+  <define name="project">
+    <interleave>
+      <ref name="attributes"/>
+      <ref name="refimage"/>
+      <ref name="bug_size"/>
+      <ref name="bug_max_speed"/>
+      <ref name="experiments"/>
+    </interleave>
+  </define>
+  <define name="attributes">
+    <zeroOrMore>
+      <element name="attributes">
+        <choice>
+          <data type="string"/>
+          <data type="integer"/>
+          <data type="float"/>
+        </choice>
+      </element>
+    </zeroOrMore>
+  </define>
+  <define name="refimage">
+    <element name="refimage">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="bug_size">
+    <element name="bug_size">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="bug_max_speed">
+    <element name="bug_max_speed">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="experiments">
+    <interleave>
+      <ref name="attributes"/>
+      <ref name="measurement_unit"/>
+      <ref name="start_time"/>
+      <ref name="end_time"/>
+      <ref name="x_scale_ratio"/>
+      <ref name="y_scale_ratio"/>
+      <ref name="threshold"/>
+      <ref name="release_area"/>
+      <ref name="points"/>
+      <ref name="areas"/>
+    </interleave>
+  </define>
+  <define name="measurement_unit">
+    <element name="measurement_unit">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="start_time">
+    <element name="start_time">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="end_time">
+    <element name="end_time">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="x_scale_ratio">
+    <element name="x_scale_ratio">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="y_scale_ratio">
+    <element name="y_scale_ratio">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="threshold">
+    <element name="threshold">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="release_area">
+    <element name="release_area">
+      <data type="string"/>
+    </element>
+  </define>
+  <!-- TODO: Need to verify this -->
+  <define name="points">
+    <zeroOrMore>
+      <ref name="point_time"/>
+    </zeroOrMore>
+  </define>
+  <define name="areas">
+    <zeroOrMore>
+      <ref name="area"/>
+    </zeroOrMore>
+  </define>
+  <define name="point">
+    <interleave>
+      <ref name="pos_x"/>
+      <ref name="pos_y"/>
+    </interleave>
+  </define>
+  <define name="pos_x">
+    <element name="pos_x">
+      <data type="integer"/>
+    </element>
+  </define>
+  <define name="pos_y">
+    <element name="pos_y">
+      <data type="integer"/>
+    </element>
+  </define>
+  <define name="point_time">
+    <interleave>
+      <ref name="pos_x"/>
+      <ref name="pos_y"/>
+      <ref name="start_time"/>
+      <ref name="end_time"/>
+    </interleave>
+  </define>
+  <define name="area">
+    <interleave>
+      <ref name="shape"/>
+      <ref name="name"/>
+      <ref name="description"/>
+      <ref name="number_of_tracks"/>
+      <ref name="residence"/>
+      <ref name="residence_percentage"/>
+      <ref name="total_lenght"/>
+      <ref name="tracks"/>
+    </interleave>
+  </define>
+  <define name="shape">
+    <choice>
+      <ref name="ellipse"/>
+      <ref name="rectangle"/>
+      <ref name="freeform"/>
+    </choice>
+  </define>
+  <define name="description">
+    <element name="description">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="number_of_tracks">
+    <element name="number_of_tracks">
+      <data type="integer"/>
+    </element>
+  </define>
+  <define name="residence">
+    <element name="residence">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="residence_percentage">
+    <element name="residence_percentage">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="total_lenght">
+    <element name="total_lenght">
+      <data type="float"/>
+    </element>
+  </define>
+  <!-- TODO: implement these -->
+  <define name="ellipse">
+    <element name="ellipse">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="rectangle">
+    <element name="rectangle">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="freeform">
+    <element name="freeform">
+      <data type="string"/>
+    </element>
+  </define>
+  <define name="tracks">
+    <zeroOrMore>
+      <ref name="track"/>
+    </zeroOrMore>
+  </define>
+  <define name="track">
+    <interleave>
+      <ref name="residence"/>
+      <ref name="tortuosity"/>
+      <ref name="total_lenght"/>
+      <ref name="average_speed"/>
+      <ref name="standard_deviation"/>
+      <ref name="angular_standard_deviation"/>
+      <ref name="direction_changes"/>
+      <ref name="points"/>
+    </interleave>
+  </define>
+  <define name="tortuosity">
+    <element name="tortuosity">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="average_speed">
+    <element name="average_speed">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="standard_deviation">
+    <element name="standard_deviation">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="angular_standard_deviation">
+    <element name="angular_standard_deviation">
+      <data type="float"/>
+    </element>
+  </define>
+  <define name="direction_changes">
+    <element name="direction_changes">
+      <data type="integer"/>
+    </element>
+  </define>
+</grammar>

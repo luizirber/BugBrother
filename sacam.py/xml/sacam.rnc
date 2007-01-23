@@ -1,0 +1,54 @@
+# SACAM project file.
+default namespace = "http://cnpdia.embrapa.br/ns"
+datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
+start = project
+
+project = attributes & refimage & bug_size & bug_max_speed & experiments
+# TODO: works, but isn't right
+attributes = element attributes { xsd:string | xsd:integer | xsd:float }*
+refimage = element refimage { xsd:string }
+bug_size = element bug_size { xsd:float }
+bug_max_speed = element bug_max_speed { xsd:float }
+
+experiments = attributes & measurement_unit & start_time & end_time
+              & x_scale_ratio & y_scale_ratio & threshold & release_area
+              & points & areas
+measurement_unit = element measurement_unit { xsd:string }
+start_time = element start_time { xsd:string }
+end_time = element end_time { xsd:string }
+x_scale_ratio = element x_scale_ratio { xsd:float }
+y_scale_ratio = element y_scale_ratio { xsd:float }
+threshold = element threshold { xsd:float }
+release_area = element release_area { xsd:string } # TODO: Need to verify this
+points = (point_time)*
+areas = (area)*
+
+point = pos_x & pos_y
+pos_x = element pos_x { xsd:integer }
+pos_y = element pos_y { xsd:integer }
+
+point_time = pos_x & pos_y & start_time & end_time
+    
+area = shape & name & description & number_of_tracks & residence
+       & residence_percentage & total_lenght & tracks
+shape = ellipse | rectangle | freeform
+description = element description { xsd:string }
+number_of_tracks = element number_of_tracks { xsd:integer }
+residence = element residence { xsd:string }
+residence_percentage = element residence_percentage { xsd:float }
+total_lenght = element total_lenght { xsd:float }
+
+# TODO: implement these
+ellipse = element ellipse { xsd:string }
+rectangle = element rectangle { xsd:string }
+freeform = element freeform { xsd:string }
+
+tracks = (track)*
+
+track = residence & tortuosity & total_lenght & average_speed & standard_deviation
+        & angular_standard_deviation & direction_changes & points
+tortuosity = element tortuosity { xsd:float }
+average_speed = element average_speed { xsd:float }
+standard_deviation = element standard_deviation { xsd:float }
+angular_standard_deviation = element angular_standard_deviation { xsd:float }
+direction_changes = element direction_changes { xsd:integer }

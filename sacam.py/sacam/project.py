@@ -23,7 +23,7 @@ class project(object):
         self.experiment_list = []
         self.experiment_list.append(experiment())
         self.current_experiment = self.experiment_list[-1]
-        self.bug_max_velocity = 3
+        self.bug_max_speed = 3
         self.bug_size = 39
         self.attributes[_("Project Name")] = _("Project")
     
@@ -36,7 +36,13 @@ class project(object):
         projfile = file(self.filename,"r")
         temp = cPickle.load(projfile)
         projfile.close()
-    
+        
+    def _load(self):
+        pass
+            
+    def _save(self):
+        pass
+        
     def export(self, filename):
         fw = writer(open(filename, 'wb'), 'excel')
         export_rows = []
@@ -67,11 +73,9 @@ class experiment(object):
     end_time = None
     attributes = {}
     measurement_unit = None
-    scale_ratio = None
     x_scale_ratio = None
     y_scale_ratio = None
     track = None
-    experiment_name = None
     
     def __init__(self):
         self.threshold = 0x30
