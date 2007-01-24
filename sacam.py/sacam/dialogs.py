@@ -190,11 +190,28 @@ class areas_diag(object):
         self.window.show_all()
         response = self.window.run()
         if response == gtk.RESPONSE_OK :
+            # read the areas from the treemodel and save in the 
+            # current experiment areas list
             model = self.xml.get_widget("treeviewAreas").get_model()
             values = [ (r[0],r[1]) for r in model ]
             project.current_experiment.areas_list = []
             for name, shape in values:
                 project.current_experiment.areas_list.append(area(name, shape))
+                
+            # set the release_area attribute of the current experiment
+            if isinstance(self.release_area, rectangle):
+                release = [ int(self.release_area.y_center - self.release_area.height/2),
+                         int(self.release_area.x_center - self.release_area.width/2 ),
+                         int(self.release_area.y_center + self.release_area.height/2),  
+                         int(self.release_area.x_center + self.release_area.width/2 ) ]
+                self.project.current_experiment.release_area = release
+            elif isinstance(self.release_area, ellipse):
+                release = [ int(self.release_area.y_center - self.release_area.y_axis),
+                         int(self.release_area.x_center - self.release_area.x_axis ),
+                         int(self.release_area.y_center + self.release_area.y_axis),                             
+                         int(self.release_area.x_center + self.release_area.x_axis ) ]
+                self.project.current_experiment.release_area = release
+            
             self.window.hide_all()
             interface.invalid_areas = False            
             interface.ready_state()            
@@ -208,7 +225,7 @@ class areas_diag(object):
             
     def set_as_release_area(self, wid):
         try:
-            release = self.selected_shape
+            self.release_area = self.selected_shape
         except:
             diag = gtk.MessageDialog ( self.window, 
                                        gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, 
@@ -217,19 +234,6 @@ class areas_diag(object):
                                        _("An area must be selected") )
             diag.run()
             diag.destroy()
-        else:
-            if isinstance(release, rectangle):
-                release_area = [ int(release.y_center - release.height/2),
-                                int(release.x_center - release.width/2 ),
-                                int(release.y_center + release.height/2),                             
-                                int(release.x_center + release.width/2 ) ]
-                self.project.current_experiment.release_area = release_area
-            elif isinstance(release, ellipse):
-                release_area = [ int(release.y_center - release.y_axis),
-                                int(release.x_center - release.x_axis ),
-                                int(release.y_center + release.y_axis),                             
-                                int(release.x_center + release.x_axis ) ]
-                self.project.current_experiment.release_area = release_area
             
     def select_area(self, wid, output, area_name, area_desc):
         selection = wid.get_selection()

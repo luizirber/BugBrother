@@ -1,54 +1,55 @@
 # SACAM project file.
-default namespace = "http://cnpdia.embrapa.br/ns"
-datatypes xsd = "http://www.w3.org/2001/XMLSchema-datatypes"
+default namespace = "http://cnpdia.embrapa.br"
+
 start = project
 
-project = attributes & refimage & bug_size & bug_max_speed & experiments
-# TODO: works, but isn't right
-attributes = element attributes { xsd:string | xsd:integer | xsd:float }*
-refimage = element refimage { xsd:string }
-bug_size = element bug_size { xsd:float }
-bug_max_speed = element bug_max_speed { xsd:float }
+project = element project { attributes, refimage, bug_size, 
+                            bug_max_speed, experiments }
+attributes = element attributes { (attrib)* }
+attrib = element attribute { text }
+refimage = element refimage { text }
+bug_size = element bug_size { text }
+bug_max_speed = element bug_max_speed { text }
 
-experiments = attributes & measurement_unit & start_time & end_time
-              & x_scale_ratio & y_scale_ratio & threshold & release_area
-              & points & areas
-measurement_unit = element measurement_unit { xsd:string }
-start_time = element start_time { xsd:string }
-end_time = element end_time { xsd:string }
-x_scale_ratio = element x_scale_ratio { xsd:float }
-y_scale_ratio = element y_scale_ratio { xsd:float }
-threshold = element threshold { xsd:float }
-release_area = element release_area { xsd:string } # TODO: Need to verify this
-points = (point_time)*
-areas = (area)*
+experiments = element experiments { (experiment)* }
+experiment = element experiment { attributes, measurement_unit, start_time, 
+                                  end_time, x_scale_ratio, y_scale_ratio, 
+                                  threshold, release_area, points, areas }
+measurement_unit = element measurement_unit { text }
+start_time = element start_time { text }
+end_time = element end_time { text }
+x_scale_ratio = element x_scale_ratio { text }
+y_scale_ratio = element y_scale_ratio { text }
+threshold = element threshold { text }
+release_area = element release_area { text } # TODO: Need to verify this
+points = element points { (point)* }
+areas = element areas { (area)* }
 
-point = pos_x & pos_y
-pos_x = element pos_x { xsd:integer }
-pos_y = element pos_y { xsd:integer }
-
-point_time = pos_x & pos_y & start_time & end_time
+point = element point { pos_x, pos_y, start_time, end_time }
+pos_x = element pos_x { text }
+pos_y = element pos_y { text }
     
-area = shape & name & description & number_of_tracks & residence
-       & residence_percentage & total_lenght & tracks
+area = element area { shape, name, description, number_of_tracks, residence,
+                      residence_percentage, total_lenght, tracks }
+name = element name { text }
 shape = ellipse | rectangle | freeform
-description = element description { xsd:string }
-number_of_tracks = element number_of_tracks { xsd:integer }
-residence = element residence { xsd:string }
-residence_percentage = element residence_percentage { xsd:float }
-total_lenght = element total_lenght { xsd:float }
+description = element description { text }
+number_of_tracks = element number_of_tracks { text }
+residence = element residence { text }
+residence_percentage = element residence_percentage { text }
+total_lenght = element total_lenght { text }
 
 # TODO: implement these
-ellipse = element ellipse { xsd:string }
-rectangle = element rectangle { xsd:string }
-freeform = element freeform { xsd:string }
+ellipse = element ellipse { text }
+rectangle = element rectangle { text }
+freeform = element freeform { text }
 
 tracks = (track)*
 
 track = residence & tortuosity & total_lenght & average_speed & standard_deviation
         & angular_standard_deviation & direction_changes & points
-tortuosity = element tortuosity { xsd:float }
-average_speed = element average_speed { xsd:float }
-standard_deviation = element standard_deviation { xsd:float }
-angular_standard_deviation = element angular_standard_deviation { xsd:float }
-direction_changes = element direction_changes { xsd:integer }
+tortuosity = element tortuosity { text }
+average_speed = element average_speed { text }
+standard_deviation = element standard_deviation { text }
+angular_standard_deviation = element angular_standard_deviation { text }
+direction_changes = element direction_changes { text }

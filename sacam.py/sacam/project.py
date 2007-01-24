@@ -7,6 +7,9 @@ from zlib import compress, decompress
 from csv import writer
 from datetime import timedelta
 
+from kiwi.environ import environ
+from lxml import etree
+
 from sacam.i18n import _
 from sacam.areas import track, rectangle, ellipse
 
@@ -32,13 +35,38 @@ class project(object):
         cPickle.dump(self, projfile, 2)
         projfile.close()
     
-    def load(self):
-        projfile = file(self.filename,"r")
-        temp = cPickle.load(projfile)
-        projfile.close()
+#    def load(self):
+#        projfile = file(self.filename,"r")
+#        temp = cPickle.load(projfile)
+#        projfile.close()
         
-    def _load(self):
-        pass
+    def load(self, filename):
+        ''' If returned value is None, there is an error! '''
+        prj = None
+        try:
+            #open the file for reading
+            projfile = file(filename, "r")
+        except:
+            pass
+        else:
+            schemafile = open(environ.find_resource('xml','sacam.rng'))
+            schema = etree.parse(schemafile)
+            relax_schema = etree.RelaxNG(schema)
+            
+            xml_tree = etree.parse(projfile)
+            if not relax_schema.validate(xml_tree):
+                prj = None
+            else:
+                prj = project()
+                prj.filename = filename
+                root = xml_tree.getroot()
+                print [(el.tag, el.prefix) for el in root]
+                
+            schemafile.close()
+            # we don't need the file anymore, it can be closed
+            projfile.close()
+        
+        return prj
             
     def _save(self):
         pass
@@ -82,7 +110,10 @@ class experiment(object):
         self.release_area = [0, 0, 480, 640]
         self.attributes[_("Experiment Name")] = _("Experiment")
         
-    def save(self):
+    def _load(self):
+        pass
+    
+    def _save(self):
         pass
     
     def export(self):

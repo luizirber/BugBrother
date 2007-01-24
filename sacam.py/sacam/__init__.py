@@ -30,5 +30,6 @@ lib = Library('sacam', root=dirname)
 if lib.uninstalled:
     lib.add_global_resource('glade', 'glade')
     lib.add_global_resource('doc', 'doc')
+    lib.add_global_resource('xml', 'xml')
 #lib.enable_translation("sacam")
 

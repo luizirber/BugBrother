@@ -1,46 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SACAM project file. -->
-<grammar ns="http://cnpdia.embrapa.br/ns" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar ns="http://cnpdia.embrapa.br" xmlns="http://relaxng.org/ns/structure/1.0">
   <start>
     <ref name="project"/>
   </start>
   <define name="project">
-    <interleave>
+    <element name="project">
       <ref name="attributes"/>
       <ref name="refimage"/>
       <ref name="bug_size"/>
       <ref name="bug_max_speed"/>
       <ref name="experiments"/>
-    </interleave>
+    </element>
   </define>
   <define name="attributes">
-    <zeroOrMore>
-      <element name="attributes">
-        <choice>
-          <data type="string"/>
-          <data type="integer"/>
-          <data type="float"/>
-        </choice>
-      </element>
-    </zeroOrMore>
+    <element name="attributes">
+      <zeroOrMore>
+        <ref name="attrib"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="attrib">
+    <element name="attribute">
+      <text/>
+    </element>
   </define>
   <define name="refimage">
     <element name="refimage">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="bug_size">
     <element name="bug_size">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="bug_max_speed">
     <element name="bug_max_speed">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="experiments">
-    <interleave>
+    <element name="experiments">
+      <zeroOrMore>
+        <ref name="experiment"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="experiment">
+    <element name="experiment">
       <ref name="attributes"/>
       <ref name="measurement_unit"/>
       <ref name="start_time"/>
@@ -51,80 +59,78 @@
       <ref name="release_area"/>
       <ref name="points"/>
       <ref name="areas"/>
-    </interleave>
+    </element>
   </define>
   <define name="measurement_unit">
     <element name="measurement_unit">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="start_time">
     <element name="start_time">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="end_time">
     <element name="end_time">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="x_scale_ratio">
     <element name="x_scale_ratio">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="y_scale_ratio">
     <element name="y_scale_ratio">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="threshold">
     <element name="threshold">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="release_area">
     <element name="release_area">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <!-- TODO: Need to verify this -->
   <define name="points">
-    <zeroOrMore>
-      <ref name="point_time"/>
-    </zeroOrMore>
+    <element name="points">
+      <zeroOrMore>
+        <ref name="point"/>
+      </zeroOrMore>
+    </element>
   </define>
   <define name="areas">
-    <zeroOrMore>
-      <ref name="area"/>
-    </zeroOrMore>
+    <element name="areas">
+      <zeroOrMore>
+        <ref name="area"/>
+      </zeroOrMore>
+    </element>
   </define>
   <define name="point">
-    <interleave>
-      <ref name="pos_x"/>
-      <ref name="pos_y"/>
-    </interleave>
-  </define>
-  <define name="pos_x">
-    <element name="pos_x">
-      <data type="integer"/>
-    </element>
-  </define>
-  <define name="pos_y">
-    <element name="pos_y">
-      <data type="integer"/>
-    </element>
-  </define>
-  <define name="point_time">
-    <interleave>
+    <element name="point">
       <ref name="pos_x"/>
       <ref name="pos_y"/>
       <ref name="start_time"/>
       <ref name="end_time"/>
-    </interleave>
+    </element>
+  </define>
+  <define name="pos_x">
+    <element name="pos_x">
+      <text/>
+    </element>
+  </define>
+  <define name="pos_y">
+    <element name="pos_y">
+      <text/>
+    </element>
   </define>
   <define name="area">
-    <interleave>
+    <element name="area">
       <ref name="shape"/>
       <ref name="name"/>
       <ref name="description"/>
@@ -133,7 +139,12 @@
       <ref name="residence_percentage"/>
       <ref name="total_lenght"/>
       <ref name="tracks"/>
-    </interleave>
+    </element>
+  </define>
+  <define name="name">
+    <element name="name">
+      <text/>
+    </element>
   </define>
   <define name="shape">
     <choice>
@@ -144,43 +155,43 @@
   </define>
   <define name="description">
     <element name="description">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="number_of_tracks">
     <element name="number_of_tracks">
-      <data type="integer"/>
+      <text/>
     </element>
   </define>
   <define name="residence">
     <element name="residence">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="residence_percentage">
     <element name="residence_percentage">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="total_lenght">
     <element name="total_lenght">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <!-- TODO: implement these -->
   <define name="ellipse">
     <element name="ellipse">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="rectangle">
     <element name="rectangle">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="freeform">
     <element name="freeform">
-      <data type="string"/>
+      <text/>
     </element>
   </define>
   <define name="tracks">
@@ -202,27 +213,27 @@
   </define>
   <define name="tortuosity">
     <element name="tortuosity">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="average_speed">
     <element name="average_speed">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="standard_deviation">
     <element name="standard_deviation">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="angular_standard_deviation">
     <element name="angular_standard_deviation">
-      <data type="float"/>
+      <text/>
     </element>
   </define>
   <define name="direction_changes">
     <element name="direction_changes">
-      <data type="integer"/>
+      <text/>
     </element>
   </define>
 </grammar>

@@ -223,12 +223,17 @@ class Interface(object):
         if response != gtk.RESPONSE_OK:
             fsdial.destroy()
         else:
-            self.project.filename = fsdial.get_filename()
+            filename = fsdial.get_filename()
             self.ready_state()            
         fsdial.destroy()
         
-        if self.project.filename:
-            self.project = self.project.load()
+        if filename:
+            prj = self.project.load(filename)
+            if prj:
+                self.project = prj
+            else:
+                #TODO: imprimir erro
+                pass
                
     def start_video(self, widget, project):
         notebook = self.xml.get_widget("mainNotebook")
