@@ -39,15 +39,22 @@ residence = element residence { text }
 residence_percentage = element residence_percentage { text }
 total_lenght = element total_lenght { text }
 
-# TODO: implement these
-ellipse = element ellipse { text }
-rectangle = element rectangle { text }
+ellipse = element ellipse { x_center, y_center, x_axis, y_axis }
+rectangle = element rectangle { x_center, y_center, height, width }
 freeform = element freeform { text }
 
-tracks = (track)*
+x_center = element x_center { text }
+y_center = element y_center { text }
+x_axis = element x_axis { text }
+y_axis = element y_axis { text }
+height = element height { text }
+width = element width { text }
 
-track = residence & tortuosity & total_lenght & average_speed & standard_deviation
-        & angular_standard_deviation & direction_changes & points
+tracks = element tracks { (track)* }
+
+track = element track { residence & tortuosity & total_lenght & average_speed & 
+                        standard_deviation & angular_standard_deviation &
+                        direction_changes & points }
 tortuosity = element tortuosity { text }
 average_speed = element average_speed { text }
 standard_deviation = element standard_deviation { text }

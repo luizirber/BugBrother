@@ -14,28 +14,34 @@ INTERFACE:
     - Transfer all the callbacks to the glade file (Is it viable?)
     - DeviceManager: 
         - allow changes in the pipeline
-        - DONE: Video Input: I'm not happy with the way it is working. Try to find a better solution
-                       to the problem of putting a xvimagesink inside the program.
+        - DONE: Video Input: I'm not happy with the way it is working. Try to 
+                find a better solution to the problem of putting a xvimagesink
+                inside the program.
         - Need to handle errors in the pipeline
         - Pipeline is too CPU-intensive. Find a better one.
-    - Better Save/Load dialogs
+    - DONE: Better Save/Load dialogs
         - DONE: Default directory must be home
         - DONE: BUG: Why it doesn't create the first folder?
         - DONE: New project window isn't working.
-    - DONE: Strict order: only call another dialog if the previous one is defined
-        RefImg -> Scale -> Insect Size
-        RefImg -> Areas
-    - DONE: Refactoring - put the dialogs-specific code in new classes (dialogs.py)
+    - DONE: Strict order: only call another dialog if the previous one 
+            is defined
+                RefImg -> Scale -> Insect Size
+                RefImg -> Areas
+    - DONE: Refactoring - put the dialogs-specific code in new classes 
     - DONE: Put a slider in the ProjPropDiag to control the threshold
+    - dialogs must update their data before run()     
     - SCALE DIALOG:
         - If shape is a line, disable Y_axis
         - Must only calculate the scale if a shape was drawn
         - Forbid counting pixels when mouse leave the image
     - AREAS DIALOG:
-        - ALMOST: Resize areas in Areas dialog (still need to look at ellipse code)
-        - DONE: What is the best for drawing? make the center static at the start point and increase the size
-        - DONE: Circle is a subtype of Ellipse, and Square is a subtype of Rectangle. Unify the classes and 
-                put a key_press event (SHIFT) to determine is it must be "squarish" (square and circle)
+        - ALMOST: Resize areas in Areas dialog (still need to look at 
+          ellipse code)
+        - DONE: What is the best for drawing? make the center static at the 
+                start point and increase the size
+        - DONE: Circle is a subtype of Ellipse, and Square is a subtype of 
+                Rectangle. Unify the classes and put a key_press event (SHIFT)
+                to determine is it must be "squarish" (square and circle)
         - why the image don't show when the mouse isn't moving?      
         - DONE: Remove the Circle button    
         - DONE: Implement the Remove button
@@ -45,35 +51,43 @@ INTERFACE:
         - use the arrow keys to move the image
         - DONE: Allow the user to change the name of an area
         - An area must be selected to allow "Set as Release Area" button to work.
-        - FUTURE FEATURE: create a freeform shape, and allow the user to draw the track format. 
-                Could be useful to the motion tracking, because you don't need to look at the parts
-                of the arena that aren't accessible.
+        - FUTURE FEATURE: create a freeform shape, and allow the user to draw 
+                          the track format. Could be useful to the motion 
+                          tracking, because you don't need to look at the parts
+                          of the arena that aren't accessible.
     - INSECT SIZE DIALOG
-        - DONE: Use the scale to convert the value to pixels instead of a metric unit.
+        - DONE: Use the scale to convert the value to pixels instead of a 
+                metric unit.
     - PROJECT PROPERTIES
-        - Allow user to enter the name of the experiment.
+        - DONE: Allow user to enter the name of the experiment.
     - VIDEO TRACKING
         - DONE: Put a small counter, with time and current X and Y coordinates.
         - Draw the track when tracking
-        - Only draw the point where the insect is, don't draw the boxes (tracking area, i.e.)
+        - Only draw the point where the insect is, don't draw the boxes 
+          (tracking area, i.e.)
         
-
 DEPLOYMENT:
     - Installation facility
 
 AREAS:
     - line methods
-    - Put a description attribute in areas, so the user can write down what the area represents
+    - Put a description attribute in areas, so the user can write down what 
+      the area represents
 
 PROJECT:
-    - Project contains N experiments: each experiment has his own properties. When the
-      experiment is stopped, begin another experiment, with the same properties. Allow
-      changes in these properties for the new experiment.
-    - Save each experiment in a separated file, with three images: refimg+areas, refimg+tracks and refimg
-      Inside the experiment save the point_list, the area_list and the track_list
-    - XML, when possible. Nowadays is just a pickled object. And it don't work well.
-    - Implements the extra_properties attribute
+    - Project contains N experiments: each experiment has his own properties. 
+      When the experiment is stopped, begin another experiment, with the same 
+      properties. Allow changes in these properties for the new experiment.
+    - Save each experiment in a separated file, with three images: refimg+areas,
+      refimg+tracks and refimg. Inside the experiment save the point_list, 
+      the area_list and the track_list
+    - XML, when possible. Nowadays is just a pickled object. And it doesn't 
+      work well.
+    - Separate the XML parsing process when loading, so each experiment, area 
+      and track build itself and then return to project.
+    - Allow extra properties in attributes
     - Save and Loading isn't working.
+    - Calculate bug_size and bug_max_speed based on scale.
 
 EXPERIMENT:
     - verify the calculations, because of x_scale_ratio and y_scale_ratio
@@ -82,7 +96,8 @@ EXPERIMENT:
 VIDEOPROCESSORMODULE
     - add points to the list
     - allow clicks in the image to change the point where the insect is
-    - need some corrections with parameter bug_size, sometimes it don't catch the insect.
+    - need some corrections with parameter bug_size, sometimes it don't 
+      catch the insect.
 
 REPORT:
     - DONE: Use ponderate average? NO!

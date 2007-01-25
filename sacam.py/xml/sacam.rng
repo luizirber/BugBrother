@@ -178,15 +178,20 @@
       <text/>
     </element>
   </define>
-  <!-- TODO: implement these -->
   <define name="ellipse">
     <element name="ellipse">
-      <text/>
+      <ref name="x_center"/>
+      <ref name="y_center"/>
+      <ref name="x_axis"/>
+      <ref name="y_axis"/>
     </element>
   </define>
   <define name="rectangle">
     <element name="rectangle">
-      <text/>
+      <ref name="x_center"/>
+      <ref name="y_center"/>
+      <ref name="height"/>
+      <ref name="width"/>
     </element>
   </define>
   <define name="freeform">
@@ -194,22 +199,56 @@
       <text/>
     </element>
   </define>
+  <define name="x_center">
+    <element name="x_center">
+      <text/>
+    </element>
+  </define>
+  <define name="y_center">
+    <element name="y_center">
+      <text/>
+    </element>
+  </define>
+  <define name="x_axis">
+    <element name="x_axis">
+      <text/>
+    </element>
+  </define>
+  <define name="y_axis">
+    <element name="y_axis">
+      <text/>
+    </element>
+  </define>
+  <define name="height">
+    <element name="height">
+      <text/>
+    </element>
+  </define>
+  <define name="width">
+    <element name="width">
+      <text/>
+    </element>
+  </define>
   <define name="tracks">
-    <zeroOrMore>
-      <ref name="track"/>
-    </zeroOrMore>
+    <element name="tracks">
+      <zeroOrMore>
+        <ref name="track"/>
+      </zeroOrMore>
+    </element>
   </define>
   <define name="track">
-    <interleave>
-      <ref name="residence"/>
-      <ref name="tortuosity"/>
-      <ref name="total_lenght"/>
-      <ref name="average_speed"/>
-      <ref name="standard_deviation"/>
-      <ref name="angular_standard_deviation"/>
-      <ref name="direction_changes"/>
-      <ref name="points"/>
-    </interleave>
+    <element name="track">
+      <interleave>
+        <ref name="residence"/>
+        <ref name="tortuosity"/>
+        <ref name="total_lenght"/>
+        <ref name="average_speed"/>
+        <ref name="standard_deviation"/>
+        <ref name="angular_standard_deviation"/>
+        <ref name="direction_changes"/>
+        <ref name="points"/>
+      </interleave>
+    </element>
   </define>
   <define name="tortuosity">
     <element name="tortuosity">

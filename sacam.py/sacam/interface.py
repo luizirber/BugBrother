@@ -212,6 +212,7 @@ class Interface(object):
                 
     def load_project(self, widget):
         main = self.xml.get_widget("mainwindow")
+        filename = None
         fsdial = gtk.FileChooserDialog(_("Load Project"), main,
                         gtk.FILE_CHOOSER_ACTION_OPEN,
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
@@ -231,8 +232,9 @@ class Interface(object):
             prj = self.project.load(filename)
             if prj:
                 self.project = prj
+                #TODO: verify the invalid_* values
             else:
-                #TODO: imprimir erro
+                #TODO: print error
                 pass
                
     def start_video(self, widget, project):

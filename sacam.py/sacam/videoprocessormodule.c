@@ -22,7 +22,7 @@ typedef struct {
     gboolean window_is_defined;
     gchar initial;
     gchar final;
-    guint32 bug_size;
+    gdouble bug_size;
     guint middle_height;
     guint middle_width;
 } Videoprocessor;
@@ -202,7 +202,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         
         bug_size = PyObject_GetAttrString(project, "bug_size");
         bug_max_speed = PyObject_GetAttrString(project, "bug_max_speed");
-        self->bug_size = PyInt_AsLong(bug_size) + PyInt_AsLong(bug_max_speed);
+        self->bug_size = PyFloat_AsDouble(bug_size) + PyFloat_AsDouble(bug_max_speed);
 
         self->gc = gdk_gc_new(GTK_WIDGET(output->obj)->window);
         gdk_gc_set_line_attributes (self->gc, 5, GDK_LINE_ON_OFF_DASH,
@@ -226,7 +226,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
 
         PyObject *begin, *end;
         PyObject *initial, *final;
-        gint size;
+        gdouble size;
         gint rows_start, rows_finish;
         gint pixels_start, pixels_finish;
         
@@ -237,10 +237,10 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         size = (PyInt_AsLong(initial) - PyInt_AsLong(final))/2;
         if (size < self->bug_size)
             size = self->bug_size;
-        rows_start = self->middle_height - size;
+        rows_start = self->middle_height - (gint)size;
         if (rows_start < 0)
             rows_start = 0;
-        rows_finish = self->middle_height + size;
+        rows_finish = self->middle_height + (gint)size;
         if (rows_finish > gdk_pixbuf_get_height (GDK_PIXBUF(self->current->obj)) )
             rows_finish = gdk_pixbuf_get_height (GDK_PIXBUF(self->current->obj));
 
@@ -249,10 +249,10 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         size = (PyInt_AsLong(initial) - PyInt_AsLong(final))/2;
         if (size < self->bug_size)
             size = self->bug_size;
-        pixels_start = self->middle_width - size;
+        pixels_start = self->middle_width - (gint)size;
         if (pixels_start < 0)
             pixels_start = 0;
-        pixels_finish = self->middle_width + size;
+        pixels_finish = self->middle_width + (gint)size;
         if (pixels_finish > gdk_pixbuf_get_width (GDK_PIXBUF(self->current->obj)) )
             pixels_finish = gdk_pixbuf_get_width (GDK_PIXBUF(self->current->obj));
 

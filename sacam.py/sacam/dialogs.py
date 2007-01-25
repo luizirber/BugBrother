@@ -156,6 +156,7 @@ class areas_diag(object):
                                 
         widget = self.xml.get_widget("buttonSetReleaseArea")
         widget.connect("clicked", self.set_as_release_area)                                
+        self.release_area = None                                
                                 
         #default shape to be drawn
         self.shape_type = "rectangle"
@@ -684,6 +685,8 @@ class insectsize_diag(object):
         labelSize.set_label(value)
         labelSpeed = self.xml.get_widget("labelSpeed");
         labelSpeed.set_label(value + "/s")        
+        
+        # TODO: need to set the values based on the project properties
         
         insectSizeDiag.show_all()
         response = insectSizeDiag.run()

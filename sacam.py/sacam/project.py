@@ -11,37 +11,27 @@ from kiwi.environ import environ
 from lxml import etree
 
 from sacam.i18n import _
-from sacam.areas import track, rectangle, ellipse
+from sacam.areas import track, rectangle, ellipse, point, area
 
 class project(object):
     """
     this class contains data used to define a project.
     """
     
-    attributes = {}
-    refimage = None
-    filename = None
-    
     def __init__(self):
+        self.filename = None
+        self.attributes = {}
+        self.refimage = None
         self.experiment_list = []
         self.experiment_list.append(experiment())
         self.current_experiment = self.experiment_list[-1]
         self.bug_max_speed = 3
         self.bug_size = 39
+        self.refimage = None
         self.attributes[_("Project Name")] = _("Project")
     
-    def save(self):
-        projfile = file(self.filename,"w")        
-        cPickle.dump(self, projfile, 2)
-        projfile.close()
-    
-#    def load(self):
-#        projfile = file(self.filename,"r")
-#        temp = cPickle.load(projfile)
-#        projfile.close()
-        
     def load(self, filename):
-        ''' If returned value is None, there is an error! '''
+        ''' TODO: If returned value is None, there is an error! '''
         prj = None
         try:
             #open the file for reading
@@ -53,23 +43,64 @@ class project(object):
             schema = etree.parse(schemafile)
             relax_schema = etree.RelaxNG(schema)
             
-            xml_tree = etree.parse(projfile)
+            ## Parse the file, validate, and then iterate thru it
+            ## to build the project instance            
+            parser = etree.XMLParser(ns_clean=True)
+            xml_tree = etree.parse(projfile, parser)
             if not relax_schema.validate(xml_tree):
                 prj = None
             else:
                 prj = project()
                 prj.filename = filename
-                root = xml_tree.getroot()
-                print [(el.tag, el.prefix) for el in root]
                 
+                # get the <project> tag
+                root = xml_tree.getroot()
+                
+                # begin parsing of tree.
+                # First step: build the attributes dictionary.
+                element = root.find("{http://cnpdia.embrapa.br}attributes")
+                for attr in element:
+                    key, value = attr.text.split(':')
+                    prj.attributes[_(key)] = _(value)
+                
+                # Second step: refimage property
+                element = root.find("{http://cnpdia.embrapa.br}refimage")
+                prj.refimage = element.text
+                
+                # Third step: bug_size property
+                element = root.find("{http://cnpdia.embrapa.br}bug_size")
+                prj.original_bug_size = float(element.text)
+                #TODO: bug_size is calculated based on scale. Do this.
+                
+                # Fourth step: bug_max_speed property
+                element = root.find("{http://cnpdia.embrapa.br}bug_max_speed")
+                prj.original_bug_speed = float(element.text)
+                #TODO: bug_max_speed is calculated based on scale. Do this.
+                
+                # Fifth step: experiment list
+                experiments = root.find("{http://cnpdia.embrapa.br}experiments")
+                prj.experiment_list = []
+                for el in experiments:
+                    new_exp = experiment().build_from_xml(el)
+                    prj.experiment_list.append(new_exp)
+                prj.current_experiment = prj.experiment_list[-1]
+                    
             schemafile.close()
-            # we don't need the file anymore, it can be closed
+            # we don't need the projfile anymore, it can be closed
             projfile.close()
-        
         return prj
             
-    def _save(self):
-        pass
+    def save(self):
+        projfile = file(self.filename,'w')
+        projfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        root = etree.Element('project xmlns="http://cnpdia.embrapa.br"')
+        
+        
+
+        tree = etree.ElementTree(root)
+        tree.write(projfile,"UTF-8")
+        projfile.close()
+        
         
     def export(self, filename):
         fw = writer(open(filename, 'wb'), 'excel')
@@ -103,17 +134,55 @@ class experiment(object):
     measurement_unit = None
     x_scale_ratio = None
     y_scale_ratio = None
-    track = None
     
     def __init__(self):
         self.threshold = 0x30
         self.release_area = [0, 0, 480, 640]
         self.attributes[_("Experiment Name")] = _("Experiment")
-        
-    def _load(self):
-        pass
     
-    def _save(self):
+    def build_from_xml(self, el):
+        exp = experiment()
+        attributes = el.find("{http://cnpdia.embrapa.br}attributes")
+        for attr in attributes:
+            key, value = attr.text.split(":")
+            exp.attributes[_(key)] = _(value)
+        
+        element = el.find("{http://cnpdia.embrapa.br}measurement_unit")
+        exp.measurement_unit = element.text
+        
+        element = el.find("{http://cnpdia.embrapa.br}start_time")
+        exp.start_time = element.text
+        
+        element = el.find("{http://cnpdia.embrapa.br}end_time")
+        exp.end_time = element.text
+        
+        element = el.find("{http://cnpdia.embrapa.br}x_scale_ratio")
+        exp.x_scale_ratio = float(element.text)
+        
+        element = el.find("{http://cnpdia.embrapa.br}y_scale_ratio")
+        exp.y_scale_ratio = float(element.text)
+        
+        element = el.find("{http://cnpdia.embrapa.br}threshold")
+        exp.threshold = int(element.text)
+        
+        # TODO: make a acessor function to set release_area
+        # it should take a string, and search an area_name
+        # that matches this string.
+        #element = el.find("{http://cnpdia.embrapa.br}release_area")
+        #exp.set_release_area(element.text)
+    
+        points = el.find("{http://cnpdia.embrapa.br}points")
+        for pnt in points:
+            new_point = point().build_from_xml(pnt)
+            exp.point_list.append(new_point)
+            
+        areas = el.find("{http://cnpdia.embrapa.br}areas")
+        for ar in areas:
+            new_area = area().build_from_xml(ar)
+            exp.areas_list.append(new_area)
+        return exp
+    
+    def build_xml(self):
         pass
     
     def export(self):
