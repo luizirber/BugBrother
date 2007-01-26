@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from math import pi
+from lxml import etree
 
 class point(object):
     """
@@ -15,6 +16,25 @@ class point(object):
         self.start_time = None
         self.end_time = None
         
+    def object_to_xml(self, points):
+        new_point = etree.SubElement(points, 'point')
+        
+        element = etree.SubElement(new_point, "pos_x")
+        element.text = str(self.x)
+        
+        element = etree.SubElement(new_point, "pos_y")
+        element.text = str(self.y)
+    
+        # TODO: parse to string a datetime object
+        # http://docs.python.org/lib/node85.html    
+        element = etree.SubElement(new_point, "start_time")
+        element.text = str('')
+    
+        # TODO: parse to string a datetime object
+        # http://docs.python.org/lib/node85.html    
+        element = etree.SubElement(new_point, "end_time")
+        element.text = str('')                
+        
     def build_from_xml(self, pnt):
         new_point = point()                    
         
@@ -24,10 +44,13 @@ class point(object):
         value = pnt.find("{http://cnpdia.embrapa.br}pos_y")
         new_point.y = int(value.text)
         
-        #TODO: build a datetime object for start_time and end_time
+        # TODO: parse the string to a datetime object
+        # http://docs.python.org/lib/node85.html
         value = pnt.find("{http://cnpdia.embrapa.br}start_time")
         new_point.start_time = value.text
     
+        # TODO: parse the string to a datetime object
+        # http://docs.python.org/lib/node85.html
         value = pnt.find("{http://cnpdia.embrapa.br}end_time")
         new_point.end_time = value.text
         
@@ -48,6 +71,34 @@ class track(object):
         self.tortuosity = 0
         self.meanTrackLinSpeed = 0
         self.meanTrackAngleSpeed = 0
+    
+    def object_to_xml(self, tracks):
+        new_track = etree.SubElement(tracks, "track")
+        
+        element = etree.SubElement(new_track, "residence")
+        element.text = str(self.residence)
+        
+        element = etree.SubElement(new_track, "tortuosity")
+        element.text = str(self.tortuosity)
+                
+        element = etree.SubElement(new_track, "total_lenght")
+        element.text = str(self.total_lenght)
+                        
+        element = etree.SubElement(new_track, "average_speed")
+        element.text = str(self.average_speed)                        
+    
+        element = etree.SubElement(new_track, "standard_deviation")
+        element.text = str(self.standard_deviation)                        
+    
+        element = etree.SubElement(new_track, "angular_standard_deviation")
+        element.text = str(self.angular_standard_deviation)                        
+    
+        element = etree.SubElement(new_track, "direction_changes")
+        element.text = str(self.direction_changes)                        
+    
+        element = etree.SubElement(new_track, "points")
+        for pnt in self.point_list:
+            pnt.export_to_xml(points)
     
     def build_from_xml(self, trk):
         new_track = track()
@@ -97,6 +148,12 @@ class shape(object):
         pass
 
     def draw(self, canvas):
+        pass
+    
+    def object_to_xml(self, root):
+        pass
+
+    def build_from_xml(self, root):
         pass
 
 
@@ -148,6 +205,22 @@ class rectangle(shape):
         
         return new_shape
                 
+    def object_to_xml(self, new_area):
+        new_shape = etree.SubElement(new_area, "rectangle")
+        
+        element = etree.SubElement(new_shape, "x_center")
+        element.text = str(self.x_center)
+        
+        element = etree.SubElement(new_shape, "y_center")
+        element.text = str(self.y_center)
+        
+        element = etree.SubElement(new_shape, "height")
+        element.text = str(self.width)
+        
+        element = etree.SubElement(new_shape, "width")
+        element.text = str(self.height)
+                        
+                
 class ellipse(shape):
     """ http://en.wikipedia.org/wiki/Ellipse#Area """
     def __init__(self):
@@ -187,6 +260,22 @@ class ellipse(shape):
         new_shape.y_axis = float(value.text)
         
         return new_shape
+    
+    def object_to_xml(self, new_area):
+        new_shape = etree.SubElement(new_area, "ellipse")
+        
+        element = etree.SubElement(new_shape, "x_center")
+        element.text = str(self.x_center)
+        
+        element = etree.SubElement(new_shape, "y_center")
+        element.text = str(self.y_center)
+        
+        element = etree.SubElement(new_shape, "x_axis")
+        element.text = str(self.x_axis)
+        
+        element = etree.SubElement(new_shape, "y_axis")
+        element.text = str(self.y_axis)
+        
     
 class freeform(shape):
     def __init__(self):
@@ -236,6 +325,33 @@ class area(object):
         self.name = name
         self.track_list = []
         self.started = False
+    
+    def object_to_xml(self, areas):
+        new_area = etree.SubElement(areas, "area")
+        
+        self.shape.object_to_xml(new_area)
+        
+        element = etree.SubElement(new_area, "name")
+        element.text = str(self.name)
+        
+        element = etree.SubElement(new_area, "description")
+        element.text = str(self.description)
+        
+        element = etree.SubElement(new_area, "number_of_tracks")
+        element.text = str(self.number_of_tracks)
+        
+        element = etree.SubElement(new_area, "residence")
+        element.text = str(self.residence)
+    
+        element = etree.SubElement(new_area, "residence_percentage")
+        element.text = str(self.residence_percentage)
+    
+        element = etree.SubElement(new_area, "total_lenght")
+        element.text = str(self.total_lenght)
+    
+        tracks = etree.SubElement(new_area, "tracks")    
+        for trk in self.track_list:
+            trk.object_to_xml(tracks)
     
     def build_from_xml(self, ar):
         new_area = area()

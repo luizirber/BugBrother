@@ -11,7 +11,7 @@ from kiwi.environ import environ
 from lxml import etree
 
 from sacam.i18n import _
-from sacam.areas import track, rectangle, ellipse, point, area
+from sacam.areas import track, rectangle, ellipse, point, area, freeform
 
 class project(object):
     """
@@ -61,7 +61,7 @@ class project(object):
                 element = root.find("{http://cnpdia.embrapa.br}attributes")
                 for attr in element:
                     key, value = attr.text.split(':')
-                    prj.attributes[_(key)] = _(value)
+                    prj.attributes[key] = value
                 
                 # Second step: refimage property
                 element = root.find("{http://cnpdia.embrapa.br}refimage")
@@ -93,14 +93,31 @@ class project(object):
     def save(self):
         projfile = file(self.filename,'w')
         projfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-        root = etree.Element('project xmlns="http://cnpdia.embrapa.br"')
         
-        
-
+        root = etree.Element('project',attrib={'xmlns':"http://cnpdia.embrapa.br"})
         tree = etree.ElementTree(root)
-        tree.write(projfile,"UTF-8")
-        projfile.close()
         
+        attr = etree.SubElement(root, "attributes")
+        for key in self.attributes:
+            new_attribute = etree.SubElement(attr, "attribute")
+            new_attribute.text = str(key + ':' + self.attributes[key])
+        
+        #TODO: parse filename property and save the refimage.
+        element = etree.SubElement(root, "refimage")
+        element.text = self.filename
+        
+        element = etree.SubElement(root, "bug_size")
+        element.text = str(self.bug_size)
+        
+        element = etree.SubElement(root, "bug_max_speed")
+        element.text = str(self.bug_max_speed)
+        
+        experiments = etree.SubElement(root, "experiments")
+        for exp in self.experiment_list:
+            exp.object_to_xml(experiments)
+        
+        tree.write(projfile,"UTF-8",pretty_print=True)
+        projfile.close()
         
     def export(self, filename):
         fw = writer(open(filename, 'wb'), 'excel')
@@ -131,28 +148,75 @@ class experiment(object):
     start_time = None
     end_time = None
     attributes = {}
-    measurement_unit = None
-    x_scale_ratio = None
-    y_scale_ratio = None
+    measurement_unit = 'cm'
+    x_scale_ratio = '1'
+    y_scale_ratio = '1'
     
     def __init__(self):
         self.threshold = 0x30
         self.release_area = [0, 0, 480, 640]
         self.attributes[_("Experiment Name")] = _("Experiment")
     
+    def object_to_xml(self, experiments):
+        new_experiment = etree.SubElement(experiments, 'experiment')
+        
+        attr = etree.SubElement(new_experiment, 'attributes')
+        for key in self.attributes:
+            new_attribute = etree.SubElement(attr, "attribute")
+            new_attribute.text = str(key + ':' + self.attributes[key])
+        
+        element = etree.SubElement(new_experiment, "measurement_unit")
+        element.text = str(self.measurement_unit)
+        
+        # TODO: parse to string a datetime object
+        # http://docs.python.org/lib/node85.html
+        element = etree.SubElement(new_experiment, "start_time")
+        element.text = str('start_time')
+        
+        # TODO: parse to string a datetime object
+        # http://docs.python.org/lib/node85.html
+        element = etree.SubElement(new_experiment, "end_time")
+        element.text = str('end_time')
+        
+        element = etree.SubElement(new_experiment, "x_scale_ratio")
+        element.text = str(self.x_scale_ratio)
+        
+        element = etree.SubElement(new_experiment, "y_scale_ratio")
+        element.text = str(self.y_scale_ratio)
+        
+        element = etree.SubElement(new_experiment, "threshold")
+        element.text = str(self.threshold)
+
+        # TODO: save the name of the release area
+        element = etree.SubElement(new_experiment, "release_area")
+        element.text = str('')
+        
+        points = etree.SubElement(new_experiment, "points")
+        for pnt in self.point_list:
+            pnt.object_to_xml(points)
+            
+        areas = etree.SubElement(new_experiment, "areas")
+        for ar in self.areas_list:
+            ar.object_to_xml(areas)
+    
+    
     def build_from_xml(self, el):
         exp = experiment()
         attributes = el.find("{http://cnpdia.embrapa.br}attributes")
         for attr in attributes:
             key, value = attr.text.split(":")
-            exp.attributes[_(key)] = _(value)
+            exp.attributes[key] = value
         
         element = el.find("{http://cnpdia.embrapa.br}measurement_unit")
         exp.measurement_unit = element.text
         
+        # TODO: parse the string to a datetime object
+        # http://docs.python.org/lib/node85.html
         element = el.find("{http://cnpdia.embrapa.br}start_time")
         exp.start_time = element.text
         
+        # TODO: parse the string to a datetime object
+        # http://docs.python.org/lib/node85.html
         element = el.find("{http://cnpdia.embrapa.br}end_time")
         exp.end_time = element.text
         
