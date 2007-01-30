@@ -61,13 +61,13 @@ class Interface(object):
         widget.connect("clicked", self.propdiag.run, self.project, self.xml)
                             
         widget = self.xml.get_widget("buttonScale")
-        widget.connect("clicked", self.scalediag.run, self.project, self)
+        widget.connect("clicked", self.scalediag.run, self.project)
         
         widget = self.xml.get_widget("buttonInsectSize")
-        widget.connect("clicked", self.insectsizediag.run, self.project, self)
+        widget.connect("clicked", self.insectsizediag.run, self.project)
                 
         widget = self.xml.get_widget("buttonRefImg")
-        widget.connect("clicked", self.refimgdiag.run, self.project, self)
+        widget.connect("clicked", self.refimgdiag.run, self.project)
         
         widget = self.xml.get_widget("buttonProcess")
         widget.connect("clicked", self.process_lists)        
@@ -76,7 +76,7 @@ class Interface(object):
         widget.connect("clicked", self.report)        
                                
         widget = self.xml.get_widget("buttonAreas")
-        widget.connect("clicked", self.areasdiag.run, self.project, self)
+        widget.connect("clicked", self.areasdiag.run, self.project)
                                         
         #refimg dialog callback
         widget = self.xml.get_widget('buttonConfirm')
@@ -110,14 +110,87 @@ class Interface(object):
                                  self.project.current_experiment.attributes[_("Experiment Name")] ) )
         self.window.show()        
         
-        self.ready_state()        
+        self.update_state()        
         
         return
                  
-    def process_lists(self, wid):
-        self.project.current_experiment.prepare_point_list()
-        self.project.current_experiment.prepare_areas_list()
-        self.project.current_experiment.prepare_stats()
+    def main(self, argv):
+        gtk.main()
+                 
+    def new_project(self, widget):
+        if self.project:
+            diag = gtk.MessageDialog ( self.window, 
+                                       gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, 
+                                       gtk.MESSAGE_QUESTION, 
+                                       gtk.BUTTONS_YES_NO,
+                                       _("Do you want to save the current project?") )
+            response = diag.run()
+            
+            if response == gtk.RESPONSE_YES:
+                diag.destroy()                
+                self.save_project(None)
+                self.project = project()
+            else:
+                diag.destroy()                
+                self.project = project()
+        
+        response = self.propdiag.run(None, self.project, self.xml)
+        
+        if response == False :
+            self.update_state()            
+            return
+               
+        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)               
+        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)      
+                
+        response = self.refimgdiag.run(None, self.project, self)
+        if response == False :
+            self.update_state()            
+            return
+        
+        response = self.areasdiag.run(None, self.project, self)
+        if response == False :
+            self.update_state()            
+            return
+
+        response = self.scalediag.run(None, self.project, self)
+        if response == False :
+            self.update_state()
+            return
+                
+        response = self.insectsizediag.run(None, self.project, self)
+        if response == False :
+            self.update_state()            
+            return
+                
+        self.update_state()
+                
+    def load_project(self, widget):
+        main = self.xml.get_widget("mainwindow")
+        filename = None
+        fsdial = gtk.FileChooserDialog(_("Load Project"), main,
+                        gtk.FILE_CHOOSER_ACTION_OPEN,
+                       (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                        gtk.STOCK_OK, gtk.RESPONSE_OK) )
+        fsdial.set_current_folder(self.home)
+                
+        response = fsdial.run()
+        
+        if response != gtk.RESPONSE_OK:
+            fsdial.destroy()
+        else:
+            filename = fsdial.get_filename()
+            self.update_state()            
+        fsdial.destroy()
+        
+        if filename:
+            prj = self.project.load(filename)
+            if prj:
+                self.project = prj
+                self.update_state()
+            else:
+                #TODO: print error
+                pass
                
     def save_project(self, widget):
         if self.invalid_path:
@@ -156,88 +229,8 @@ class Interface(object):
             self.project.save()
         else:
             self.project.save()
-
-    def destroy(self, widget):
-        self.device_manager.pipeline_capture.set_state(gst.STATE_NULL)                    
-        self.device_manager.pipeline_play.set_state(gst.STATE_NULL)
-        gtk.main_quit()
-     
-    def new_project(self, widget):
-        if self.project:
-            diag = gtk.MessageDialog ( self.window, 
-                                       gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT, 
-                                       gtk.MESSAGE_QUESTION, 
-                                       gtk.BUTTONS_YES_NO,
-                                       _("Do you want to save the current project?") )
-            response = diag.run()
-            
-            if response == gtk.RESPONSE_YES:
-                diag.destroy()                
-                self.save_project(None)
-                self.project = project()
-            else:
-                diag.destroy()                
-                self.project = project()
-        
-        response = self.propdiag.run(None, self.project, self.xml)
-        
-        if response == False :
-            self.ready_state()            
-            return
                
-        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)               
-        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)      
-                
-        response = self.refimgdiag.run(None, self.project, self)
-        if response == False :
-            self.ready_state()            
-            return
-        
-        response = self.areasdiag.run(None, self.project, self)
-        if response == False :
-            self.ready_state()            
-            return
-
-        response = self.scalediag.run(None, self.project, self)
-        if response == False :
-            self.ready_state()
-            return
-                
-        response = self.insectsizediag.run(None, self.project, self)
-        if response == False :
-            self.ready_state()            
-            return
-                
-        self.ready_state()
-                
-    def load_project(self, widget):
-        main = self.xml.get_widget("mainwindow")
-        filename = None
-        fsdial = gtk.FileChooserDialog(_("Load Project"), main,
-                        gtk.FILE_CHOOSER_ACTION_OPEN,
-                       (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                        gtk.STOCK_OK, gtk.RESPONSE_OK) )
-        fsdial.set_current_folder(self.home)
-                
-        response = fsdial.run()
-        
-        if response != gtk.RESPONSE_OK:
-            fsdial.destroy()
-        else:
-            filename = fsdial.get_filename()
-            self.ready_state()            
-        fsdial.destroy()
-        
-        if filename:
-            prj = self.project.load(filename)
-            if prj:
-                self.project = prj
-                #TODO: verify the invalid_* values
-            else:
-                #TODO: print error
-                pass
-               
-    def start_video(self, widget, project):
+    def start_video(self, widget, prj):
         notebook = self.xml.get_widget("mainNotebook")
         notebook.set_current_page(1)
         
@@ -259,22 +252,88 @@ class Interface(object):
         self.running = widget.get_active()
         if self.running:
             while self.running:
-                self.device_manager.start_video(widget, project)
+                self.device_manager.start_video(widget, prj)
                 
-                widget = self.xml.get_widget("labelTime")
-                now = datetime(1,1,1).now()
-                time = now - project.current_experiment.start_time
-                widget.set_text(str(time))
-                
-                widget = self.xml.get_widget("labelXPos")
-                try: widget.set_text(str(project.current_experiment.point_list[-1].x))
-                except: pass
-                
-                widget = self.xml.get_widget("labelYPos")
-                try: widget.set_text(str(project.current_experiment.point_list[-1].y))
-                except: pass
+                if prj.current_experiment.start_time:
+                    widget = self.xml.get_widget("labelTime")
+                    now = datetime(1,1,1).now()
+                    time = now - prj.current_experiment.start_time
+                    widget.set_text(str(time))
+                    
+                    widget = self.xml.get_widget("labelXPos")
+                    try: widget.set_text(str(prj.current_experiment.point_list[-1].x))
+                    except: pass
+                    
+                    widget = self.xml.get_widget("labelYPos")
+                    try: widget.set_text(str(prj.current_experiment.point_list[-1].y))
+                    except: pass
         else:
-            self.ready_state()
+            prj.new_experiment_from_current()
+            self.update_state()
+
+    def report(self, widget):
+        fsdialog = gtk.FileChooserDialog(_("Save Report"), self.window,
+                     gtk.FILE_CHOOSER_ACTION_SAVE,
+                    (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
+                     gtk.STOCK_OK, gtk.RESPONSE_OK) )        
+        if self.project.filename:             
+            fsdialog.set_current_folder(self.project.filename)
+        else:
+            fsdialog.set_current_folder(self.home)
+        
+        response = fsdialog.run()
+        
+        if response == gtk.RESPONSE_OK:
+            filename = fsdialog.get_filename() + '.csv'
+            self.project.export(filename)            
+        fsdialog.destroy()
+        msg = gtk.MessageDialog ( self.window, 
+                                  gtk.DIALOG_DESTROY_WITH_PARENT, 
+                                  gtk.MESSAGE_INFO, 
+                                  gtk.BUTTONS_OK,
+                                  _("Report generated.") )
+        msg.run()
+        msg.destroy()
+    
+    def process_lists(self, wid):
+        self.project.current_experiment.prepare_point_list()
+        self.project.current_experiment.prepare_areas_list()
+        self.project.current_experiment.prepare_stats()
+               
+    def update_state(self):
+        if len(self.project.current_experiment.areas_list) == 0:
+            self.invalid_areas = True
+        else:
+            self.invalid_areas = False
+            
+        if self.project.refimage:
+            self.invalid_refimg = False
+        else:
+            self.invalid_refimg = True
+            
+        if self.project.filename:    
+            if os.path.exists(self.project.filename):
+                self.invalid_path = False
+            else:
+                self.invalid_path = True
+            
+        if self.project.bug_size:
+            self.invalid_size = False
+        else:
+            self.invalid_size = True
+
+        if self.project.bug_max_speed:
+            self.invalid_speed = False
+        else:
+            self.invalid_speed = True
+            
+        if self.project.current_experiment.x_scale_ratio \
+           and self.project.current_experiment.y_scale_ratio:
+            self.invalid_scale = False
+        else:
+            self.invalid_scale = True
+        
+        self.ready_state()
 
     def capturing_state(self):
         widget = self.xml.get_widget("buttonStart")
@@ -394,35 +453,12 @@ class Interface(object):
         
         widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(2).set_sensitive(True)                
-        
-           
-    def report(self, widget):
-        fsdialog = gtk.FileChooserDialog(_("Save Report"), self.window,
-                     gtk.FILE_CHOOSER_ACTION_SAVE,
-                    (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                     gtk.STOCK_OK, gtk.RESPONSE_OK) )        
-        if self.project.filename:             
-            fsdialog.set_current_folder(self.project.filename)
-        else:
-            fsdialog.set_current_folder(self.home)
-        
-        response = fsdialog.run()
-        
-        if response == gtk.RESPONSE_OK:
-            filename = fsdialog.get_filename() + '.csv'
-            self.project.export(filename)            
-        fsdialog.destroy()
-        msg = gtk.MessageDialog ( self.window, 
-                                  gtk.DIALOG_DESTROY_WITH_PARENT, 
-                                  gtk.MESSAGE_INFO, 
-                                  gtk.BUTTONS_OK,
-                                  _("Report generated.") )
-        msg.run()
-        msg.destroy()
+               
+    def destroy(self, widget):
+        self.device_manager.pipeline_capture.set_state(gst.STATE_NULL)                    
+        self.device_manager.pipeline_play.set_state(gst.STATE_NULL)
+        gtk.main_quit()
     
-    def main(self, argv):
-        gtk.main()
-        
 
 if __name__ == "__main__":
     base = Interface()

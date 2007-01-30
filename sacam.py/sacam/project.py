@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
 from math import pi, sqrt, acos
-from copy import copy
+from copy import deepcopy
 import cPickle
-from zlib import compress, decompress
 from csv import writer
 from datetime import timedelta
 
@@ -49,6 +48,8 @@ class project(object):
             xml_tree = etree.parse(projfile, parser)
             if not relax_schema.validate(xml_tree):
                 prj = None
+                print error
+                # TODO: error handling
             else:
                 prj = project()
                 prj.filename = filename
@@ -136,6 +137,17 @@ class project(object):
         # at last, save the rows in the file
         fw.writerows(export_rows)
 
+    def new_experiment_from_current(self):
+        exp = experiment()
+        exp.attributes = deepcopy(self.current_experiment.attributes)
+        exp.measurement_unit = deepcopy(self.current_experiment.measurement_unit)
+        exp.x_scale_ratio = deepcopy(self.current_experiment.x_scale_ratio)
+        exp.y_scale_ratio = deepcopy(self.current_experiment.y_scale_ratio)
+        exp.threshold = deepcopy(self.current_experiment.threshold)
+        exp.release_area = deepcopy(self.current_experiment.release_area)
+        exp.areas_list = deepcopy(self.current_experiment.areas_list)
+        self.experiment_list.append(exp)
+        self.current_experiment = exp
     
 class experiment(object):
     """
@@ -325,14 +337,14 @@ class experiment(object):
                 else:
                     if area.started:
                         temp_track = track()
-                        temp_track.point_list = copy(temp_list)
+                        temp_track.point_list = deepcopy(temp_list)
                         area.track_list.append(temp_track)
                         temp_list = []
                     area.started = False
             #in this case, every point in point_list in inside the area
             if area.started:
                 temp_track = track()
-                temp_track.point_list = copy(temp_list)
+                temp_track.point_list = deepcopy(temp_list)
                 area.track_list.append(temp_track)
                 temp_list = []
             

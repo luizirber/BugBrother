@@ -29,7 +29,8 @@ INTERFACE:
                 RefImg -> Areas
     - DONE: Refactoring - put the dialogs-specific code in new classes 
     - DONE: Put a slider in the ProjPropDiag to control the threshold
-    - dialogs must update their data before run()     
+    - dialogs must update their data before run()
+        - PROBLEM: make dialogs derive dialog()
     - SCALE DIALOG:
         - If shape is a line, disable Y_axis
         - Must only calculate the scale if a shape was drawn
@@ -81,23 +82,26 @@ PROJECT:
     - Save each experiment in a separated file, with three images: refimg+areas,
       refimg+tracks and refimg. Inside the experiment save the point_list, 
       the area_list and the track_list
-    - XML, when possible. Nowadays is just a pickled object. And it doesn't 
+    - DONE: XML, when possible. Nowadays is just a pickled object. And it doesn't 
       work well.
-    - Separate the XML parsing process when loading, so each experiment, area 
+    - DONE: Separate the XML parsing process when loading, so each experiment, area 
       and track build itself and then return to project.
     - Allow extra properties in attributes
-    - Save and Loading isn't working.
+    - DONE: Save and Loading isn't working.
     - Calculate bug_size and bug_max_speed based on scale.
+    - Save and load refimage
 
 EXPERIMENT:
     - verify the calculations, because of x_scale_ratio and y_scale_ratio
     - DONE: Generate reports in CSV format
 
-VIDEOPROCESSORMODULE
-    - add points to the list
+VIDEOPROCESSOR:
     - allow clicks in the image to change the point where the insect is
     - need some corrections with parameter bug_size, sometimes it don't 
       catch the insect.
+    VIDEOPROCESSORMODULE:
+        - DONE: add points to the list
+      
 
 REPORT:
     - DONE: Use ponderate average? NO!

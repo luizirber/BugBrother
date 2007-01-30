@@ -47,18 +47,20 @@ class Device_manager(object):
         self.processor_output = processor_output
         self.frame_format = None
         
+        self.counter = 0
+        
         #TODO: look for these values, don't hardcode then
         device = '/dev/video0'
         width, height = 640, 480
         
         #TODO: merge the pipelines
         pipeline_string = (
-#            'videotestsrc name=source ! ffmpegcolorspace ! '        
-            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+            'videotestsrc name=source ! ffmpegcolorspace ! '        
+#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
             'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
-#           )%(width, height)
-           )%(device,width, height)           
+           )%(width, height)
+#           )%(device,width, height)           
         
 #        pipeline_string2 = (
 #           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
@@ -162,6 +164,11 @@ class Device_manager(object):
 #                                    self.processor_output, project)
         self.processor.process_video(self.get_current_frame(), 
                                      self.processor_output, project)
+        self.counter += 1
+        if self.counter == 10:
+            gc.collect()
+            self.counter = 0
+                                             
         return True 
           
     def show_window(self, widget):

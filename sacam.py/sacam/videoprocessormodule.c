@@ -9,13 +9,16 @@
 #include <glib/gprintf.h>
 #include <gdk/gdkpixbuf.h>
 
+#include <time.h>
+
 static PyTypeObject *PyGObject_Type=NULL;
+static PyTypeObject *PyObject_PointType=NULL;
 
 typedef struct {
     PyObject_HEAD
     PyGObject *previous;
     PyGObject *current;
-    PyObject *window;
+    PyObject  *window;
     guint32 threshold;
     GdkGC* gc;
     gboolean first_run;
@@ -145,16 +148,20 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
     PyGObject *source;
     PyGObject *output;
     PyObject *project;
-
+    PyObject *current_experiment;    
+    
     if (!PyArg_ParseTuple(args, "O!O!O", PyGObject_Type, &source,
                                          PyGObject_Type, &output, 
                                          &project))
         return NULL;
 
+    current_experiment = PyObject_GetAttrString(project, 
+                                            "current_experiment");
+    
+    PyObject *datetime_obj = PyDateTime_FromDateAndTime(1,1,1,1,1,1,1);
+
     if (self->first_run == TRUE) {
 
-        int result;
-        PyObject *current_experiment;
         PyObject *start_time;
         PyObject *threshold;
         PyObject *initial;
@@ -162,25 +169,10 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         PyObject *bug_size;
         PyObject *bug_max_speed;
         
-        current_experiment = PyObject_GetAttrString(project, 
-                                                "current_experiment");
-        start_time = PyObject_GetAttrString(current_experiment,
-                                                "start_time");
-        result = PyObject_Compare(start_time, Py_None);
-
-        if (result) {
-            gint test;
-            PyObject *now; 
-/*            now = PyDateTime_FromTimestamp();
-
-            test = PyObject_Print(now, stdout, NULL);
-            g_printf("teste: %i\n",test);
-            fflush(stdout);
-
-            PyObject_SetAttrString(current_experiment, "start_time", now);
-            Py_XDECREF(now);
-*/
-        }
+        PyObject *now;
+        now = PyObject_CallMethod(datetime_obj, "now", NULL);
+        PyObject_SetAttrString(current_experiment, "start_time", now);
+        Py_XDECREF(now);
 
         threshold = PyObject_GetAttrString(current_experiment,
                                            "threshold");
@@ -209,7 +201,6 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
                                     GDK_CAP_NOT_LAST, GDK_JOIN_MITER);
 
         Py_XDECREF(start_time);
-        Py_XDECREF(current_experiment);
         Py_XDECREF(threshold); 
         Py_XDECREF(bug_size);
         Py_XDECREF(bug_max_speed);
@@ -230,7 +221,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         gint rows_start, rows_finish;
         gint pixels_start, pixels_finish;
         
-//        begin = PyDateTime_FromTimestamp();
+        begin = PyObject_CallMethod(datetime_obj, "now", NULL);
 
         initial = PyList_GetItem(self->window, 2);
         final = PyList_GetItem(self->window, 0);
@@ -332,7 +323,7 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         }
         
 
-//        end = PyDateTime_FromTimestamp();
+        end = PyObject_CallMethod(datetime_obj, "now", NULL);
 
         initial = PyList_GetItem(self->window, 3);
         final = PyList_GetItem(self->window, 1);
@@ -379,17 +370,39 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
                             self->middle_height - 3,         //y0
                             6, 6);                           //height
 
-/*
-            ptemp = point()
-            ptemp.x, ptemp.y = self.middle_width, self.middle_height
-            ptemp.start_time, ptemp.end_time = begin, end
-            project.current_experiment.point_list.append(ptemp) 
-*/
+        PyObject* ptemp;
+        PyObject* value;
+        PyObject* point_list;                
+                
+        ptemp = PyObject_CallObject(PyObject_PointType, NULL);
 
-//        Py_XDECREF(begin);
-//        Py_XDECREF(end);
+        value = Py_BuildValue("i", self->middle_width);        
+        PyObject_SetAttrString(ptemp, "x", value);
+        Py_XDECREF(value);
+        
+        value = Py_BuildValue("i", self->middle_height);  
+        PyObject_SetAttrString(ptemp, "y", value);
+        Py_XDECREF(value);
+        
+        PyObject_SetAttrString(ptemp, "start_time", begin);
+        PyObject_SetAttrString(ptemp, "end_time", end);        
+
+        current_experiment = PyObject_GetAttrString(project, 
+                                                "current_experiment");
+
+        point_list = PyObject_GetAttrString(current_experiment, 
+                                            "point_list");
+        PyList_Append(point_list, ptemp);
+        
+        Py_XDECREF(point_list);
+        Py_XDECREF(ptemp);
+        
+        Py_XDECREF(begin);
+        Py_XDECREF(end);
     }
-
+    
+    Py_XDECREF(datetime_obj);
+    Py_XDECREF(current_experiment);        
     Py_RETURN_TRUE;
 }
 
@@ -475,6 +488,12 @@ initvideoprocessor(void)
     module = PyImport_ImportModule("gobject");
     if (module) {
         PyGObject_Type = (PyTypeObject*)PyObject_GetAttrString(module, "GObject");
+        Py_DECREF(module);
+    }
+    
+    module = PyImport_ImportModule("areas");
+    if (module) {
+        PyObject_PointType = (PyTypeObject*)PyObject_GetAttrString(module, "point");
         Py_DECREF(module);
     }
 }

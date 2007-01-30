@@ -70,7 +70,7 @@ class refimg_diag(object):
     def __init__(self, xml):
         self.xml = xml
     
-    def run(self, wid, project, interface):
+    def run(self, wid, project):
         refimgDiag = self.xml.get_widget("dialogRefImage");                 
         refimgDiag.show_all()        
         response = refimgDiag.run()
@@ -79,16 +79,10 @@ class refimg_diag(object):
             refImg = self.xml.get_widget("imageRefImg").get_pixbuf()
             if refImg:
                 project.refimage = refImg
-                interface.invalid_refimg = False
-            else:
-                interface.invalid_refimg = True
             refimgDiag.hide_all()
-            interface.ready_state()            
             return True
         else:
             refimgDiag.hide_all()
-            interface.invalid_refimg = True
-            interface.ready_state()            
             return False
 
     def capture(self, widget, project, device):
@@ -185,7 +179,7 @@ class areas_diag(object):
         model[path][column] = new_text
         edit_view.set_text(new_text)
     
-    def run(self, wid, project, interface):
+    def run(self, wid, project):
         self.project = project
         self.window = self.xml.get_widget("dialogAreas"); 
         self.window.show_all()
@@ -214,14 +208,9 @@ class areas_diag(object):
                 self.project.current_experiment.release_area = release
             
             self.window.hide_all()
-            interface.invalid_areas = False            
-            interface.ready_state()            
             return True
         else:
             self.window.hide_all()
-            if project.current_experiment.areas_list == []:
-                interface.invalid_areas = True
-            interface.ready_state()                
             return False            
             
     def set_as_release_area(self, wid):
@@ -490,7 +479,7 @@ class scale_diag(object):
         self.temp_shape = None
         self.composing_shape = False
         
-    def run(self, wid, project, interface):
+    def run(self, wid, project):
         self.project = project
         scaleDiag = self.xml.get_widget("dialogScale"); 
         scaleDiag.show_all()        
@@ -498,31 +487,27 @@ class scale_diag(object):
         response = scaleDiag.run()
         
         if response == gtk.RESPONSE_OK :
-            interface.invalid_scale = False            
             try:
                 value = self.xml.get_widget("comboboxentryUnit").get_active_text()
             except: 
-                interface.invalid_scale = True
+                pass
             else: 
                 self.project.current_experiment.measurement_unit = value
             
             try: 
                 self.project.current_experiment.x_scale_ratio = self.x_scale
             except:
-                interface.invalid_scale = True
+                pass
                             
             try:
                 self.project.current_experiment.y_scale_ratio = self.y_scale            
             except:
-                interface.invalid_scale = True
-            
+                pass
+                        
             scaleDiag.hide_all()
-            interface.ready_state()            
             return True
         else:
             scaleDiag.hide_all()            
-            interface.invalid_scale = True
-            interface.ready_state()            
             return False
         
     def draw_expose(self, wid, event, project):
@@ -676,7 +661,7 @@ class insectsize_diag(object):
     def __init__(self, xml):
         self.xml = xml
     
-    def run(self, wid, project, interface):
+    def run(self, wid, project):
         self.project = project
         insectSizeDiag = self.xml.get_widget("dialogInsectSize");
         
@@ -691,13 +676,11 @@ class insectsize_diag(object):
         insectSizeDiag.show_all()
         response = insectSizeDiag.run()
         if response == gtk.RESPONSE_OK :
-            interface.invalid_size = False
-            interface.invalid_speed = False
             widget = self.xml.get_widget("entryInsectSize")
             try:
                 size = float(widget.props.text)
             except ValueError:
-                interface.invalid_size = True
+                pass
             else:
                 self.project.original_bug_size = size
                 x_scale = self.project.current_experiment.x_scale_ratio
@@ -712,7 +695,7 @@ class insectsize_diag(object):
             try:
                 speed = float(widget.props.text)
             except ValueError:
-                interface.invalid_speed = True
+                pass
             else:
                 self.project.original_bug_speed = speed
                 x_scale = self.project.current_experiment.x_scale_ratio
@@ -724,10 +707,7 @@ class insectsize_diag(object):
                 self.project.bug_max_speed = speed
                 
             insectSizeDiag.hide_all()
-            interface.ready_state()            
             return True
         else:
             insectSizeDiag.hide_all()            
-            interface.invalid_size = True
-            interface.ready_state()            
             return False
