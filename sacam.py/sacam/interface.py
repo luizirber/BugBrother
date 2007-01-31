@@ -61,13 +61,13 @@ class Interface(object):
         widget.connect("clicked", self.propdiag.run, self.project, self.xml)
                             
         widget = self.xml.get_widget("buttonScale")
-        widget.connect("clicked", self.scalediag.run, self.project)
+        widget.connect("clicked", self.scalediag.run, self.project, self)
         
         widget = self.xml.get_widget("buttonInsectSize")
-        widget.connect("clicked", self.insectsizediag.run, self.project)
+        widget.connect("clicked", self.insectsizediag.run, self.project, self)
                 
         widget = self.xml.get_widget("buttonRefImg")
-        widget.connect("clicked", self.refimgdiag.run, self.project)
+        widget.connect("clicked", self.refimgdiag.run, self.project, self)
         
         widget = self.xml.get_widget("buttonProcess")
         widget.connect("clicked", self.process_lists)        
@@ -76,7 +76,7 @@ class Interface(object):
         widget.connect("clicked", self.report)        
                                
         widget = self.xml.get_widget("buttonAreas")
-        widget.connect("clicked", self.areasdiag.run, self.project)
+        widget.connect("clicked", self.areasdiag.run, self.project, self)
                                         
         #refimg dialog callback
         widget = self.xml.get_widget('buttonConfirm')
@@ -251,6 +251,10 @@ class Interface(object):
             
         self.running = widget.get_active()
         if self.running:
+            image = gtk.Image()
+            image.set_from_stock(gtk.STOCK_MEDIA_STOP, 
+                                 gtk.ICON_SIZE_SMALL_TOOLBAR)
+            widget.set_image(image)
             while self.running:
                 self.device_manager.start_video(widget, prj)
                 
@@ -267,7 +271,17 @@ class Interface(object):
                     widget = self.xml.get_widget("labelYPos")
                     try: widget.set_text(str(prj.current_experiment.point_list[-1].y))
                     except: pass
+                    
+#                    if prj.current_experiment.point_list:
+#                        print 'delta:', prj.current_experiment.point_list[-1].end_time \
+#                                      - prj.current_experiment.point_list[-1].start_time
+                    
+                    
         else:
+            image = gtk.Image()
+            image.set_from_stock(gtk.STOCK_MEDIA_PLAY, 
+                                 gtk.ICON_SIZE_SMALL_TOOLBAR)
+            widget.set_image(image)
             prj.new_experiment_from_current()
             self.update_state()
 

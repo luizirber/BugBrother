@@ -52,20 +52,25 @@ class Device_manager(object):
         #TODO: look for these values, don't hardcode then
         device = '/dev/video0'
         width, height = 640, 480
-        
-        #TODO: merge the pipelines
+                
         pipeline_string = (
-            'videotestsrc name=source ! ffmpegcolorspace ! '        
-#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+#            'videotestsrc name=source ! ffmpegcolorspace ! '        
+            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
             'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
-           )%(width, height)
-#           )%(device,width, height)           
+            
+#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+#            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
+#            'identity name=null ! videorate ! fakesink name=sink'
+#           )%(width, height)
+           )%(device,width, height)
         
-#        pipeline_string2 = (
+        pipeline_string2 = (
 #           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
-#           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
-#        )%(device)
+           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
+#        )
+        )%(device)
+
                   
         pipeline = gst.parse_launch(pipeline_string)
 #        self.pipeline_play = gst.parse_launch(pipeline_string2)
@@ -133,9 +138,6 @@ class Device_manager(object):
 #        norms = [norm.label for norm in self.source.list_norms()]
 #        for item in norms:
 #            combonorm.append_text(item)
-                    
-#        self.pipeline.set_state(gst.STATE_PLAYING)
-
             
     def expose_cb(self, wid, event):
         self.sink.set_xwindow_id(self.outputarea.window.xid)   

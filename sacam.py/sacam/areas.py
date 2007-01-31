@@ -60,17 +60,13 @@ class point(object):
 class track(object):
     def __init__(self):
         self.point_list = []
-        self.angleSpeedQuadSum = 0
-        self.linSpeedQuadSum = 0
-        self.linSpeedSum = 0
-        self.track_lenght = 0
-        self.total_time = 0
-        self.totalTrackSections = 0
-        self.trackLinSpeedDeviation = 0
-        self.trackAngleSpeedDeviation = 0
+        self.lenght = 0
+        self.LinSpeedDeviation = 0
+        self.AngleSpeedDeviation = 0
         self.tortuosity = 0
-        self.meanTrackLinSpeed = 0
-        self.meanTrackAngleSpeed = 0
+        self.meanLinSpeed = 0
+        self.residence = 0
+        self.direction_changes = 0
     
     def object_to_xml(self, tracks):
         new_track = etree.SubElement(tracks, "track")
@@ -82,23 +78,23 @@ class track(object):
         element.text = str(self.tortuosity)
                 
         element = etree.SubElement(new_track, "total_lenght")
-        element.text = str(self.total_lenght)
+        element.text = str(self.lenght)
                         
         element = etree.SubElement(new_track, "average_speed")
-        element.text = str(self.average_speed)                        
+        element.text = str(self.meanLinSpeed)
     
         element = etree.SubElement(new_track, "standard_deviation")
-        element.text = str(self.standard_deviation)                        
+        element.text = str(self.LinSpeedDeviation)
     
         element = etree.SubElement(new_track, "angular_standard_deviation")
-        element.text = str(self.angular_standard_deviation)                        
+        element.text = str(self.AngleSpeedDeviation)                        
     
         element = etree.SubElement(new_track, "direction_changes")
         element.text = str(self.direction_changes)                        
     
-        element = etree.SubElement(new_track, "points")
+        points = etree.SubElement(new_track, "points")
         for pnt in self.point_list:
-            pnt.export_to_xml(points)
+            pnt.object_to_xml(points)
     
     def build_from_xml(self, trk):
         new_track = track()
@@ -320,11 +316,16 @@ class area(object):
     and a name, to simplify the area identification for the user.
     """
     
-    def __init__(self, name=None, shape=None):
+    def __init__(self, name=None, desc=None, shape=None):
         self.shape = shape
         self.name = name
+        self.description = desc
         self.track_list = []
         self.started = False
+        self.number_of_tracks = None
+        self.residence_percentage = None
+        self.residence = None
+        self.total_lenght = None
     
     def object_to_xml(self, areas):
         new_area = etree.SubElement(areas, "area")

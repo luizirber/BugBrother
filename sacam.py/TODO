@@ -30,7 +30,6 @@ INTERFACE:
     - DONE: Refactoring - put the dialogs-specific code in new classes 
     - DONE: Put a slider in the ProjPropDiag to control the threshold
     - dialogs must update their data before run()
-        - PROBLEM: make dialogs derive dialog()
     - SCALE DIALOG:
         - If shape is a line, disable Y_axis
         - Must only calculate the scale if a shape was drawn
@@ -87,7 +86,9 @@ PROJECT:
     - DONE: Separate the XML parsing process when loading, so each experiment, area 
       and track build itself and then return to project.
     - Allow extra properties in attributes
-    - DONE: Save and Loading isn't working.
+    - ALMOST: Save and Loading isn't working.
+        - BIG PROBLEM: self.project in interface class isn't repassed to
+          the dialogs.
     - Calculate bug_size and bug_max_speed based on scale.
     - Save and load refimage
 
@@ -121,7 +122,7 @@ Interface
 
 1. Alterar ícones – Usar ícones que estejam correlacionados com a tarefa que será executada pelo mesmo.
 
-   1. Na janela NEW PROJECT- Permitir ao usuário entrar com o nome do projeto e do primeiro experimento. Por  exemplo:  Projeto Joaninha e os experimentos 1,2 e etc...
+   DONE: 1. Na janela NEW PROJECT- Permitir ao usuário entrar com o nome do projeto e do primeiro experimento. Por  exemplo:  Projeto Joaninha e os experimentos 1,2 e etc...
    2. Na janela load project abro um projeto já existente de forma que posso usar os parâmetros daquele projeto. É isto Luis Carlos, Isso no final não ficou muito claro. Nesta janela. Na verdade não consigo ver muita diferença nas janelas  New project e Load  project. Luis Carlos acho melho deixar uma única janela com a opcçao de criar um novo projeto, como está funcionado na janela New project.
    DONE: 3. Colocar um ícone no TIMER um relógio qualquer.
    DONE: 4. Project properties está ótimo. O ícone está legal.
@@ -130,7 +131,7 @@ Interface
    DONE: 6.1. Mudar o ícone. Coloque um ícone coomo o ícone de desenho do WORDou algo parecido.
    DONE: 7. Scale. . Use um ícone de uma régua.
    DONE: 8. No scale insect. O ícone que o Rogério usou está bom.
-   9. O ícone do start está ótimo, só mude para um quadrado para o usuário encerrar o experimento.
+   DONE: 9. O ícone do start está ótimo, só mude para um quadrado para o usuário encerrar o experimento.
   10. ìcones de Device e  Process estão OK. Implementar a parte de device. Deixe o mais amplo possível. De forma, que possamos usar com diferentes  placas de aquisição de som e camaras . Sei que é impossível para todos, mas deixar o mais geral possível.
 
  
@@ -162,7 +163,7 @@ DONE: 7. Quatro tipos de desenhos geométricos (retângulo, quadrado, elipse e c
 
 Obs: Neste item sugiro desvincular a necessidade de criar uma área de liberação para liberar os próximos passos do software. Como muitos insetos são muitos rápidos fica difícil delimitar esta área de liberação. O botão da área de liberação pode ser deixado como está, mas acho que seria muito interessante implementar o algoritmo para que o usuário possa clicar sobre o inseto onde quer que ele esteja dentro do olfatômetro.  Inclusive, em alguns experimentos a área de liberação não necessariamente existirá. Por exemplo, quando fazemos experimentos numa arena circular, onde somente uma área grande é criada.  
 
-8. Verificar o algoritmo para a aquisição de imagem. Rever o número de frames de captura por segundo. Observamos durante os testes que o ponto que segue o inseto não está bem no centro do inseto.
+ALMOST: 8. Verificar o algoritmo para a aquisição de imagem. Rever o número de frames de captura por segundo. Observamos durante os testes que o ponto que segue o inseto não está bem no centro do inseto.
 
  
 

@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
+import os
+
 from math import pi, sqrt, acos
 from copy import deepcopy
 import cPickle
 from csv import writer
 from datetime import timedelta
 
+from gtk import gdk
 from kiwi.environ import environ
 from lxml import etree
 
@@ -66,17 +69,16 @@ class project(object):
                 
                 # Second step: refimage property
                 element = root.find("{http://cnpdia.embrapa.br}refimage")
-                prj.refimage = element.text
+                fln, tail = os.path.split(element.text)
+                prj.refimage = gdk.pixbuf_new_from_file(fln + '/refimg.jpg')
                 
                 # Third step: bug_size property
                 element = root.find("{http://cnpdia.embrapa.br}bug_size")
-                prj.original_bug_size = float(element.text)
-                #TODO: bug_size is calculated based on scale. Do this.
+                prj.bug_size = float(element.text)
                 
                 # Fourth step: bug_max_speed property
                 element = root.find("{http://cnpdia.embrapa.br}bug_max_speed")
-                prj.original_bug_speed = float(element.text)
-                #TODO: bug_max_speed is calculated based on scale. Do this.
+                prj.bug_speed = float(element.text)
                 
                 # Fifth step: experiment list
                 experiments = root.find("{http://cnpdia.embrapa.br}experiments")
@@ -103,9 +105,13 @@ class project(object):
             new_attribute = etree.SubElement(attr, "attribute")
             new_attribute.text = str(key + ':' + self.attributes[key])
         
-        #TODO: parse filename property and save the refimage.
         element = etree.SubElement(root, "refimage")
-        element.text = self.filename
+        if self.refimage:
+            element.text = self.filename
+            fln, tail = os.path.split(element.text)
+            self.refimage.save(fln + '/refimg.jpg', "jpeg", {"quality":"80"})
+        else:
+            element.text = ''
         
         element = etree.SubElement(root, "bug_size")
         element.text = str(self.bug_size)
@@ -139,6 +145,8 @@ class project(object):
 
     def new_experiment_from_current(self):
         exp = experiment()
+        
+        # TODO:take a look at this
         exp.attributes = deepcopy(self.current_experiment.attributes)
         exp.measurement_unit = deepcopy(self.current_experiment.measurement_unit)
         exp.x_scale_ratio = deepcopy(self.current_experiment.x_scale_ratio)
@@ -146,6 +154,7 @@ class project(object):
         exp.threshold = deepcopy(self.current_experiment.threshold)
         exp.release_area = deepcopy(self.current_experiment.release_area)
         exp.areas_list = deepcopy(self.current_experiment.areas_list)
+        
         self.experiment_list.append(exp)
         self.current_experiment = exp
     

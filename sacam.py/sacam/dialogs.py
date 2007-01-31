@@ -70,19 +70,25 @@ class refimg_diag(object):
     def __init__(self, xml):
         self.xml = xml
     
-    def run(self, wid, project):
-        refimgDiag = self.xml.get_widget("dialogRefImage");                 
+    def run(self, wid, project, interface):
+        refimg_widget = self.xml.get_widget("imageRefImg")
+        if project.refimage:
+            refimg_widget.set_from_pixbuf(project.refimage)
+        
+        refimgDiag = self.xml.get_widget("dialogRefImage");        
         refimgDiag.show_all()        
         response = refimgDiag.run()
                 
         if response == gtk.RESPONSE_OK :
-            refImg = self.xml.get_widget("imageRefImg").get_pixbuf()
+            refImg = refimg_widget.get_pixbuf()
             if refImg:
                 project.refimage = refImg
             refimgDiag.hide_all()
+            interface.update_state()
             return True
         else:
             refimgDiag.hide_all()
+            interface.update_state()
             return False
 
     def capture(self, widget, project, device):
@@ -179,7 +185,7 @@ class areas_diag(object):
         model[path][column] = new_text
         edit_view.set_text(new_text)
     
-    def run(self, wid, project):
+    def run(self, wid, project, interface):
         self.project = project
         self.window = self.xml.get_widget("dialogAreas"); 
         self.window.show_all()
@@ -188,10 +194,10 @@ class areas_diag(object):
             # read the areas from the treemodel and save in the 
             # current experiment areas list
             model = self.xml.get_widget("treeviewAreas").get_model()
-            values = [ (r[0],r[1]) for r in model ]
+            values = [ (r[0],r[1],r[2]) for r in model ]
             project.current_experiment.areas_list = []
-            for name, shape in values:
-                project.current_experiment.areas_list.append(area(name, shape))
+            for name, shape, desc in values:
+                project.current_experiment.areas_list.append(area(name, desc, shape))
                 
             # set the release_area attribute of the current experiment
             if isinstance(self.release_area, rectangle):
@@ -208,9 +214,11 @@ class areas_diag(object):
                 self.project.current_experiment.release_area = release
             
             self.window.hide_all()
+            interface.update_state()
             return True
         else:
             self.window.hide_all()
+            interface.update_state()            
             return False            
             
     def set_as_release_area(self, wid):
@@ -479,7 +487,7 @@ class scale_diag(object):
         self.temp_shape = None
         self.composing_shape = False
         
-    def run(self, wid, project):
+    def run(self, wid, project, interface):
         self.project = project
         scaleDiag = self.xml.get_widget("dialogScale"); 
         scaleDiag.show_all()        
@@ -505,9 +513,11 @@ class scale_diag(object):
                 pass
                         
             scaleDiag.hide_all()
+            interface.update_state()
             return True
         else:
-            scaleDiag.hide_all()            
+            scaleDiag.hide_all()    
+            interface.update_state()        
             return False
         
     def draw_expose(self, wid, event, project):
@@ -661,7 +671,7 @@ class insectsize_diag(object):
     def __init__(self, xml):
         self.xml = xml
     
-    def run(self, wid, project):
+    def run(self, wid, project, interface):
         self.project = project
         insectSizeDiag = self.xml.get_widget("dialogInsectSize");
         
@@ -707,7 +717,9 @@ class insectsize_diag(object):
                 self.project.bug_max_speed = speed
                 
             insectSizeDiag.hide_all()
+            interface.update_state()
             return True
         else:
             insectSizeDiag.hide_all()            
+            interface.update_state()
             return False
