@@ -2,6 +2,8 @@
 
 from math import pi
 from lxml import etree
+from datetime import datetime
+from time import strptime
 
 class point(object):
     """
@@ -11,10 +13,10 @@ class point(object):
     """
         
     def __init__(self):
-        self.x = None
-        self.y = None
-        self.start_time = None
-        self.end_time = None
+        self.x = ''
+        self.y = ''
+        self.start_time = ''
+        self.end_time = ''
         
     def object_to_xml(self, points):
         new_point = etree.SubElement(points, 'point')
@@ -25,15 +27,12 @@ class point(object):
         element = etree.SubElement(new_point, "pos_y")
         element.text = str(self.y)
     
-        # TODO: parse to string a datetime object
-        # http://docs.python.org/lib/node85.html    
         element = etree.SubElement(new_point, "start_time")
-        element.text = str('')
+        element.text = self.start_time.strftime("%Y-%m-%dT%H:%M:%S")
     
-        # TODO: parse to string a datetime object
-        # http://docs.python.org/lib/node85.html    
         element = etree.SubElement(new_point, "end_time")
-        element.text = str('')                
+        element.text = self.end_time.strftime("%Y-%m-%dT%H:%M:%S")
+
         
     def build_from_xml(self, pnt):
         new_point = point()                    
@@ -44,15 +43,13 @@ class point(object):
         value = pnt.find("{http://cnpdia.embrapa.br}pos_y")
         new_point.y = int(value.text)
         
-        # TODO: parse the string to a datetime object
-        # http://docs.python.org/lib/node85.html
         value = pnt.find("{http://cnpdia.embrapa.br}start_time")
-        new_point.start_time = value.text
+        new_time = datetime(*strptime(value.text, "%Y-%m-%dT%H:%M:%S")[0:6])        
+        new_point.start_time = new_time
     
-        # TODO: parse the string to a datetime object
-        # http://docs.python.org/lib/node85.html
         value = pnt.find("{http://cnpdia.embrapa.br}end_time")
-        new_point.end_time = value.text
+        new_time = datetime(*strptime(value.text, "%Y-%m-%dT%H:%M:%S")[0:6])
+        new_point.end_time = new_time
         
         return new_point
     
@@ -67,6 +64,8 @@ class track(object):
         self.meanLinSpeed = 0
         self.residence = 0
         self.direction_changes = 0
+        self.start_time = 0
+        self.end_time_time = 0
     
     def object_to_xml(self, tracks):
         new_track = etree.SubElement(tracks, "track")
@@ -124,6 +123,9 @@ class track(object):
         for pnt in points:
             new_point = point().build_from_xml(pnt)
             new_track.point_list.append(new_point)
+       
+        new_track.start_time = new_track.point_list[1].start_time
+        new_track.end_time = new_track.point_list[-1].end_time
        
         return new_track
        
@@ -236,9 +238,9 @@ class ellipse(shape):
         return pi * self.x_axis * self.y_axis
     
     def draw(self, canvas, gc):
-        canvas.draw_arc(gc, False, self.x_center - self.x_axis,
-                        self.y_center - self.y_axis,
-                        self.x_axis * 2, self.y_axis * 2,
+        canvas.draw_arc(gc, False, int(self.x_center - self.x_axis),
+                        int(self.y_center - self.y_axis),
+                        int(self.x_axis * 2), int(self.y_axis * 2),
                         0, 360*64)    
     
     def build_from_xml(self, shape):
@@ -288,6 +290,9 @@ class freeform(shape):
     
     def build_from_xml(self, shape):
         new_shape = freeform()
+    
+    def object_to_xml(self, new_area):
+        new_shape = etree.SubElement(new_area, "freeform")
         
         return new_shape
     
@@ -309,6 +314,40 @@ class line(shape):
         canvas.draw_line(gc, self.x_start, self.y_start,
                              self.x_end, self.y_end)
     
+    def build_from_xml(self, root):
+        new_shape = line()
+        
+        value = root.find("{http://cnpdia.embrapa.br}x_start")
+        new_shape.x_start = int(value.text)
+        
+        value = root.find("{http://cnpdia.embrapa.br}y_start")
+        new_shape.y_start = int(value.text)
+        
+        value = root.find("{http://cnpdia.embrapa.br}x_end")
+        new_shape.x_end = int(value.text)
+        
+        value = root.find("{http://cnpdia.embrapa.br}y_end")
+        new_shape.y_end = int(value.text)
+        
+        return new_shape
+    
+    def object_to_xml(self, root):
+        new_shape = etree.SubElement(root, "line")
+        
+        element = etree.SubElement(new_shape, "x_start")
+        element.text = str(self.x_start)
+        
+        element = etree.SubElement(new_shape, "y_start")
+        element.text = str(self.y_start)
+        
+        element = etree.SubElement(new_shape, "x_end")
+        element.text = str(self.x_end)
+        
+        element = etree.SubElement(new_shape, "y_end")
+        element.text = str(self.y_end)
+        
+        return new_shape
+    
 class area(object):
     """
     This class represents an area. An area contains 2 attributes: 
@@ -322,10 +361,10 @@ class area(object):
         self.description = desc
         self.track_list = []
         self.started = False
-        self.number_of_tracks = None
-        self.residence_percentage = None
-        self.residence = None
-        self.total_lenght = None
+        self.number_of_tracks = ''
+        self.residence_percentage = ''
+        self.residence = ''
+        self.total_lenght = ''
     
     def object_to_xml(self, areas):
         new_area = etree.SubElement(areas, "area")
@@ -341,6 +380,7 @@ class area(object):
         element = etree.SubElement(new_area, "number_of_tracks")
         element.text = str(self.number_of_tracks)
         
+        #TODO: this is a timedelta. build it correctly
         element = etree.SubElement(new_area, "residence")
         element.text = str(self.residence)
     
@@ -373,16 +413,21 @@ class area(object):
         new_area.description = element.text
         
         element = ar.find("{http://cnpdia.embrapa.br}number_of_tracks")
-        new_area.number_of_tracks = int(element.text)
+        if element.text:
+            new_area.number_of_tracks = int(element.text)
         
+        #TODO: this is a timedelta. build it correctly.
         element = ar.find("{http://cnpdia.embrapa.br}residence")
-        new_area.residence = float(element.text)
+        if element.text:
+            new_area.residence = element.text
         
         element = ar.find("{http://cnpdia.embrapa.br}residence_percentage")
-        new_area.residence_percentage = float(element.text)
+        if element.text:
+            new_area.residence_percentage = float(element.text)
         
         element = ar.find("{http://cnpdia.embrapa.br}total_lenght")
-        new_area.total_lenght = float(element.text)
+        if element.text:
+            new_area.total_lenght = float(element.text)
     
         tracks = ar.find("{http://cnpdia.embrapa.br}tracks")
         for trk in tracks:

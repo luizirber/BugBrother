@@ -55,6 +55,7 @@
       <ref name="end_time"/>
       <ref name="x_scale_ratio"/>
       <ref name="y_scale_ratio"/>
+      <ref name="scale_shape"/>
       <ref name="threshold"/>
       <ref name="release_area"/>
       <ref name="points"/>
@@ -84,6 +85,15 @@
   <define name="y_scale_ratio">
     <element name="y_scale_ratio">
       <text/>
+    </element>
+  </define>
+  <define name="scale_shape">
+    <element name="scale_shape">
+      <choice>
+        <empty/>
+        <ref name="shape"/>
+        <ref name="line"/>
+      </choice>
     </element>
   </define>
   <define name="threshold">
@@ -196,6 +206,34 @@
   </define>
   <define name="freeform">
     <element name="freeform">
+      <text/>
+    </element>
+  </define>
+  <define name="line">
+    <element name="line">
+      <ref name="x_start"/>
+      <ref name="y_start"/>
+      <ref name="x_end"/>
+      <ref name="y_end"/>
+    </element>
+  </define>
+  <define name="x_start">
+    <element name="x_start">
+      <text/>
+    </element>
+  </define>
+  <define name="y_start">
+    <element name="y_start">
+      <text/>
+    </element>
+  </define>
+  <define name="x_end">
+    <element name="x_end">
+      <text/>
+    </element>
+  </define>
+  <define name="y_end">
+    <element name="y_end">
       <text/>
     </element>
   </define>

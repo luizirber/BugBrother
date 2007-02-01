@@ -45,9 +45,6 @@ class Interface(object):
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
         
-        widget = self.xml.get_widget("buttonStart")
-        widget.connect("clicked", self.start_video, self.project)
-        
         widget = self.xml.get_widget("buttonPreferences")
         widget.connect("clicked", self.device_manager.show_window)
         
@@ -57,30 +54,19 @@ class Interface(object):
         widget = self.xml.get_widget("buttonOpen")
         widget.connect("clicked", self.load_project)
         
-        widget = self.xml.get_widget("buttonProjProperties")
-        widget.connect("clicked", self.propdiag.run, self.project, self.xml)
-                            
-        widget = self.xml.get_widget("buttonScale")
-        widget.connect("clicked", self.scalediag.run, self.project, self)
-        
-        widget = self.xml.get_widget("buttonInsectSize")
-        widget.connect("clicked", self.insectsizediag.run, self.project, self)
-                
-        widget = self.xml.get_widget("buttonRefImg")
-        widget.connect("clicked", self.refimgdiag.run, self.project, self)
-        
         widget = self.xml.get_widget("buttonProcess")
         widget.connect("clicked", self.process_lists)        
         
         widget = self.xml.get_widget("buttonReport")
         widget.connect("clicked", self.report)        
-                               
-        widget = self.xml.get_widget("buttonAreas")
-        widget.connect("clicked", self.areasdiag.run, self.project, self)
-                                        
-        #refimg dialog callback
-        widget = self.xml.get_widget('buttonConfirm')
-        widget.connect('clicked', self.refimgdiag.capture, self.project, self.device_manager)
+        
+        self.video_hnd = None
+        self.prop_hnd = None
+        self.scale_hnd = None
+        self.size_hnd = None
+        self.refimg_hnd = None
+        self.areas_hnd = None
+        self.connect_project_signals()        
         
         #the "invalid_*" variables
         self.invalid_size = True
@@ -103,11 +89,8 @@ class Interface(object):
                 else:
                     home = os.environ['HOMEPATH']
         self.home = os.path.realpath(home) + os.sep        
-        
+                
         self.window.connect("destroy", self.destroy)
-        self.window.set_title( ("SACAM - %s - %s") % 
-                               ( self.project.attributes[_("Project Name")],
-                                 self.project.current_experiment.attributes[_("Experiment Name")] ) )
         self.window.show()        
         
         self.update_state()        
@@ -117,6 +100,37 @@ class Interface(object):
     def main(self, argv):
         gtk.main()
                  
+    def connect_project_signals(self):
+        widget = self.xml.get_widget("buttonStart")        
+        if self.video_hnd:
+            widget.disconnect(self.video_hnd)
+        self.video_hnd = widget.connect("clicked", self.start_video, self.project)
+        
+        widget = self.xml.get_widget("buttonProjProperties")
+        if self.prop_hnd:
+            widget.disconnect(self.prop_hnd)
+        self.prop_hnd = widget.connect("clicked", self.propdiag.run, self.project, self.xml)
+                            
+        widget = self.xml.get_widget("buttonScale")
+        if self.scale_hnd:
+            widget.disconnect(self.scale_hnd)        
+        self.scale_hnd = widget.connect("clicked", self.scalediag.run, self.project, self)
+        
+        widget = self.xml.get_widget("buttonInsectSize")
+        if self.size_hnd:
+            widget.disconnect(self.size_hnd)
+        self.size_hnd = widget.connect("clicked", self.insectsizediag.run, self.project, self)
+                
+        widget = self.xml.get_widget("buttonRefImg")
+        if self.refimg_hnd:
+            widget.disconnect(self.refimg_hnd)
+        self.refimg_hnd = widget.connect("clicked", self.refimgdiag.run, self.project, self.device_manager, self)
+                                       
+        widget = self.xml.get_widget("buttonAreas")
+        if self.areas_hnd:
+            widget.disconnect(self.areas_hnd)
+        self.areas_hnd = widget.connect("clicked", self.areasdiag.run, self.project, self)
+    
     def new_project(self, widget):
         if self.project:
             diag = gtk.MessageDialog ( self.window, 
@@ -143,7 +157,7 @@ class Interface(object):
         self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)               
         self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)      
                 
-        response = self.refimgdiag.run(None, self.project, self)
+        response = self.refimgdiag.run(None, self.project, self.device_manager, self)
         if response == False :
             self.update_state()            
             return
@@ -282,6 +296,7 @@ class Interface(object):
             image.set_from_stock(gtk.STOCK_MEDIA_PLAY, 
                                  gtk.ICON_SIZE_SMALL_TOOLBAR)
             widget.set_image(image)
+            self.project.current_experiment.finished = True
             prj.new_experiment_from_current()
             self.update_state()
 
@@ -346,6 +361,12 @@ class Interface(object):
             self.invalid_scale = False
         else:
             self.invalid_scale = True
+        
+        self.connect_project_signals()
+        
+        self.window.set_title( ("SACAM - %s - %s") % 
+                               ( self.project.attributes[_("Project Name")],
+                                 self.project.current_experiment.attributes[_("Experiment Name")] ) )
         
         self.ready_state()
 

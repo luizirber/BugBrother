@@ -54,22 +54,22 @@ class Device_manager(object):
         width, height = 640, 480
                 
         pipeline_string = (
-#            'videotestsrc name=source ! ffmpegcolorspace ! '        
-            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+            'videotestsrc name=source ! ffmpegcolorspace ! '        
+#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
             'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
             
 #            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
 #            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
 #            'identity name=null ! videorate ! fakesink name=sink'
-#           )%(width, height)
-           )%(device,width, height)
+           )%(width, height)
+#           )%(device,width, height)
         
         pipeline_string2 = (
-#           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
-           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
-#        )
-        )%(device)
+           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
+#           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
+        )
+#        )%(device)
 
                   
         pipeline = gst.parse_launch(pipeline_string)

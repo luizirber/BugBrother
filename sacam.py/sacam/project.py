@@ -6,14 +6,15 @@ from math import pi, sqrt, acos
 from copy import deepcopy
 import cPickle
 from csv import writer
-from datetime import timedelta
+from datetime import datetime, timedelta
+from time import strptime
 
 from gtk import gdk
 from kiwi.environ import environ
 from lxml import etree
 
 from sacam.i18n import _
-from sacam.areas import track, rectangle, ellipse, point, area, freeform
+from sacam.areas import track, rectangle, ellipse, point, area, freeform, line
 
 class project(object):
     """
@@ -21,15 +22,14 @@ class project(object):
     """
     
     def __init__(self):
-        self.filename = None
+        self.filename = ''
         self.attributes = {}
-        self.refimage = None
+        self.refimage = ''
         self.experiment_list = []
         self.experiment_list.append(experiment())
         self.current_experiment = self.experiment_list[-1]
         self.bug_max_speed = 3
         self.bug_size = 39
-        self.refimage = None
         self.attributes[_("Project Name")] = _("Project")
     
     def load(self, filename):
@@ -51,7 +51,7 @@ class project(object):
             xml_tree = etree.parse(projfile, parser)
             if not relax_schema.validate(xml_tree):
                 prj = None
-                print error
+                print 'error'
                 # TODO: error handling
             else:
                 prj = project()
@@ -78,7 +78,7 @@ class project(object):
                 
                 # Fourth step: bug_max_speed property
                 element = root.find("{http://cnpdia.embrapa.br}bug_max_speed")
-                prj.bug_speed = float(element.text)
+                prj.bug_max_speed = float(element.text)
                 
                 # Fifth step: experiment list
                 experiments = root.find("{http://cnpdia.embrapa.br}experiments")
@@ -111,7 +111,7 @@ class project(object):
             fln, tail = os.path.split(element.text)
             self.refimage.save(fln + '/refimg.jpg', "jpeg", {"quality":"80"})
         else:
-            element.text = ''
+            element.text = self.refimage
         
         element = etree.SubElement(root, "bug_size")
         element.text = str(self.bug_size)
@@ -121,7 +121,8 @@ class project(object):
         
         experiments = etree.SubElement(root, "experiments")
         for exp in self.experiment_list:
-            exp.object_to_xml(experiments)
+            if exp.finished:
+                exp.object_to_xml(experiments)
         
         tree.write(projfile,"UTF-8",pretty_print=True)
         projfile.close()
@@ -163,20 +164,21 @@ class experiment(object):
     a project consist of various experiment. every experiment is an instance
     of this class.
     """
-    
-    point_list = []
-    areas_list = []
-    start_time = None
-    end_time = None
-    attributes = {}
-    measurement_unit = 'cm'
-    x_scale_ratio = '1'
-    y_scale_ratio = '1'
-    
+        
     def __init__(self):
+        self.point_list = []
+        self.areas_list = []
+        self.start_time = ''
+        self.end_time = ''
+        self.attributes = {}
+        self.measurement_unit = 'cm'
+        self.x_scale_ratio = '1'
+        self.y_scale_ratio = '1'
+        self.scale_shape = None
         self.threshold = 0x30
         self.release_area = [0, 0, 480, 640]
         self.attributes[_("Experiment Name")] = _("Experiment")
+        self.finished = False        
     
     def object_to_xml(self, experiments):
         new_experiment = etree.SubElement(experiments, 'experiment')
@@ -189,15 +191,13 @@ class experiment(object):
         element = etree.SubElement(new_experiment, "measurement_unit")
         element.text = str(self.measurement_unit)
         
-        # TODO: parse to string a datetime object
-        # http://docs.python.org/lib/node85.html
         element = etree.SubElement(new_experiment, "start_time")
-        element.text = str('start_time')
+        new_time = self.point_list[0].start_time
+        element.text = new_time.strftime("%Y-%m-%dT%H:%M:%S")
         
-        # TODO: parse to string a datetime object
-        # http://docs.python.org/lib/node85.html
         element = etree.SubElement(new_experiment, "end_time")
-        element.text = str('end_time')
+        new_time = self.point_list[-1].end_time        
+        element.text = new_time.strftime("%Y-%m-%dT%H:%M:%S")
         
         element = etree.SubElement(new_experiment, "x_scale_ratio")
         element.text = str(self.x_scale_ratio)
@@ -205,12 +205,15 @@ class experiment(object):
         element = etree.SubElement(new_experiment, "y_scale_ratio")
         element.text = str(self.y_scale_ratio)
         
+        element = etree.SubElement(new_experiment, "scale_shape")
+        if self.scale_shape:
+            self.scale_shape.object_to_xml(element)
+        
         element = etree.SubElement(new_experiment, "threshold")
         element.text = str(self.threshold)
 
-        # TODO: save the name of the release area
         element = etree.SubElement(new_experiment, "release_area")
-        element.text = str('')
+        element.text = str(self.release_area)
         
         points = etree.SubElement(new_experiment, "points")
         for pnt in self.point_list:
@@ -219,7 +222,6 @@ class experiment(object):
         areas = etree.SubElement(new_experiment, "areas")
         for ar in self.areas_list:
             ar.object_to_xml(areas)
-    
     
     def build_from_xml(self, el):
         exp = experiment()
@@ -231,15 +233,13 @@ class experiment(object):
         element = el.find("{http://cnpdia.embrapa.br}measurement_unit")
         exp.measurement_unit = element.text
         
-        # TODO: parse the string to a datetime object
-        # http://docs.python.org/lib/node85.html
         element = el.find("{http://cnpdia.embrapa.br}start_time")
-        exp.start_time = element.text
+        new_time = datetime(*strptime(element.text, "%Y-%m-%dT%H:%M:%S")[0:6])
+        exp.start_time = new_time
         
-        # TODO: parse the string to a datetime object
-        # http://docs.python.org/lib/node85.html
         element = el.find("{http://cnpdia.embrapa.br}end_time")
-        exp.end_time = element.text
+        new_time = datetime(*strptime(element.text, "%Y-%m-%dT%H:%M:%S")[0:6])
+        exp.end_time = new_time
         
         element = el.find("{http://cnpdia.embrapa.br}x_scale_ratio")
         exp.x_scale_ratio = float(element.text)
@@ -247,14 +247,21 @@ class experiment(object):
         element = el.find("{http://cnpdia.embrapa.br}y_scale_ratio")
         exp.y_scale_ratio = float(element.text)
         
+        element = el.find("{http://cnpdia.embrapa.br}scale_shape")
+        shape_type = element.getchildren()
+        if shape_type:
+            if shape_type[0].tag == "{http://cnpdia.embrapa.br}line":
+                exp.scale_shape = line().build_from_xml(shape_type[0])
+            elif shape_type[0].tag == "{http://cnpdia.embrapa.br}ellipse":
+                exp.scale_shape = ellipse().build_from_xml(shape_type[0])
+            elif shape_type[0].tag == "{http://cnpdia.embrapa.br}rectangle":
+                exp.scale_shape = rectangle().build_from_xml(shape_type[0])
+        
         element = el.find("{http://cnpdia.embrapa.br}threshold")
         exp.threshold = int(element.text)
         
-        # TODO: make a acessor function to set release_area
-        # it should take a string, and search an area_name
-        # that matches this string.
-        #element = el.find("{http://cnpdia.embrapa.br}release_area")
-        #exp.set_release_area(element.text)
+        element = el.find("{http://cnpdia.embrapa.br}release_area")
+        exp.release_area = [int(i) for i in element.text[1:-1].split(',')]
     
         points = el.find("{http://cnpdia.embrapa.br}points")
         for pnt in points:
@@ -266,9 +273,6 @@ class experiment(object):
             new_area = area().build_from_xml(ar)
             exp.areas_list.append(new_area)
         return exp
-    
-    def build_xml(self):
-        pass
     
     def export(self):
         rows = []

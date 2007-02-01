@@ -70,7 +70,10 @@ class refimg_diag(object):
     def __init__(self, xml):
         self.xml = xml
     
-    def run(self, wid, project, interface):
+    def run(self, wid, project, device, interface):
+        widget = self.xml.get_widget('buttonConfirm')
+        widget.connect('clicked', self.capture, project, device)
+        
         refimg_widget = self.xml.get_widget("imageRefImg")
         if project.refimage:
             refimg_widget.set_from_pixbuf(project.refimage)
@@ -102,6 +105,7 @@ class areas_diag(object):
     def __init__(self, project, xml):
         self.xml = xml
         self.project = project
+        self.output_handler = None        
         
         # widgets to be used
         output = self.xml.get_widget("drawingareaAreas")
@@ -174,26 +178,35 @@ class areas_diag(object):
                           | gtk.gdk.BUTTON_MOTION_MASK
                           | gtk.gdk.KEY_PRESS_MASK
                           | gtk.gdk.KEY_RELEASE_MASK   )
-        #what to do when the draw area is exposed        
-        output.connect("expose_event", self.draw_expose, self.project, model)
         #these three are necessary to draw something in the draw area
         output.connect("button-press-event", self.compose_shape)
         output.connect("motion-notify-event", self.compose_shape)        
         output.connect("button-release-event", self.finish_shape, model, area_name, area_desc, view)
-            
+        
     def edited_cb(self, cell, path, new_text, edit_view, model, column):
         model[path][column] = new_text
         edit_view.set_text(new_text)
     
     def run(self, wid, project, interface):
-        self.project = project
+        self.project = project        
+        model = self.xml.get_widget("treeviewAreas").get_model()        
+        output = self.xml.get_widget("drawingareaAreas")
+        if self.output_handler:
+            output.disconnect(self.output_handler)
+        self.output_handler = output.connect("expose_event", self.draw_expose,
+                                             self.project, model)        
         self.window = self.xml.get_widget("dialogAreas"); 
         self.window.show_all()
+        
+        model.clear()
+        for ar in project.current_experiment.areas_list:
+            value = (ar.name, ar.shape, ar.description)
+            model.append(value)
+        
         response = self.window.run()
         if response == gtk.RESPONSE_OK :
             # read the areas from the treemodel and save in the 
             # current experiment areas list
-            model = self.xml.get_widget("treeviewAreas").get_model()
             values = [ (r[0],r[1],r[2]) for r in model ]
             project.current_experiment.areas_list = []
             for name, shape, desc in values:
@@ -448,8 +461,8 @@ class areas_diag(object):
     
     def remove_area(self, wid):
         view = self.xml.get_widget("treeviewAreas")
-        model, iter = view.get_selection().get_selected()
-        model.remove(iter)
+        model, itr = view.get_selection().get_selected()
+        model.remove(itr)
         
         widget = self.xml.get_widget("drawingareaAreas")
         widget.emit("expose_event", gtk.gdk.Event(gtk.gdk.NOTHING))        
@@ -461,6 +474,7 @@ class scale_diag(object):
     def __init__(self, xml, project):
         self.xml = xml
         self.project = project
+        self.output_handler = None
         
         widget = self.xml.get_widget("buttonCalculateScale")
         widget.connect("clicked", self.calculate_scale)
@@ -478,9 +492,7 @@ class scale_diag(object):
                           | gtk.gdk.BUTTON_MOTION_MASK
                           | gtk.gdk.KEY_PRESS_MASK
                           | gtk.gdk.KEY_RELEASE_MASK   )
-        #what to do when the draw area is exposed        
-        widget.connect("expose_event", self.draw_expose, self.project)
-        #these two are necessary to draw something in the draw area
+        #these are necessary to draw something in the draw area
         widget.connect("button-press-event", self.compose_shape)
         widget.connect("motion-notify-event", self.compose_shape)        
         widget.connect("button-release-event", self.finish_shape)
@@ -489,9 +501,48 @@ class scale_diag(object):
         
     def run(self, wid, project, interface):
         self.project = project
+        output = self.xml.get_widget("drawingareaScale")
+        if self.output_handler:
+            output.disconnect(self.output_handler)
+        self.output_handler = output.connect("expose_event", self.draw_expose,
+                                              self.project)
+        
+        value = self.project.current_experiment.measurement_unit
+        widget = self.xml.get_widget("comboboxentryUnit")
+        widget.prepend_text(value)
+        widget.set_active(0)
+        
+        x_scale_ratio = self.project.current_experiment.x_scale_ratio
+        self.xml.get_widget("entryXAxis").set_text(str(x_scale_ratio))
+        
+        y_scale_ratio = self.project.current_experiment.y_scale_ratio
+        self.xml.get_widget("entryYAxis").set_text(str(y_scale_ratio))
+        
+        self.temp_shape = self.project.current_experiment.scale_shape        
+        x_shape_size = 0
+        y_shape_size = 0
+        if isinstance(self.temp_shape, rectangle):
+            x_shape_size = self.temp_shape.width / x_scale_ratio
+            y_shape_size = self.temp_shape.height / y_scale_ratio
+        elif isinstance(self.temp_shape, ellipse):
+            x_shape_size = self.temp_shape.x_axis * 2 / x_scale_ratio
+            y_shape_size = self.temp_shape.y_axis * 2 / y_scale_ratio
+        elif isinstance(self.temp_shape, line):
+            x_shape_size = sqrt( pow(self.temp_shape.x_end - self.temp_shape.x_start, 2)
+                           + pow(self.temp_shape.y_end - self.temp_shape.y_start, 2) ) \
+                           / x_scale_ratio
+            y_shape_size = x_shape_size
+        self.xml.get_widget("entryShapeXSize").set_text(str(x_shape_size))
+        self.xml.get_widget("entryShapeYSize").set_text(str(y_shape_size))
+
         scaleDiag = self.xml.get_widget("dialogScale"); 
         scaleDiag.show_all()        
-        #connect the callbacks for the scale dialog        
+        
+        if not self.graphic_context:
+            self.graphic_context = gtk.gdk.GC(output.window)
+        if self.temp_shape:
+            self.temp_shape.draw(output.window, self.graphic_context)            
+        
         response = scaleDiag.run()
         
         if response == gtk.RESPONSE_OK :
@@ -511,6 +562,8 @@ class scale_diag(object):
                 self.project.current_experiment.y_scale_ratio = self.y_scale            
             except:
                 pass
+                        
+            self.project.current_experiment.scale_shape = self.temp_shape
                         
             scaleDiag.hide_all()
             interface.update_state()
@@ -612,7 +665,7 @@ class scale_diag(object):
             elif isinstance(self.temp_shape, line):                    
                 self.temp_shape.x_end = int(self.end_point[0])                    
                 self.temp_shape.y_end = int(self.end_point[1])
-            self.temp_shape.draw(wid.window, self.graphic_context)                    
+            self.temp_shape.draw(wid.window, self.graphic_context)
             self.composing_shape = False
 
     def calculate_scale(self, wid):
@@ -681,7 +734,18 @@ class insectsize_diag(object):
         labelSpeed = self.xml.get_widget("labelSpeed");
         labelSpeed.set_label(value + "/s")        
         
-        # TODO: need to set the values based on the project properties
+        # Snoop Dogg mode ON
+        x_scale = self.project.current_experiment.x_scale_ratio
+        y_scale = self.project.current_experiment.y_scale_ratio
+        if x_scale > y_scale:
+            siz = self.project.bug_size / x_scale
+            spee = self.project.bug_max_speed / x_scale
+        else:
+            siz = self.project.bug_size / y_scale
+            spee = self.project.bug_max_speed / x_scale
+        self.xml.get_widget("entryInsectSize").set_text(str(siz))
+        self.xml.get_widget("entryInsectSpeed").set_text(str(spee))
+        #Snoop Dogg mode OFF
         
         insectSizeDiag.show_all()
         response = insectSizeDiag.run()
