@@ -284,11 +284,6 @@ class Interface(object):
                     try: widget.set_text(str(prj.current_experiment.point_list[-1].y))
                     except: pass
                     
-#                    if prj.current_experiment.point_list:
-#                        print 'delta:', prj.current_experiment.point_list[-1].end_time \
-#                                      - prj.current_experiment.point_list[-1].start_time
-                    
-                    
         else:
             image = gtk.Image()
             image.set_from_stock(gtk.STOCK_MEDIA_PLAY, 
