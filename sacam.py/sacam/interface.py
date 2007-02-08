@@ -318,9 +318,11 @@ class Interface(object):
         msg.destroy()
     
     def process_lists(self, wid):
-        self.project.current_experiment.prepare_point_list()
-        self.project.current_experiment.prepare_areas_list()
-        self.project.current_experiment.prepare_stats()
+        for exp in self.project.experiment_list:
+            if exp.finished:
+                exp.prepare_point_list()
+                exp.prepare_areas_list()
+                exp.prepare_stats()
                
     def update_state(self):
         if len(self.project.current_experiment.areas_list) == 0:
@@ -428,22 +430,22 @@ class Interface(object):
         widget = self.xml.get_widget("buttonSave")
         widget.set_sensitive(True)        
         
-        if self.project.current_experiment.point_list == [] or \
-           self.project.current_experiment.areas_list == []:
-            pass
-        else:
-            widget = self.xml.get_widget("buttonTortuosity")
-            widget.set_sensitive(True)        
+#        if self.project.current_experiment.point_list == [] or \
+#           self.project.current_experiment.areas_list == []:
+#            pass
+#        else:
+        widget = self.xml.get_widget("buttonTortuosity")
+        widget.set_sensitive(True)        
+    
+        widget = self.xml.get_widget("buttonReport")
+        widget.set_sensitive(True)        
         
-            widget = self.xml.get_widget("buttonReport")
-            widget.set_sensitive(True)        
-            
-            widget = self.xml.get_widget("buttonPrint")
+        widget = self.xml.get_widget("buttonPrint")
+        widget.set_sensitive(True)
+        
+        if not self.invalid_refimg:
+            widget = self.xml.get_widget("buttonProcess")
             widget.set_sensitive(True)
-            
-            if not self.invalid_refimg:
-                widget = self.xml.get_widget("buttonProcess")
-                widget.set_sensitive(True)
             
         if self.invalid_refimg:
             pass

@@ -10,7 +10,7 @@ INTERFACE:
     - Disable VideoInput and TrackSimulator when doing the tracking
     - TRACK SIMULATOR (TIP: can borrow code from areas dialog)
         - Don't change directly the data. Changes generate new tracks.
-    - Put more experiments in a project (currently handles only one)
+    - ALMOST: Put more experiments in a project (currently handles only one)
     - Transfer all the callbacks to the glade file (Is it viable?)
     - DeviceManager: 
         - allow changes in the pipeline
@@ -29,9 +29,10 @@ INTERFACE:
                 RefImg -> Areas
     - DONE: Refactoring - put the dialogs-specific code in new classes 
     - DONE: Put a slider in the ProjPropDiag to control the threshold
-    - dialogs must update their data before run()
+    - DONE: dialogs must update their data before run()
     - SCALE DIALOG:
-        - If shape is a line, disable Y_axis
+        - DONE: If shape is a line, disable Y_axis
+        - When initializing verify if a scale shape was already drawn
         - Must only calculate the scale if a shape was drawn
         - Forbid counting pixels when mouse leave the image
     - AREAS DIALOG:
@@ -67,12 +68,12 @@ INTERFACE:
           (tracking area, i.e.)
         
 DEPLOYMENT:
-    - Installation facility
+    - DONE: Installation facility
 
 AREAS:
     - line methods
-    - Put a description attribute in areas, so the user can write down what 
-      the area represents
+    - DONE: Put a description attribute in areas, so the user can write down 
+      what the area represents
 
 PROJECT:
     - Project contains N experiments: each experiment has his own properties. 
@@ -83,8 +84,8 @@ PROJECT:
       the area_list and the track_list
     - DONE: XML, when possible. Nowadays is just a pickled object. And it doesn't 
       work well.
-    - DONE: Separate the XML parsing process when loading, so each experiment, area 
-      and track build itself and then return to project.
+    - DONE: Separate the XML parsing process when loading, so each experiment, 
+      area and track build itself and then return to project.
     - Allow extra properties in attributes
     - ALMOST: Save and Loading isn't working.
         - BIG PROBLEM: self.project in interface class isn't repassed to

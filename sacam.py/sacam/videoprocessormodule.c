@@ -162,7 +162,6 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
 
     if (self->first_run == TRUE) {
 
-        PyObject *start_time;
         PyObject *threshold;
         PyObject *initial;
         PyObject *final;
@@ -200,7 +199,6 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         gdk_gc_set_line_attributes (self->gc, 5, GDK_LINE_ON_OFF_DASH,
                                     GDK_CAP_NOT_LAST, GDK_JOIN_MITER);
 
-        Py_XDECREF(start_time);
         Py_XDECREF(threshold); 
         Py_XDECREF(bug_size);
         Py_XDECREF(bug_max_speed);
@@ -401,8 +399,8 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         Py_XDECREF(end);
     }
     
-    Py_XDECREF(datetime_obj);
-    Py_XDECREF(current_experiment);        
+//    Py_XDECREF(datetime_obj);
+//    Py_XDECREF(current_experiment);        
     Py_RETURN_TRUE;
 }
 

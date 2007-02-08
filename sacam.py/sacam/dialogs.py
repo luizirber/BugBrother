@@ -482,9 +482,10 @@ class scale_diag(object):
         widget.connect("changed", self.set_label_unit)
         
         self.graphic_context = None
-                                
-        entryShapeXSize = self.xml.get_widget("entryShapeXSize")
-        entryShapeYSize = self.xml.get_widget("entryShapeYSize")        
+        
+        widget = self.xml.get_widget("radiobuttonLine")
+        widget.connect("toggled", self.toggled)
+       
         widget = self.xml.get_widget("drawingareaScale")
         widget.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
                           | gtk.gdk.BUTTON_RELEASE_MASK
@@ -498,6 +499,14 @@ class scale_diag(object):
         self.temp_shape = None
         self.composing_shape = False
         
+    def toggled(self, button):
+        if button.get_active():
+            self.xml.get_widget("labelShapeXSize").set_text(_('Lenght of Line:'))
+            self.xml.get_widget("hboxShapeYSize").props.visible = False
+        else:
+            self.xml.get_widget("labelShapeXSize").set_text(_('Size of shape (X Axis):'))
+            self.xml.get_widget("hboxShapeYSize").props.visible = True            
+                    
     def run(self, wid, project, interface):
         self.project = project
         output = self.xml.get_widget("drawingareaScale")
@@ -523,14 +532,21 @@ class scale_diag(object):
         if isinstance(self.temp_shape, rectangle):
             x_shape_size = self.temp_shape.width / x_scale_ratio
             y_shape_size = self.temp_shape.height / y_scale_ratio
+            self.xml.get_widget("labelShapeXSize").set_text(_('Size of shape (X Axis):'))
+            self.xml.get_widget("hboxShapeYSize").props.visible = True            
         elif isinstance(self.temp_shape, ellipse):
             x_shape_size = self.temp_shape.x_axis * 2 / x_scale_ratio
             y_shape_size = self.temp_shape.y_axis * 2 / y_scale_ratio
+            self.xml.get_widget("labelShapeXSize").set_text(_('Size of shape (X Axis):'))
+            self.xml.get_widget("hboxShapeYSize").props.visible = True            
         elif isinstance(self.temp_shape, line):
             x_shape_size = sqrt( pow(self.temp_shape.x_end - self.temp_shape.x_start, 2)
                            + pow(self.temp_shape.y_end - self.temp_shape.y_start, 2) ) \
                            / x_scale_ratio
             y_shape_size = x_shape_size
+            self.xml.get_widget("labelShapeXSize").set_text(_('Lenght of Line:'))
+            self.xml.get_widget("hboxShapeYSize").props.visible = False
+           
         self.xml.get_widget("entryShapeXSize").set_text(str(x_shape_size))
         self.xml.get_widget("entryShapeYSize").set_text(str(y_shape_size))
 
@@ -676,34 +692,47 @@ class scale_diag(object):
             
         y_size = self.xml.get_widget("entryShapeYSize").get_text()
         try: y_size = float(y_size)
-        except: invalid_value = True                
+        except: invalid_value = True
         
-        #TODO: verify if a shape was drawn
-        
-        if invalid_value:
+        if not self.temp_shape:
             error = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
-                                      gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, 
-                                      _("Invalid values"))
+                                        gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, 
+                                        _("You need to draw a shape!"))
             response = error.run()
-            if response == gtk.RESPONSE_OK:
-                error.destroy()
+            error.destroy()
         else:
-            if isinstance(self.temp_shape, rectangle):
-                x_shape_size = self.temp_shape.width
-                y_shape_size = self.temp_shape.height
-            elif isinstance(self.temp_shape, ellipse):
-                x_shape_size = self.temp_shape.x_axis * 2
-                y_shape_size = self.temp_shape.y_axis * 2
-            elif isinstance(self.temp_shape, line):            
-                x_shape_size = sqrt( pow(self.temp_shape.x_end - self.temp_shape.x_start, 2)
-                             + pow(self.temp_shape.y_end - self.temp_shape.y_start, 2) )
-                y_shape_size = x_shape_size
-            
-            self.x_scale = (x_shape_size) / float(x_size)
-            self.y_scale = (y_shape_size) / float(y_size)
-            
-            self.xml.get_widget("entryXAxis").set_text(str(self.x_scale))
-            self.xml.get_widget("entryYAxis").set_text(str(self.y_scale))
+            if invalid_value:
+                error = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
+                                          gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, 
+                                          _("Invalid values"))
+                response = error.run()
+                error.destroy()
+            else:
+                if isinstance(self.temp_shape, rectangle):
+                    x_shape_size = self.temp_shape.width
+                    y_shape_size = self.temp_shape.height
+                elif isinstance(self.temp_shape, ellipse):
+                    x_shape_size = self.temp_shape.x_axis * 2
+                    y_shape_size = self.temp_shape.y_axis * 2
+                elif isinstance(self.temp_shape, line):
+                    square_x = pow(self.temp_shape.x_end - self.temp_shape.x_start, 2)
+                    square_y = pow(self.temp_shape.y_end - self.temp_shape.y_start, 2)
+                    x_shape_size = sqrt( square_x + square_y )
+                    y_shape_size = x_shape_size
+                    y_size = x_size
+                
+                if x_size <= 0 or y_size <= 0:
+                    error = gtk.MessageDialog(None, gtk.DIALOG_MODAL, 
+                                   gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, 
+                                   _("Shape size must be greater than zero"))
+                    response = error.run()
+                    error.destroy()
+                else:
+                    self.x_scale = (x_shape_size) / float(x_size)
+                    self.y_scale = (y_shape_size) / float(y_size)
+                    
+                    self.xml.get_widget("entryXAxis").set_text(str(self.x_scale))
+                    self.xml.get_widget("entryYAxis").set_text(str(self.y_scale))
                 
     def set_label_unit(self, wid):
         wlist = []

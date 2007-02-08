@@ -84,7 +84,8 @@ class project(object):
                 for el in experiments:
                     new_exp = experiment().build_from_xml(el)
                     prj.experiment_list.append(new_exp)
-                prj.current_experiment = prj.experiment_list[-1]
+                if prj.experiment_list:
+                    prj.current_experiment = prj.experiment_list[-1]
                     
             schemafile.close()
             # we don't need the projfile anymore, it can be closed
@@ -170,8 +171,8 @@ class experiment(object):
         self.end_time = ''
         self.attributes = {}
         self.measurement_unit = 'cm'
-        self.x_scale_ratio = '1'
-        self.y_scale_ratio = '1'
+        self.x_scale_ratio = 1
+        self.y_scale_ratio = 1
         self.scale_shape = None
         self.threshold = 0x30
         self.release_area = [0, 0, 480, 640]
@@ -281,11 +282,11 @@ class experiment(object):
         # for each area in the experiment, export name and shape
         for area in self.areas_list:
             rows.append( ("") )
+            rows.append( (_("Area Name: "), area.name) )
+            rows.append( (_("Area Description: "), area.description) )                        
             if isinstance(area.shape, rectangle):
-                rows.append( (_("Area Name: "), area.name) )
                 rows.append( (_("Area Shape: "), _("Rectangle")) )
             elif isinstance(area.shape, ellipse):
-                rows.append( (_("Area Name: "), area.name) )
                 rows.append( (_("Area Shape: "), _("Ellipse")) )
             
             #for each track in area, export the data needed
@@ -317,7 +318,6 @@ class experiment(object):
                 rows.append( (_("Total Lenght (") + self.measurement_unit + "): ", area.total_lenght) )
                 
                 #TODO: this value is different from the calculated in the track. Hum.
-         		#TODO2: division by zero! verify
                 value = area.total_lenght / \
                         (float(area.residence.seconds) + float(area.residence.microseconds/1000000))
                 rows.append( (_("Average Speed (") + self.measurement_unit + "/s): ", value) )
