@@ -1,0 +1,80 @@
+SACAM 
+========
+
+Author: Luiz Irber <luiz.irber@gmail.com>
+
+This program allows you to create the Graphical User Interface (GUI) of your
+GTK+ program in a visual way. It started as a Glade-3 clone but now it is more
+complete and featured than its ancestor. It tries to be compatible with libglade
+but it can handle some widgets that still lack support in libglade.
+
+Gazpacho is also part of Gruppy, an LGPL'ed framework and set of tools to build
+ERP-like software systems for medium and small sized companies. Nevertheless it is
+not dependent of any part of it so you can use it by its own.
+
+SACAM's homepage is located at:
+http://repositorio.agrolivre.gov.br/projects/sacam/
+
+It's sourcecode is avaliable through a CVS repository, and can be viewed via 
+web at:
+http://repositorio.agrolivre.gov.br/plugins/scmcvs/cvsweb.php/?cvsroot=sacam
+
+If you have any enhancements or bug reports, please fill them in AgroLivre:
+http://repositorio.agrolivre.gov.br/tracker/?group_id=16
+
+Requirements
+============
+SACAM has the following dependencies:
+
+Python 2.4 or higher
+PyGTK 2.8.0 or higher
+kiwi 1.9.6 or higher
+lxml 0.8 or higher
+GStreamer 0.10.7 or higher
+
+Running SACAM
+================
+To run SACAM you can either run it from the download directory or you can
+install it into your prefix.
+
+If you don't want to install it just type:
+
+[user@localhost sacam]$ bin/sacam
+
+Note that you will probably need to set your PYTHONPATH if your system does not
+have pygtk 2.4.0 in the default python site-packages directory.
+
+If you want to install SACAM just type:
+[user@localhost sacam]$ python setup.py install --prefix=yourprefix
+
+Note that you will need write permissions in 'yourprefix'
+
+Then to run sacam:
+[user@localhost]$ sacam
+
+Note that your path will need to containe 'yourprefix/bin'
+
+
+New Versions
+============
+
+New versions of SACAM can be found at:
+
+http://repositorio.agrolivre.gov.br/projects/sacam/
+
+
+Mailing list
+============
+
+There is a mailing list for SACAM. You can subscribe to it through the web
+interface at:
+
+http://repositorio.agrolivre.gov.br/mailman/listinfo/sacam-users
+
+
+Copyright Information
+=====================
+                                                                               
+This software is covered by the GNU General Public License
+(version 2.0, or if you choose, a later version).  Basically just don't
+say you wrote bits you didn't.

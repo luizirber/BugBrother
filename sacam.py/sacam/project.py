@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import os
 
 from math import pi, sqrt, acos

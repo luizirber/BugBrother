@@ -1,0 +1,17 @@
+Source: sacam
+Section: science
+Priority: optional
+Maintainer: Luiz Irber <luiz.irber@gmail.com>
+Uploaders: Luiz Irber <luiz.irber@gmail.com>
+Build-Depends: @cdbs@, debhelper (>= 5.0.7), python (>= 2.4), kiwi | python-kiwi, python-support (>= 0.1)
+Build-Depends-Indep: python-all-dev
+Standards-Version: 3.6.2
+
+Package: sacam
+Architecture: i386
+Depends: ${python:Depends}, python-gtk2 (>= 2.8.6), kiwi | python-kiwi, python-lxml (>= 0.8), gstreamer0.10-plugins-base (>= 0.10.7)
+Description: Sistema de Analise Comportamental de Animais em Movimento
+ .
+ SACAM
+ .
+ Homepage: http://repositorio.agrolivre.gov.br/projects/sacam/

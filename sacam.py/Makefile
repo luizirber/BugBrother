@@ -9,4 +9,4 @@ merge:
 install:
 	msgfmt --output-file=/usr/share/locale/pt_BR/LC_MESSAGES/sacam.mo po/pt_BR.po
 	chown root:root /usr/share/locale/pt_BR/LC_MESSAGES/sacam.mo
-	dpkg-reconfigure locales
+	sudo locale-gen

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from math import pi
 from lxml import etree
 from datetime import datetime

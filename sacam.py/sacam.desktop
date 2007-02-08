@@ -1,11 +1,11 @@
 [Desktop Entry]
-Version=1.0
-Encoding=UTF-8
-Name=No name
-Type=Application
-Name[pt_BR]=SACAM
-Comment[pt_BR]=Sistema de Analise Comportamental de Animais em Movimento
-Comment[en_US]=Animal Motion Behavior Analysis System
-Exec=sacam
-Icon=sacam.png
-GenericName[en_US]=
+Name = SACAM
+Comment[pt_BR] = Sistema de Análise Comportamental de Animais em Movimento
+Comment[en_US] = Animal Motion Behavior Analysis System
+Icon = $datadir/glade/sacam.png
+Exec = $prefix/bin/sacam
+Terminal = false
+Type = Application
+Version = 1.0
+Encoding = UTF-8
+Categories = Application;Education;Science;ImageProcessing;

@@ -1,16 +1,10 @@
 #!/usr/bin/env python
 
 from commands import getoutput
-from kiwi.dist import setup, listfiles
+from kiwi.dist import setup, listfiles, listpackages
 from distutils.core import Extension
 
-from kiwi.dist import TemplateInstallLib
-
-class InstallLib(TemplateInstallLib):
-   name = 'sacam'
-   global_resources = dict(glade='$datadir/glade',
-                           pixmap='$datadir/pixmap')
-
+# flags used to compile the videoprocessor extension
 cflags = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 '
                    'pygtk-2.0 pygobject-2.0 --cflags')
 temp = cflags.replace('-I', '')
@@ -37,17 +31,40 @@ videoprocessor = Extension("videoprocessor",
                             library_dirs = lib_dirs,
                             sources = ['sacam/videoprocessormodule.c'])
 
-setup(name='SACAM',
+templates = []
+data_files = [
+     ('share/doc/sacam', ('AUTHORS', 'ChangeLog', 'CONTRIBUTORS',
+                          'COPYING', 'README', 'NEWS')),
+     ('share/doc/sacam', listfiles('doc', '*')),
+     ('share/doc/sacam/examples', listfiles('examples', '*')),
+     ('$datadir/glade', listfiles('glade', '*.glade')),
+     ('$datadir/glade', listfiles('glade', '*.png')),
+     ('$datadir/xml', listfiles('xml', '*.rng'))
+     ]
+     
+resources = dict(locale='$prefix/share/locale')
+global_resources = dict(
+     doc = '$prefix/share/doc/sacam',
+     glade = '$datadir/glade',
+     )
+     
+kwargs = {}
+scripts = ['bin/sacam']
+templates.append(('share/applications', ['sacam.desktop']))
+     
+setup(name='sacam',
       version='1.0',
       description='Sistema de Analise Comportamental de Animais em Movimento'
                   '/ Animal Motion Behavior Analysis System ',
       author='Luiz Carlos Irber Junior',
       author_email='luiz.irber@gmail.com',
       url='http://repositorio.agrolivre.gov.br/projects/sacam/',
+      license='GPL',
       ext_modules = [videoprocessor],
-      packages = ['sacam'],
-      package_dir = { 'sacam': 'sacam' },
-      data_files=[('share/sacam/glade', listfiles('glade','*.glade')),
-                  ('share/sacam/xml', listfiles('xml', '*.rng')) ],
-      cmdclass=dict(install_lib=InstallLib))
-
+      packages = listpackages('sacam'),
+      scripts = scripts,
+      data_files = data_files,
+      resources = resources,
+      global_resources = global_resources,
+      templates = templates,
+      **kwargs)             
