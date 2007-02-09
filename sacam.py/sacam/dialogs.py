@@ -276,7 +276,9 @@ class areas_diag(object):
                 self.end_point = (event.x, event.y)
                 if self.shape_type == "rectangle":
                     self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                    
+                    if event.state & gtk.gdk.BUTTON1_MASK and \
+                       event.state & gtk.gdk.SHIFT_MASK:                    
                         self.temp_shape.height = self.temp_shape.width
                     else:
                         self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
@@ -372,7 +374,8 @@ class areas_diag(object):
                 self.end_point = (event.x, event.y)            
                 if self.shape_type == "rectangle":
                     self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                    if event.state & gtk.gdk.BUTTON1_MASK and \
+                       event.state & gtk.gdk.SHIFT_MASK:                    
                         self.temp_shape.height = self.temp_shape.width
                     else:                
                         self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
@@ -411,7 +414,8 @@ class areas_diag(object):
                 self.final_point = (event.x, event.y)
                 if isinstance(self.resizing_shape, rectangle):
                     self.resizing_shape.width = int(abs(self.final_point[0] - self.initial_point[0]))
-                    if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                    if event.state & gtk.gdk.BUTTON1_MASK and \
+                       event.state & gtk.gdk.SHIFT_MASK:                    
                         self.resizing_shape.height = self.resizing_shape.width
                     else:
                         self.resizing_shape.height = int(abs(self.final_point[1] - self.initial_point[1]))
@@ -614,12 +618,15 @@ class scale_diag(object):
             self.end_point = (event.x, event.y)
             if isinstance(self.temp_shape, rectangle):
                 self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                if event.state & gtk.gdk.BUTTON1_MASK and \
+                    event.state & gtk.gdk.SHIFT_MASK:                    
                     self.temp_shape.height = self.temp_shape.width
                 else:
-                    self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
+                    value = int(abs(self.end_point[1] - self.start_point[1]))
+                    self.temp_shape.height = value
                 if self.start_point[0] < self.end_point[0]:
-                    self.temp_shape.x_center = int(self.start_point[0] + self.temp_shape.width/2)
+                    value = int(self.start_point[0] + self.temp_shape.width/2)
+                    self.temp_shape.x_center = value
                 else:
                     self.temp_shape.x_center = int(self.end_point[0] + self.temp_shape.width/2)           
                 if self.start_point[1] < self.end_point[1]:
@@ -628,7 +635,8 @@ class scale_diag(object):
                     self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.height/2)
             elif isinstance(self.temp_shape, ellipse):
                 self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
-                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                if event.state & gtk.gdk.BUTTON1_MASK and \
+                    event.state & gtk.gdk.SHIFT_MASK:                    
                     self.temp_shape.y_axis = self.temp_shape.x_axis
                 else:                    
                     self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))
@@ -651,7 +659,8 @@ class scale_diag(object):
             self.end_point = (event.x, event.y)            
             if isinstance(self.temp_shape, rectangle):
                 self.temp_shape.width = int(abs(self.end_point[0] - self.start_point[0]))
-                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                if event.state & gtk.gdk.BUTTON1_MASK and \
+                    event.state & gtk.gdk.SHIFT_MASK:                    
                     self.temp_shape.height = self.temp_shape.width
                 else:                
                     self.temp_shape.height = int(abs(self.end_point[1] - self.start_point[1]))
@@ -665,7 +674,8 @@ class scale_diag(object):
                     self.temp_shape.y_center = int(self.end_point[1] + self.temp_shape.height/2)
             elif isinstance(self.temp_shape, ellipse):
                 self.temp_shape.x_axis = int(abs(self.end_point[0] - self.start_point[0]))
-                if event.get_state() == (gtk.gdk.SHIFT_MASK | gtk.gdk.BUTTON1_MASK):
+                if event.state & gtk.gdk.BUTTON1_MASK and \
+                    event.state & gtk.gdk.SHIFT_MASK:                    
                     self.temp_shape.y_axis = self.temp_shape.x_axis
                 else:                    
                     self.temp_shape.y_axis = int(abs(self.end_point[1] - self.start_point[1]))

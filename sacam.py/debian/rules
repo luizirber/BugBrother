@@ -7,6 +7,8 @@ include /usr/share/cdbs/1/class/python-distutils.mk
 
 DEB_PYTHON_INSTALL_ARGS_ALL += --install-lib usr/share/python-support/sacam --single-version-externally-managed
 
-# DEB_PYTHON_BUILD_ARGS = --build-base="$(DEB_BUILDDIR)/specific-build-dir"
-
 DEB_COMPRESS_EXCLUDE := .py
+
+binary-install/$(DEB_PYTHON_MODULE_PACKAGE)::
+	find debian/$(DEB_PYTHON_MODULE_PACKAGE)/usr/share/ -type f -exec chmod -R a-x {} \;
+	echo "2.4-" >debian/$(DEB_PYTHON_MODULE_PACKAGE)/$(cdbs_python_support_path)/.version

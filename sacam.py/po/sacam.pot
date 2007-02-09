@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-01-18 18:38-0200\n"
+"POT-Creation-Date: 2007-02-09 11:24-0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,149 +16,170 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: sacam/dialogs.py:27 sacam/dialogs.py:51 sacam/dialogs.py:60
-#: sacam/interface.py:108 sacam/project.py:28
+#: sacam/dialogs.py:26 sacam/dialogs.py:50 sacam/dialogs.py:59
+#: sacam/interface.py:363 sacam/project.py:31
 msgid "Project Name"
 msgstr ""
 
-#: sacam/dialogs.py:31 sacam/dialogs.py:55 sacam/dialogs.py:61
-#: sacam/interface.py:109 sacam/project.py:79
+#: sacam/dialogs.py:30 sacam/dialogs.py:54 sacam/dialogs.py:60
+#: sacam/interface.py:364 sacam/project.py:179
 msgid "Experiment Name"
 msgstr ""
 
-#: sacam/dialogs.py:35 sacam/dialogs.py:52
+#: sacam/dialogs.py:34 sacam/dialogs.py:51
 msgid "Insect Name"
 msgstr ""
 
-#: sacam/dialogs.py:39 sacam/dialogs.py:53
+#: sacam/dialogs.py:38 sacam/dialogs.py:52
 msgid "Compounds used"
 msgstr ""
 
-#: sacam/dialogs.py:43 sacam/dialogs.py:54
+#: sacam/dialogs.py:42 sacam/dialogs.py:53
 msgid "Temperature"
 msgstr ""
 
-#: sacam/dialogs.py:122
+#: sacam/dialogs.py:125
 msgid "Name"
 msgstr ""
 
-#: sacam/dialogs.py:129
+#: sacam/dialogs.py:132
 msgid "Description"
 msgstr ""
 
-#: sacam/dialogs.py:217
+#: sacam/dialogs.py:244
 msgid "An area must be selected"
 msgstr ""
 
-#: sacam/dialogs.py:632
+#: sacam/dialogs.py:504 sacam/dialogs.py:547
+msgid "Lenght of Line:"
+msgstr ""
+
+#: sacam/dialogs.py:507 sacam/dialogs.py:535 sacam/dialogs.py:540
+#: glade/sacam.glade.h:42
+msgid "Size of shape (X Axis):"
+msgstr ""
+
+#: sacam/dialogs.py:700
+msgid "You need to draw a shape!"
+msgstr ""
+
+#: sacam/dialogs.py:707
 msgid "Invalid values"
 msgstr ""
 
-#: sacam/interface.py:123
-msgid "Save Project"
+#: sacam/dialogs.py:727
+msgid "Shape size must be greater than zero"
 msgstr ""
 
-#: sacam/interface.py:170
+#: sacam/interface.py:138
 msgid "Do you want to save the current project?"
 msgstr ""
 
-#: sacam/interface.py:214
+#: sacam/interface.py:183
 msgid "Load Project"
 msgstr ""
 
-#: sacam/interface.py:374
+#: sacam/interface.py:209
+msgid "Save Project"
+msgstr ""
+
+#: sacam/interface.py:297
 msgid "Save Report"
 msgstr ""
 
-#: sacam/interface.py:393
+#: sacam/interface.py:316
 msgid "Report generated."
 msgstr ""
 
-#: sacam/project.py:28
+#: sacam/project.py:31
 msgid "Project"
 msgstr ""
 
-#: sacam/project.py:79
+#: sacam/project.py:179
 msgid "Experiment"
 msgstr ""
 
-#: sacam/project.py:94 sacam/project.py:97
+#: sacam/project.py:285
 msgid "Area Name: "
 msgstr ""
 
-#: sacam/project.py:95 sacam/project.py:98
+#: sacam/project.py:286
+msgid "Area Description: "
+msgstr ""
+
+#: sacam/project.py:288 sacam/project.py:290
 msgid "Area Shape: "
 msgstr ""
 
-#: sacam/project.py:95 glade/sacam.glade.h:27
+#: sacam/project.py:288 glade/sacam.glade.h:35
 msgid "Rectangle"
 msgstr ""
 
-#: sacam/project.py:98 glade/sacam.glade.h:12
+#: sacam/project.py:290 glade/sacam.glade.h:17
 msgid "Ellipse"
 msgstr ""
 
-#: sacam/project.py:102
+#: sacam/project.py:294
 msgid "Insect didn't entered in this area, no data available"
 msgstr ""
 
-#: sacam/project.py:104
+#: sacam/project.py:296
 msgid "Track List: "
 msgstr ""
 
-#: sacam/project.py:105
+#: sacam/project.py:297
 msgid "Start Time "
 msgstr ""
 
-#: sacam/project.py:105
+#: sacam/project.py:297
 msgid "End Time "
 msgstr ""
 
-#: sacam/project.py:106
+#: sacam/project.py:298
 msgid "Residence "
 msgstr ""
 
-#: sacam/project.py:106
+#: sacam/project.py:298
 msgid "Tortuosity "
 msgstr ""
 
-#: sacam/project.py:107
+#: sacam/project.py:299
 msgid "Lenght ("
 msgstr ""
 
-#: sacam/project.py:108 sacam/project.py:132
+#: sacam/project.py:300 sacam/project.py:323
 msgid "Average Speed ("
 msgstr ""
 
-#: sacam/project.py:109 sacam/project.py:134
+#: sacam/project.py:301 sacam/project.py:325
 msgid "Standard Deviation :"
 msgstr ""
 
-#: sacam/project.py:110 sacam/project.py:135
+#: sacam/project.py:302 sacam/project.py:326
 msgid "Angular Average Deviation :"
 msgstr ""
 
-#: sacam/project.py:120
+#: sacam/project.py:312
 msgid "Resume: "
 msgstr ""
 
-#: sacam/project.py:121
+#: sacam/project.py:313
 msgid "Residence: "
 msgstr ""
 
-#: sacam/project.py:122
+#: sacam/project.py:314
 msgid "Residence (%): "
 msgstr ""
 
-#: sacam/project.py:123
+#: sacam/project.py:315
 msgid "Tortuosity: "
 msgstr ""
 
-#: sacam/project.py:124
+#: sacam/project.py:316
 msgid "Average Lenght ("
 msgstr ""
 
-#: sacam/project.py:126
+#: sacam/project.py:318
 msgid "Total Lenght ("
 msgstr ""
 
@@ -167,202 +188,246 @@ msgid "<b>Areas</b>"
 msgstr ""
 
 #: glade/sacam.glade.h:2
-msgid "<b>Shapes</b>"
+msgid "<b>Information</b>"
 msgstr ""
 
 #: glade/sacam.glade.h:3
-msgid "Add"
+msgid "<b>Point</b>"
 msgstr ""
 
 #: glade/sacam.glade.h:4
-msgid "Areas"
+msgid "<b>Shapes</b>"
 msgstr ""
 
 #: glade/sacam.glade.h:5
-msgid "Calculate the scale"
+msgid "Add"
 msgstr ""
 
 #: glade/sacam.glade.h:6
-msgid "Capture Image"
+msgid "Apply Changes"
 msgstr ""
 
 #: glade/sacam.glade.h:7
-msgid "Channel"
+msgid "Area:"
 msgstr ""
 
 #: glade/sacam.glade.h:8
-msgid "Compounds used:"
+msgid "Areas"
 msgstr ""
 
 #: glade/sacam.glade.h:9
-msgid "Description:"
+msgid "Calculate the scale"
 msgstr ""
 
 #: glade/sacam.glade.h:10
-msgid "Device"
+msgid "Capture Image"
 msgstr ""
 
 #: glade/sacam.glade.h:11
-msgid "Device Manager"
+msgid "Channel"
+msgstr ""
+
+#: glade/sacam.glade.h:12
+msgid "Compounds used:"
 msgstr ""
 
 #: glade/sacam.glade.h:13
-msgid "Insect Max Speed:"
+msgid "Description:"
 msgstr ""
 
 #: glade/sacam.glade.h:14
-msgid "Insect Size"
+msgid "Device"
 msgstr ""
 
 #: glade/sacam.glade.h:15
-msgid "Insect Size:"
+msgid "Device Manager"
 msgstr ""
 
 #: glade/sacam.glade.h:16
-msgid "Line"
-msgstr ""
-
-#: glade/sacam.glade.h:17
-msgid "Measurement unit:"
+msgid "Elapsed Time:"
 msgstr ""
 
 #: glade/sacam.glade.h:18
-msgid "Move"
+msgid "Experiment:"
 msgstr ""
 
 #: glade/sacam.glade.h:19
-msgid "Name:"
+msgid "Insect Max Speed:"
 msgstr ""
 
 #: glade/sacam.glade.h:20
-msgid "New"
+msgid "Insect Size"
 msgstr ""
 
 #: glade/sacam.glade.h:21
-msgid "Norm"
+msgid "Insect Size:"
 msgstr ""
 
 #: glade/sacam.glade.h:22
-msgid "Open"
+msgid "Line"
 msgstr ""
 
 #: glade/sacam.glade.h:23
-msgid "Preferences"
+msgid "Measurement unit:"
 msgstr ""
 
 #: glade/sacam.glade.h:24
-msgid "Print"
+msgid "Move"
 msgstr ""
 
 #: glade/sacam.glade.h:25
-msgid "Process"
+msgid "Name:"
 msgstr ""
 
 #: glade/sacam.glade.h:26
-msgid "Project Information"
+msgid "New"
+msgstr ""
+
+#: glade/sacam.glade.h:27
+msgid "Norm"
 msgstr ""
 
 #: glade/sacam.glade.h:28
-msgid "Reference Image"
+msgid "Not started"
 msgstr ""
 
 #: glade/sacam.glade.h:29
-msgid "Remove"
+msgid "Open"
 msgstr ""
 
 #: glade/sacam.glade.h:30
-msgid "Resize"
+msgid "Preferences"
 msgstr ""
 
 #: glade/sacam.glade.h:31
-msgid "Save"
+msgid "Print"
 msgstr ""
 
 #: glade/sacam.glade.h:32
-msgid "Scale"
+msgid "Process"
 msgstr ""
 
 #: glade/sacam.glade.h:33
-msgid "Set as Release Area"
+msgid "Project Information"
 msgstr ""
 
 #: glade/sacam.glade.h:34
-msgid "Size of shape (X Axis):"
-msgstr ""
-
-#: glade/sacam.glade.h:35
-msgid "Size of shape (Y Axis):"
+msgid "Project Manager"
 msgstr ""
 
 #: glade/sacam.glade.h:36
-msgid "Start"
+msgid "Reference Image"
 msgstr ""
 
 #: glade/sacam.glade.h:37
-msgid "Temperature:"
+msgid "Remove"
 msgstr ""
 
 #: glade/sacam.glade.h:38
-msgid "Threshold:"
+msgid "Resize"
 msgstr ""
 
 #: glade/sacam.glade.h:39
-msgid "Timer"
+msgid "Save"
 msgstr ""
 
 #: glade/sacam.glade.h:40
-msgid "Tortuosity"
+msgid "Scale"
 msgstr ""
 
 #: glade/sacam.glade.h:41
-msgid "Track Simulator"
-msgstr ""
-
-#: glade/sacam.glade.h:42
-msgid "Tracking Display"
+msgid "Set as Release Area"
 msgstr ""
 
 #: glade/sacam.glade.h:43
-msgid "Video Input"
+msgid "Size of shape (Y Axis):"
 msgstr ""
 
 #: glade/sacam.glade.h:44
-msgid "What is the name of the experiment: "
+msgid "Start"
 msgstr ""
 
 #: glade/sacam.glade.h:45
-msgid "What is the name of the insect:"
+msgid "Temperature:"
 msgstr ""
 
 #: glade/sacam.glade.h:46
-msgid "What is the name of the project: "
+msgid "Threshold:"
 msgstr ""
 
 #: glade/sacam.glade.h:47
-msgid "Which shape do you want to draw?"
+msgid "Timer"
 msgstr ""
 
 #: glade/sacam.glade.h:48
-msgid "X Axis:"
+msgid "Tortuosity"
 msgstr ""
 
 #: glade/sacam.glade.h:49
-msgid "Y Axis:"
+msgid "Track Simulator"
 msgstr ""
 
 #: glade/sacam.glade.h:50
-msgid "_File"
+msgid "Track:"
 msgstr ""
 
 #: glade/sacam.glade.h:51
-msgid "gtk-cancel"
+msgid "Tracking Display"
 msgstr ""
 
 #: glade/sacam.glade.h:52
-msgid "gtk-ok"
+msgid "Unavailable"
 msgstr ""
 
 #: glade/sacam.glade.h:53
+msgid "Video Input"
+msgstr ""
+
+#: glade/sacam.glade.h:54
+msgid "What is the name of the experiment: "
+msgstr ""
+
+#: glade/sacam.glade.h:55
+msgid "What is the name of the insect:"
+msgstr ""
+
+#: glade/sacam.glade.h:56
+msgid "What is the name of the project: "
+msgstr ""
+
+#: glade/sacam.glade.h:57
+msgid "Which shape do you want to draw?"
+msgstr ""
+
+#: glade/sacam.glade.h:58
+msgid "X Axis:"
+msgstr ""
+
+#: glade/sacam.glade.h:59
+msgid "X Position:"
+msgstr ""
+
+#: glade/sacam.glade.h:60
+msgid "Y Axis:"
+msgstr ""
+
+#: glade/sacam.glade.h:61
+msgid "Y Position:"
+msgstr ""
+
+#: glade/sacam.glade.h:62
+msgid "_File"
+msgstr ""
+
+#: glade/sacam.glade.h:63
+msgid "gtk-cancel"
+msgstr ""
+
+#: glade/sacam.glade.h:64
+msgid "gtk-ok"
+msgstr ""
+
+#: glade/sacam.glade.h:65
 msgid ""
 "mm\n"
 "cm"

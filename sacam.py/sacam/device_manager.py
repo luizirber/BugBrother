@@ -47,33 +47,61 @@ class Device_manager(object):
         self.processor_output = processor_output
         self.frame_format = None
         
+        self.pipeline_play = None
+        
+        widget = self.xml.get_widget('buttonDefaultPipeline')
+        widget.connect('clicked', self.set_default_pipeline_string)
+        
+        widget = self.xml.get_widget('buttonTestingPipeline')
+        widget.connect('clicked', self.set_testing_pipeline_string)
+                
         self.counter = 0
         
+        self.textview = self.xml.get_widget("textviewPipeline")
+        self.textview.set_wrap_mode(gtk.WRAP_WORD)
+        self.set_default_pipeline_string(None)
+        self.set_pipelines()
+            
+    def set_default_pipeline_string(self, button):
         #TODO: look for these values, don't hardcode then
         device = '/dev/video0'
         width, height = 640, 480
                 
         pipeline_string = (
-            'videotestsrc name=source ! ffmpegcolorspace ! '        
-#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
             'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
-            
-#            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
-#            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
-#            'identity name=null ! videorate ! fakesink name=sink'
-           )%(width, height)
-#           )%(device,width, height)
+           )%(device,width, height)
         
         pipeline_string2 = (
-           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
-#           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
-        )
-#        )%(device)
+#           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
+           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
+#        )
+        )%(device)
 
-                  
-        pipeline = gst.parse_launch(pipeline_string)
+        self.pipeline_string = pipeline_string
+        self.textview.get_buffer().set_text(pipeline_string)
+        
+    def set_testing_pipeline_string(self, button):
+        #TODO: look for these values, don't hardcode then
+        device = '/dev/video0'
+        width, height = 640, 480
+                
+        pipeline_string = (
+            'videotestsrc name=source ! ffmpegcolorspace ! '                
+            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
+            'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
+           )%(width, height)
+        
+        self.pipeline_string = pipeline_string
+        self.textview.get_buffer().set_text(pipeline_string)    
+            
+    def set_pipelines(self):
+        pipeline = gst.parse_launch(self.pipeline_string)
 #        self.pipeline_play = gst.parse_launch(pipeline_string2)
+        if self.pipeline_play:
+            self.pipeline_play.set_state(gst.STATE_NULL)
+            
         self.pipeline_play = pipeline
         self.source = pipeline.get_by_name("source")
 #      
@@ -100,16 +128,16 @@ class Device_manager(object):
 
 #        self.pipeline_capture = pipeline
         self.pipeline_capture = self.pipeline_play
-        self.pipeline_capture.set_state(gst.STATE_READY)
-        self.pipeline_play.set_state(gst.STATE_READY)
+        self.pipeline_capture.set_state(gst.STATE_PLAYING)
+        self.pipeline_play.set_state(gst.STATE_PLAYING)
 
 #        chan = self.source.find_channel_by_name('Composite1')
 #        self.source.set_channel(chan)       
 #        print [param.name for param in self.sink.props]        
 
-#	src = self.pipeline_play.get_by_name("source")
-#	chan = src.find_channel_by_name("Composite1")
-#	src.set_channel(chan)
+#   src = self.pipeline_play.get_by_name("source")
+#   chan = src.find_channel_by_name("Composite1")
+#   src.set_channel(chan)
 
 
 #        cell = gtk.CellRendererText()
@@ -138,6 +166,7 @@ class Device_manager(object):
 #        norms = [norm.label for norm in self.source.list_norms()]
 #        for item in norms:
 #            combonorm.append_text(item)
+                    
             
     def expose_cb(self, wid, event):
         self.sink.set_xwindow_id(self.outputarea.window.xid)   
@@ -175,11 +204,11 @@ class Device_manager(object):
           
     def show_window(self, widget):
         self.devicewindow.show_all()
-        #connect the callbacks for the insect size dialog        
         response = self.devicewindow.run()
         
         if response == gtk.RESPONSE_OK :
-            # Handle changes in the pipeline
+            # Handle changes in the pipeline   
+            self.set_pipelines()
             self.devicewindow.hide_all()
         else:
             self.devicewindow.hide_all()
