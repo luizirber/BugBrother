@@ -252,8 +252,8 @@ class Interface(object):
         
         self.capturing_state()
         
-        if self.device_manager.pipeline_capture.get_state() != gst.STATE_PLAYING:
-            self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)
+        if self.device_manager.pipeline_play.get_state() != gst.STATE_PLAYING:
+            self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
         
 #        if ( widget.get_active() ):        
 #            self.device_manager.start_video(widget, project)

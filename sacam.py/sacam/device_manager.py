@@ -60,8 +60,20 @@ class Device_manager(object):
                 
         self.counter = 0
         
-        widget = self.xml.get_widget('comboboxInputType')
-        widget.connect('changed', self.combo_change)
+        input_type = self.xml.get_widget('comboboxInputType')
+        input_type.connect('changed', self.input_combo_change)
+
+        widget = self.xml.get_widget('comboboxWidth')
+        input_type.connect('changed', self.set_combo_width, widget)
+        widget.connect('changed', self.combo_width_change)
+
+        widget = self.xml.get_widget('comboboxHeight')
+        input_type.connect('changed', self.set_combo_height, widget)
+        widget.connect('changed', self.combo_height_change)
+
+        widget = self.xml.get_widget('comboboxDevice')
+        input_type.connect('changed', self.set_combo_device, widget)
+        widget.connect('changed', self.combo_device_change)
 
         self.textview = self.xml.get_widget("textviewPipeline")
         self.textview.set_wrap_mode(gtk.WRAP_WORD)
@@ -77,10 +89,6 @@ class Device_manager(object):
             'identity name=null ! ffmpegcolorspace ! '
            )%(self.device, self.width, self.height)
         
-        pipeline_string2 = (
-           'v4lsrc device=%s name=source ! '
-        )%(self.device)
-
         self.pipeline_string = pipeline_string
         self.textview.get_buffer().set_text(pipeline_string)
         
@@ -90,6 +98,7 @@ class Device_manager(object):
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
             'identity name=null ! ffmpegcolorspace ! '
            )%(self.width, self.height)
+
         self.pipeline_string = pipeline_string
         self.textview.get_buffer().set_text(pipeline_string)    
             
@@ -97,10 +106,10 @@ class Device_manager(object):
         fake_sink = 'fakesink'
         video_sink = 'xvimagesink name=sink force-aspect-ratio=true'
         pipeline = gst.parse_launch(self.pipeline_string + fake_sink)
-#        self.pipeline_play = gst.parse_launch(pipeline_string2)
         state_change = pipeline.set_state(gst.STATE_PAUSED)
 
         if state_change == gst.STATE_CHANGE_FAILURE:
+            print 'error! cannot set pipeline'
             return False
         else:
             if self.pipeline_play:
@@ -118,27 +127,123 @@ class Device_manager(object):
         bus = pipeline.get_bus()
         bus.add_signal_watch()
 
-#        self.pipeline_capture = pipeline
-        self.pipeline_capture = self.pipeline_play
-        self.pipeline_capture.set_state(gst.STATE_PLAYING)
         self.pipeline_play.set_state(gst.STATE_PLAYING)
 
         return True
                     
     def pipeline_start(self):
-	self.pipeline_capture.set_state(gst.STATE_PLAYING)
         self.pipeline_play.set_state(gst.STATE_PLAYING)
 
     def pipeline_destroy(self):
-    	self.pipeline_capture.set_state(gst.STATE_NULL)
-	self.pipeline_play.set_state(gst.STATE_NULL)
+        self.pipeline_play.set_state(gst.STATE_NULL)
 
     def expose_cb(self, wid, event):
         self.sink.set_xwindow_id(self.outputarea.window.xid)   
 
-    def bttv_options_setter(self):
+    def frame_setter(self, element, buf):
+        for structure in buf.caps:
+            if structure["format"]=="RGB24":
+                if self.frame_format == None:
+                    self.frame_format = structure["format"]            
+                    self.frame_width = structure["width"]
+                    self.frame_height = structure["height"]                
+                self.frame = buf.data
+            if structure["format"]=="YUV2":
+                pass
+                
+        
+    def get_current_frame(self):
+        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, gtk.gdk.COLORSPACE_RGB, 
+                        False, 8, self.frame_width, self.frame_height, 
+                        self.frame_width*3)
+        return self.pixbuf
+        
+    def start_video(self, widget, project):
+#        self.timeout_id = gobject.timeout_add(200, self.processor.process_video,
+#                                    self.get_current_frame(),
+#                                    self.processor_output, project)
+        self.processor.process_video(self.get_current_frame(), 
+                                     self.processor_output, project)
+        self.counter += 1
+        if self.counter == 10:
+            gc.collect()
+            self.counter = 0
+                                             
+        return True 
+          
+    def input_combo_change(self, combo):
+        option = combo.get_active()
+
+        widget = self.xml.get_widget('hboxBttv')
+        widget.props.visible = False
+        
+        widget = self.xml.get_widget('vboxWebcam')
+        widget.props.visible = False
+
+        if option == 0:
+            # bttv selected
+            box = self.xml.get_widget('hboxBttv')
+            box.props.visible = True
+        elif option == 1:
+            # webcam selected
+            box = self.xml.get_widget('vboxWebcam')
+            box.props.visible = True            
+        elif option == 2:
+            # firewire selected
+            print 'not implemented yet'
+    
+    def set_combo_width(self, input_option, combo):
+        model = gtk.ListStore(gobject.TYPE_INT)
+        input_type = input_option.get_active()
+        if input_type == 0:
+            # bttv selected
+            model.append( [640] )
+        model.append( [320] )
+        model.append( [160] )
+        combo.set_model(model)
+    
+    def combo_width_change(self, combo):
+        temp = combo.get_active_iter()
+        value = combo.get_model().get_value(temp, 0)
+        self.width = value
+        self.set_default_pipeline_string(None)
+
+    def combo_height_change(self, combo):
+        temp = combo.get_active_iter()
+        value = combo.get_model().get_value(temp, 0)
+        self.height = value
+        self.set_default_pipeline_string(None)
+
+    def set_combo_height(self, input_option, combo):
+        model = gtk.ListStore(gobject.TYPE_INT)
+        input_type = input_option.get_active()
+        if input_type == 0:
+            # bttv selected
+            model.append( [480] )
+        model.append( [240] )
+        model.append( [120] )
+        combo.set_model(model)
+
+    def combo_device_change(self, combo):
+        temp = combo.get_active_iter()
+        value = combo.get_model().get_value(temp, 0)
+        self.device = str(value)
+        self.set_default_pipeline_string(None)
+
+    def set_combo_device(self, input_type, combo):
+        model = gtk.ListStore(gobject.TYPE_STRING)
+        # TODO: how to verify if a device exists?
+        model.append( ['/dev/video0'] )
+        model.append( ['/dev/video1'] )
+        model.append( ['/dev/video2'] )
+        combo.set_model(model)
+
+    def combo_channel_change(self, combo):
         pass
-    #        chan = self.source.find_channel_by_name('Composite1')
+
+    def set_combo_channel(self, combo):
+        pass
+#        chan = self.source.find_channel_by_name('Composite1')
 #        self.source.set_channel(chan)       
 #        print [param.name for param in self.sink.props]        
 
@@ -174,72 +279,35 @@ class Device_manager(object):
 #        for item in norms:
 #            combonorm.append_text(item)
 
-        
-    def frame_setter(self, element, buf):
-        for structure in buf.caps:
-            if structure["format"]=="RGB24":
-                if self.frame_format == None:
-                    self.frame_format = structure["format"]            
-                    self.frame_width = structure["width"]
-                    self.frame_height = structure["height"]                
-                self.frame = buf.data
-            if structure["format"]=="YUV2":
-                pass
-                
-        
-    def get_current_frame(self):
-        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, gtk.gdk.COLORSPACE_RGB, 
-                        False, 8, self.frame_width, self.frame_height, 
-                        self.frame_width*3)
-        return self.pixbuf
-        
-    def start_video(self, widget, project):
-#        self.timeout_id = gobject.timeout_add(200, self.processor.process_video,
-#                                    self.get_current_frame(),
-#                                    self.processor_output, project)
-        self.processor.process_video(self.get_current_frame(), 
-                                     self.processor_output, project)
-        self.counter += 1
-        if self.counter == 10:
-            gc.collect()
-            self.counter = 0
-                                             
-        return True 
-          
-    def combo_change(self, combo):
-        option = combo.get_active()
+    def combo_norm(self, combo):
+        pass
 
-        widget = self.xml.get_widget('vboxBttv')
+    def show_window(self, widget):
+        self.devicewindow.show_all()        
+
+        widget = self.xml.get_widget('hboxBttv')
         widget.props.visible = False
         
         widget = self.xml.get_widget('vboxWebcam')
         widget.props.visible = False
 
-        if option == 0:
-            # bttv selected
-            box = self.xml.get_widget('vboxBttv')
-            box.props.visible = True
-            self.width = 640
-            self.height = 480
-            self.device = '/dev/video0'
-            self.set_default_pipeline_string(None)
-        elif option == 1:
-            # webcam selected
-            box = self.xml.get_widget('vboxWebcam')
-            box.props.visible = True            
-            self.width = 320
-            self.height = 240
-            self.device = '/dev/video0'
-            self.set_default_pipeline_string(None)
-        elif option == 2:
-            # firewire selected
-            print 'not implemented yet'
-          
-    def show_window(self, widget):
-        self.devicewindow.show_all()        
+        height = self.xml.get_widget('comboboxHeight')
+        width = self.xml.get_widget('comboboxWidth')
+
+        self.xml.get_widget('notebookDeviceManager').set_current_page(0)
+
         response = self.devicewindow.run()
         if response == gtk.RESPONSE_OK :
-            # Handle changes in the pipeline   
+
+            temp = width.get_active_iter()
+            value = width.get_model().get_value(temp, 0)
+            self.width = value
+
+            temp = height.get_active_iter()
+            value = height.get_model().get_value(temp, 0)
+            self.height = value
+
+#            self.set_default_pipeline_string(None)
             self.set_pipelines()
             self.devicewindow.hide_all()
         else:

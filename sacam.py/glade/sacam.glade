@@ -181,10 +181,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem2">
@@ -205,10 +201,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem3">
@@ -230,10 +222,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem18">
@@ -255,10 +243,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem4">
@@ -275,15 +259,12 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">clock.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem5">
@@ -295,10 +276,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem6">
@@ -320,10 +297,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem7">
@@ -336,15 +309,12 @@
                           <widget class="GtkImage" id="image8">
                             <property name="visible">True</property>
                             <property name="pixbuf">camera-photo.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem8">
@@ -361,15 +331,12 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">areas.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem9">
@@ -386,15 +353,12 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">scale.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem10">
@@ -411,15 +375,12 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">insectsize.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem11">
@@ -431,10 +392,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem12">
@@ -456,10 +413,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem13">
@@ -485,10 +438,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem14">
@@ -500,10 +449,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem15">
@@ -525,10 +470,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem17">
@@ -545,15 +486,12 @@
                             <property name="xalign">0</property>
                             <property name="yalign">0</property>
                             <property name="pixbuf">tortuosity.png</property>
+                            <property name="stock">gtk-missing-image</property>
                           </widget>
                         </child>
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
                 <child>
                   <widget class="GtkToolItem" id="toolitem19">
@@ -607,10 +545,6 @@
                       </widget>
                     </child>
                   </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
                 </child>
               </widget>
               <packing>
@@ -2772,25 +2706,48 @@ cm</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK</property>
         <property name="spacing">2</property>
         <child>
-          <widget class="GtkNotebook" id="notebook1">
+          <widget class="GtkNotebook" id="notebookDeviceManager">
             <property name="visible">True</property>
             <child>
               <widget class="GtkVBox" id="vbox14">
                 <property name="visible">True</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox27">
+                  <widget class="GtkHBox" id="hbox29">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkLabel" id="label32">
+                      <widget class="GtkVBox" id="vbox19">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Video Input Type:</property>
+                        <child>
+                          <widget class="GtkLabel" id="label32">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Video Input Type:</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label37">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Video Width:</property>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label40">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Video Height:</property>
+                          </widget>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment29">
+                      <widget class="GtkAlignment" id="alignment30">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>
@@ -2802,11 +2759,38 @@ cm</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkComboBox" id="comboboxInputType">
+                      <widget class="GtkVBox" id="vbox22">
                         <property name="visible">True</property>
-                        <property name="items" translatable="yes">bttv-based card
+                        <child>
+                          <widget class="GtkComboBox" id="comboboxInputType">
+                            <property name="visible">True</property>
+                            <property name="items" translatable="yes">bttv-based card
 Webcam
 Firewire</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkComboBox" id="comboboxWidth">
+                            <property name="visible">True</property>
+                            <property name="items" translatable="yes">640
+320
+160</property>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkComboBox" id="comboboxHeight">
+                            <property name="visible">True</property>
+                            <property name="items" translatable="yes">480
+240
+120</property>
+                          </widget>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
                         <property name="position">2</property>
@@ -2818,19 +2802,42 @@ Firewire</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hbox33">
+                  <widget class="GtkHBox" id="hboxBttv">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkLabel" id="label37">
+                      <widget class="GtkVBox" id="vbox15">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Video Width:</property>
+                        <child>
+                          <widget class="GtkLabel" id="label33">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Device:</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label34">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Channel:</property>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkLabel" id="label35">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="label" translatable="yes">Norm:</property>
+                          </widget>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
                     </child>
                     <child>
-                      <widget class="GtkAlignment" id="alignment34">
+                      <widget class="GtkAlignment" id="alignment33">
                         <property name="visible">True</property>
                         <child>
                           <placeholder/>
@@ -2842,11 +2849,35 @@ Firewire</property>
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkComboBox" id="comboboxWidth">
+                      <widget class="GtkVBox" id="vbox20">
                         <property name="visible">True</property>
-                        <property name="items" translatable="yes">bttv-based card
-Webcam
-Firewire</property>
+                        <child>
+                          <widget class="GtkComboBox" id="comboboxDevice">
+                            <property name="visible">True</property>
+                            <property name="items" translatable="yes">teste
+teste</property>
+                          </widget>
+                        </child>
+                        <child>
+                          <widget class="GtkComboBox" id="comboboxChannel">
+                            <property name="visible">True</property>
+                            <property name="items" translatable="yes">teste
+teste</property>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkComboBox" id="comboboxNorm">
+                            <property name="visible">True</property>
+                            <property name="items" translatable="yes">teste
+teste</property>
+                          </widget>
+                          <packing>
+                            <property name="position">2</property>
+                          </packing>
+                        </child>
                       </widget>
                       <packing>
                         <property name="position">2</property>
@@ -2859,164 +2890,6 @@ Firewire</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hbox36">
-                    <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkLabel" id="label40">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Video Height:</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkAlignment" id="alignment37">
-                        <property name="visible">True</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkComboBox" id="comboboxHeight">
-                        <property name="visible">True</property>
-                        <property name="items" translatable="yes">bttv-based card
-Webcam
-Firewire</property>
-                      </widget>
-                      <packing>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkVBox" id="vboxBttv">
-                    <child>
-                      <widget class="GtkHBox" id="hbox29">
-                        <property name="visible">True</property>
-                        <child>
-                          <widget class="GtkLabel" id="label33">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">Device:</property>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkAlignment" id="alignment30">
-                            <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkComboBox" id="combobox1">
-                            <property name="visible">True</property>
-                          </widget>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkHBox" id="hbox30">
-                        <property name="visible">True</property>
-                        <child>
-                          <widget class="GtkLabel" id="label34">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">Channel:</property>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkAlignment" id="alignment31">
-                            <property name="visible">True</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkComboBox" id="combobox2">
-                            <property name="visible">True</property>
-                          </widget>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkHBox" id="hbox31">
-                        <property name="visible">True</property>
-                        <child>
-                          <widget class="GtkLabel" id="label35">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">Norm:</property>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkAlignment" id="alignment32">
-                            <property name="visible">True</property>
-                            <child>
-                              <placeholder/>
-                            </child>
-                          </widget>
-                          <packing>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <widget class="GtkComboBox" id="combobox3">
-                            <property name="visible">True</property>
-                          </widget>
-                          <packing>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <child>
                   <widget class="GtkVBox" id="vboxWebcam">
                     <child>
                       <widget class="GtkButton" id="button7">
@@ -3024,15 +2897,10 @@ Firewire</property>
                         <property name="label" translatable="yes">button</property>
                       </widget>
                     </child>
-                    <child>
-                      <placeholder/>
-                    </child>
-                    <child>
-                      <placeholder/>
-                    </child>
                   </widget>
                   <packing>
-                    <property name="position">4</property>
+                    <property name="expand">False</property>
+                    <property name="position">2</property>
                   </packing>
                 </child>
               </widget>
