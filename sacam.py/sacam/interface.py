@@ -151,9 +151,8 @@ class Interface(object):
         if response == False :
             self.update_state()            
             return
-               
-        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)               
-        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)      
+              
+        self.device_manager.pipeline_start()               
                 
         response = self.refimgdiag.run(None, self.project, self.device_manager, self)
         if response == False :
@@ -418,10 +417,9 @@ class Interface(object):
         widget.get_nth_page(2).set_sensitive(False)
                            
     def ready_state(self):        
-        self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
-        self.device_manager.pipeline_capture.set_state(gst.STATE_PLAYING)            
+        self.device_manager.pipeline_start()
         
-        widget = self.xml.get_widget("buttonNew")
+	widget = self.xml.get_widget("buttonNew")
         widget.set_sensitive(True)        
 
         widget = self.xml.get_widget("buttonOpen")
@@ -485,10 +483,8 @@ class Interface(object):
         widget.get_nth_page(2).set_sensitive(True)                
                
     def destroy(self, widget):
-        self.device_manager.pipeline_capture.set_state(gst.STATE_NULL)                    
-        self.device_manager.pipeline_play.set_state(gst.STATE_NULL)
-        gtk.main_quit()
-    
+	self.device_manager.pipeline_destroy()
+	gtk.main_quit()
 
 if __name__ == "__main__":
     base = Interface()

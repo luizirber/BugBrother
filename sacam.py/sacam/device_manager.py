@@ -47,6 +47,9 @@ class Device_manager(object):
         self.processor_output = processor_output
         self.frame_format = None
         
+        self.device = '/dev/video0'
+        self.width, self.height = 640, 480
+        
         self.pipeline_play = None
         
         widget = self.xml.get_widget('buttonDefaultPipeline')
@@ -57,72 +60,61 @@ class Device_manager(object):
                 
         self.counter = 0
         
+        widget = self.xml.get_widget('comboboxInputType')
+        widget.connect('changed', self.combo_change)
+
         self.textview = self.xml.get_widget("textviewPipeline")
         self.textview.set_wrap_mode(gtk.WRAP_WORD)
-        self.set_default_pipeline_string(None)
-        self.set_pipelines()
+        self.set_testing_pipeline_string(None)
+        #self.set_default_pipeline_string(None)
+        if not self.set_pipelines():
+            print 'error!'
             
     def set_default_pipeline_string(self, button):
-        #TODO: look for these values, don't hardcode then
-        device = '/dev/video0'
-        width, height = 640, 480
-                
         pipeline_string = (
             'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
-            'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
-           )%(device,width, height)
+            'identity name=null ! ffmpegcolorspace ! '
+           )%(self.device, self.width, self.height)
         
         pipeline_string2 = (
-#           'videotestsrc name=source ! xvimagesink name=sink force-aspect-ratio=true'           
-           'v4lsrc device=%s name=source ! xvimagesink name=sink force-aspect-ratio=true'
-#        )
-        )%(device)
+           'v4lsrc device=%s name=source ! '
+        )%(self.device)
 
         self.pipeline_string = pipeline_string
         self.textview.get_buffer().set_text(pipeline_string)
         
-    def set_testing_pipeline_string(self, button):
-        #TODO: look for these values, don't hardcode then
-        device = '/dev/video0'
-        width, height = 640, 480
-                
+    def set_testing_pipeline_string(self, button):                
         pipeline_string = (
             'videotestsrc name=source ! ffmpegcolorspace ! '                
-            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
-            'identity name=null ! ffmpegcolorspace ! xvimagesink name=sink force-aspect-ratio=true'
-           )%(width, height)
-        
+            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
+            'identity name=null ! ffmpegcolorspace ! '
+           )%(self.width, self.height)
         self.pipeline_string = pipeline_string
         self.textview.get_buffer().set_text(pipeline_string)    
             
     def set_pipelines(self):
-        pipeline = gst.parse_launch(self.pipeline_string)
+        fake_sink = 'fakesink'
+        video_sink = 'xvimagesink name=sink force-aspect-ratio=true'
+        pipeline = gst.parse_launch(self.pipeline_string + fake_sink)
 #        self.pipeline_play = gst.parse_launch(pipeline_string2)
-        if self.pipeline_play:
-            self.pipeline_play.set_state(gst.STATE_NULL)
+        state_change = pipeline.set_state(gst.STATE_PAUSED)
+
+        if state_change == gst.STATE_CHANGE_FAILURE:
+            return False
+        else:
+            if self.pipeline_play:
+                self.pipeline_play.set_state(gst.STATE_NULL)
+    	    pipeline.set_state(gst.STATE_NULL)
+    	    pipeline = gst.parse_launch(self.pipeline_string + video_sink)
             
         self.pipeline_play = pipeline
         self.source = pipeline.get_by_name("source")
-#      
+
         self.null = pipeline.get_by_name("null")
         self.null.connect("handoff", self.frame_setter)
         self.sink = self.pipeline_play.get_by_name("sink")
-        
-#        self.source = gst.element_factory_make('v4lsrc', "source")
-#        self.source.props.device = device
-        
-#        self.null = gst.element_factory_make('identity', "null")
-#        self.null.connect("handoff", self.frame_setter)
-        
-#        colorspace = gst.element_factory_make('ffmpegcolorspace')
-        
-#        self.sink = gst.element_factory_make('xvimagesink', "sink")
-#        self.sink.props.force_aspect_ratio = True
-        
-#        pipeline.add(self.source, self.null, colorspace, self.sink) 
-#        gst.element_link_many(self.source, self.null, colorspace, self.sink)
-        
+                
         bus = pipeline.get_bus()
         bus.add_signal_watch()
 
@@ -131,7 +123,22 @@ class Device_manager(object):
         self.pipeline_capture.set_state(gst.STATE_PLAYING)
         self.pipeline_play.set_state(gst.STATE_PLAYING)
 
-#        chan = self.source.find_channel_by_name('Composite1')
+        return True
+                    
+    def pipeline_start(self):
+	self.pipeline_capture.set_state(gst.STATE_PLAYING)
+        self.pipeline_play.set_state(gst.STATE_PLAYING)
+
+    def pipeline_destroy(self):
+    	self.pipeline_capture.set_state(gst.STATE_NULL)
+	self.pipeline_play.set_state(gst.STATE_NULL)
+
+    def expose_cb(self, wid, event):
+        self.sink.set_xwindow_id(self.outputarea.window.xid)   
+
+    def bttv_options_setter(self):
+        pass
+    #        chan = self.source.find_channel_by_name('Composite1')
 #        self.source.set_channel(chan)       
 #        print [param.name for param in self.sink.props]        
 
@@ -166,10 +173,7 @@ class Device_manager(object):
 #        norms = [norm.label for norm in self.source.list_norms()]
 #        for item in norms:
 #            combonorm.append_text(item)
-                    
-            
-    def expose_cb(self, wid, event):
-        self.sink.set_xwindow_id(self.outputarea.window.xid)   
+
         
     def frame_setter(self, element, buf):
         for structure in buf.caps:
@@ -202,10 +206,38 @@ class Device_manager(object):
                                              
         return True 
           
-    def show_window(self, widget):
-        self.devicewindow.show_all()
-        response = self.devicewindow.run()
+    def combo_change(self, combo):
+        option = combo.get_active()
+
+        widget = self.xml.get_widget('vboxBttv')
+        widget.props.visible = False
         
+        widget = self.xml.get_widget('vboxWebcam')
+        widget.props.visible = False
+
+        if option == 0:
+            # bttv selected
+            box = self.xml.get_widget('vboxBttv')
+            box.props.visible = True
+            self.width = 640
+            self.height = 480
+            self.device = '/dev/video0'
+            self.set_default_pipeline_string(None)
+        elif option == 1:
+            # webcam selected
+            box = self.xml.get_widget('vboxWebcam')
+            box.props.visible = True            
+            self.width = 320
+            self.height = 240
+            self.device = '/dev/video0'
+            self.set_default_pipeline_string(None)
+        elif option == 2:
+            # firewire selected
+            print 'not implemented yet'
+          
+    def show_window(self, widget):
+        self.devicewindow.show_all()        
+        response = self.devicewindow.run()
         if response == gtk.RESPONSE_OK :
             # Handle changes in the pipeline   
             self.set_pipelines()
