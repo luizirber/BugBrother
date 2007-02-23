@@ -48,7 +48,8 @@ class Device_manager(object):
         self.frame_format = None
         
         self.device = '/dev/video0'
-        self.width, self.height = 640, 480
+        self.width, self.height = 320, 240
+        self.norm, self.channel = None, None
         
         self.pipeline_play = None
         
@@ -61,6 +62,7 @@ class Device_manager(object):
         self.counter = 0
         
         input_type = self.xml.get_widget('comboboxInputType')
+        input_type.set_active(0)
         input_type.connect('changed', self.input_combo_change)
 
         widget = self.xml.get_widget('comboboxWidth')
@@ -75,9 +77,18 @@ class Device_manager(object):
         input_type.connect('changed', self.set_combo_device, widget)
         widget.connect('changed', self.combo_device_change)
 
+        widget = self.xml.get_widget('comboboxChannel')
+        input_type.connect('changed', self.set_combo_channel, widget)
+        widget.connect('changed', self.combo_channel_change)
+
+        widget = self.xml.get_widget('comboboxNorm')
+        input_type.connect('changed', self.set_combo_norm, widget)
+        widget.connect('changed', self.combo_norm_change)
+
         self.textview = self.xml.get_widget("textviewPipeline")
         self.textview.set_wrap_mode(gtk.WRAP_WORD)
         self.set_testing_pipeline_string(None)
+        self.show_window(None)
         #self.set_default_pipeline_string(None)
         if not self.set_pipelines():
             print 'error!'
@@ -128,6 +139,19 @@ class Device_manager(object):
         bus.add_signal_watch()
 
         self.pipeline_play.set_state(gst.STATE_PLAYING)
+
+        if self.channel:
+            print 'before: ', self.source.get_channel().label
+            chan = self.source.find_channel_by_name(self.channel)
+            self.source.set_channel(chan)
+            print 'after: ', self.source.get_channel().label
+    
+        if self.norm:
+            norm = self.source.find_norm_by_name(self.norm)
+            self.source.set_norm(norm)
+
+        self.pipeline_play.set_state(gst.STATE_PLAYING)
+        print 'long after: ',self.source.get_channel().label
 
         return True
                     
@@ -200,7 +224,16 @@ class Device_manager(object):
             model.append( [640] )
         model.append( [320] )
         model.append( [160] )
+
+        itr = None
+        for item in model:
+            if item[0] == self.width:
+                itr = item.iter
+                break
+
         combo.set_model(model)
+        if itr:
+            combo.set_active_iter(itr)
     
     def combo_width_change(self, combo):
         temp = combo.get_active_iter()
@@ -222,7 +255,16 @@ class Device_manager(object):
             model.append( [480] )
         model.append( [240] )
         model.append( [120] )
+
+        itr = None
+        for item in model:
+            if item[0] == self.height:
+                itr = item.iter
+                break
+
         combo.set_model(model)
+        if itr:
+            combo.set_active_iter(itr)
 
     def combo_device_change(self, combo):
         temp = combo.get_active_iter()
@@ -236,53 +278,56 @@ class Device_manager(object):
         model.append( ['/dev/video0'] )
         model.append( ['/dev/video1'] )
         model.append( ['/dev/video2'] )
+
+        itr = None
+        for item in model:
+            if item[0] == self.device:
+                itr = item.iter
+                break
+
+        combo.set_model(model)
+        if itr:
+            combo.set_active_iter(itr)
+
         combo.set_model(model)
 
     def combo_channel_change(self, combo):
-        pass
+        temp = combo.get_active_iter()
+        value = combo.get_model().get_value(temp, 0)
+        self.channel = str(value)
 
-    def set_combo_channel(self, combo):
-        pass
-#        chan = self.source.find_channel_by_name('Composite1')
-#        self.source.set_channel(chan)       
-#        print [param.name for param in self.sink.props]        
+    def combo_norm_change(self, combo):
+        temp = combo.get_active_iter()
+        value = combo.get_model().get_value(temp, 0)
+        self.norm = str(value)
 
-#   src = self.pipeline_play.get_by_name("source")
-#   chan = src.find_channel_by_name("Composite1")
-#   src.set_channel(chan)
+    def set_combo_channel(self, input_type, combo):
+        if input_type.get_active() == 0:
+            # bttv selected
+            try:
+                channels = [chan.label for chan in self.source.list_channels()]
+            except:
+                print "device doesn't support channels"
+            else:
+                model = gtk.ListStore(gobject.TYPE_STRING)
+                for item in channels:
+                    model.append([item])
+                combo.set_model(model)            
 
+    def set_combo_norm(self, input_type, combo):
+        if input_type.get_active() == 0:
+            # bttv selected
+            try:
+                norms = [norm.label for norm in self.source.list_norms()]
+            except:
+                print "device doesn't support norm"
+            else:
+                model = gtk.ListStore(gobject.TYPE_STRING)
+                for item in norms:
+                    model.append([item])
+                combo.set_model(model)            
 
-#        cell = gtk.CellRendererText()
-        
-#        combodevice = self.xml.get_widget("comboDevice")
-#        deviceliststore = gtk.ListStore(gobject.TYPE_STRING)        
-        
-#        combochannel = self.xml.get_widget("comboChannel")
-#        channelliststore = gtk.ListStore(gobject.TYPE_STRING)        
-        
-#        combonorm = self.xml.get_widget("comboNorm")                        
-#        normliststore = gtk.ListStore(gobject.TYPE_STRING)
-        
-#        liststore = { combodevice:deviceliststore, combochannel:channelliststore,
-#                      combonorm:normliststore }
-
-#        for comboitem in liststore:
-#            comboitem.set_model(liststore[comboitem])
-#            comboitem.pack_start(cell, True)
-#            comboitem.add_attribute(cell, 'text', 0)
-        
-#        channels = [channel.label for channel in self.source.list_channels()]
-#        for item in channels:
-#            combochannel.append_text(item)
-                
-#        norms = [norm.label for norm in self.source.list_norms()]
-#        for item in norms:
-#            combonorm.append_text(item)
-
-    def combo_norm(self, combo):
-        pass
-
-    def show_window(self, widget):
+    def show_window(self, button):
         self.devicewindow.show_all()        
 
         widget = self.xml.get_widget('hboxBttv')
@@ -295,6 +340,8 @@ class Device_manager(object):
         width = self.xml.get_widget('comboboxWidth')
 
         self.xml.get_widget('notebookDeviceManager').set_current_page(0)
+
+        self.xml.get_widget('comboboxInputType').emit('changed')
 
         response = self.devicewindow.run()
         if response == gtk.RESPONSE_OK :

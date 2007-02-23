@@ -2593,12 +2593,39 @@ cm</property>
               <placeholder/>
             </child>
             <child>
-              <widget class="GtkLabel" id="labelSpeed">
+              <widget class="GtkLabel" id="label9">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Insect Size:</property>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkEntry" id="entryInsectSize">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="max_length">10</property>
+              </widget>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="labelSize">
                 <property name="visible">True</property>
               </widget>
               <packing>
                 <property name="left_attach">2</property>
                 <property name="right_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="label13">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Insect Max Speed:</property>
+              </widget>
+              <packing>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
               </packing>
@@ -2617,42 +2644,15 @@ cm</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="label13">
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Insect Max Speed:</property>
-              </widget>
-              <packing>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="labelSize">
+              <widget class="GtkLabel" id="labelSpeed">
                 <property name="visible">True</property>
               </widget>
               <packing>
                 <property name="left_attach">2</property>
                 <property name="right_attach">3</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
               </packing>
-            </child>
-            <child>
-              <widget class="GtkEntry" id="entryInsectSize">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="max_length">10</property>
-              </widget>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="label9">
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Insect Size:</property>
-              </widget>
             </child>
           </widget>
           <packing>
@@ -2861,8 +2861,7 @@ teste</property>
                         <child>
                           <widget class="GtkComboBox" id="comboboxChannel">
                             <property name="visible">True</property>
-                            <property name="items" translatable="yes">teste
-teste</property>
+                            <property name="items" translatable="yes"></property>
                           </widget>
                           <packing>
                             <property name="position">1</property>
@@ -2871,8 +2870,7 @@ teste</property>
                         <child>
                           <widget class="GtkComboBox" id="comboboxNorm">
                             <property name="visible">True</property>
-                            <property name="items" translatable="yes">teste
-teste</property>
+                            <property name="items" translatable="yes"></property>
                           </widget>
                           <packing>
                             <property name="position">2</property>
