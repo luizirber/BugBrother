@@ -1,29 +1,34 @@
+''' This module contains the classes that define areas, points and tracks,
+    which are needed to calculate the statistics. '''
+
 from math import pi
 from lxml import etree
 from datetime import datetime
 from time import strptime
 
-class point(object):
-    """
-    Simple class that store data needed to generate reports, like
-    the time that a insect stayed in the point (start_time - end_time)
-    and in which areas the point is contained.
-    """
+class Point(object):
+    ''' Simple class that store data needed to generate reports.
+
+        This includes data such as the time that a insect stayed in the 
+        point (start_time - end_time) and in which areas the point 
+        is contained. '''
         
     def __init__(self):
-        self.x = ''
-        self.y = ''
+        self.x_pos = ''
+        self.y_pos = ''
         self.start_time = ''
         self.end_time = ''
         
     def object_to_xml(self, points):
+        ''' Convert the instance to a lxml element. '''
+
         new_point = etree.SubElement(points, 'point')
         
         element = etree.SubElement(new_point, "pos_x")
-        element.text = str(self.x)
+        element.text = str(self.x_pos)
         
         element = etree.SubElement(new_point, "pos_y")
-        element.text = str(self.y)
+        element.text = str(self.y_pos)
     
         element = etree.SubElement(new_point, "start_time")
         element.text = self.start_time.strftime("%Y-%m-%dT%H:%M:%S")
@@ -33,16 +38,18 @@ class point(object):
 
         
     def build_from_xml(self, pnt):
-        new_point = point()                    
+        ''' From a lxml element build a Point instance '''
+
+        new_point = Point()         
         
         value = pnt.find("{http://cnpdia.embrapa.br}pos_x")
-        new_point.x = int(value.text)
+        new_point.x_pos = int(value.text)
         
         value = pnt.find("{http://cnpdia.embrapa.br}pos_y")
-        new_point.y = int(value.text)
+        new_point.y_pos = int(value.text)
         
         value = pnt.find("{http://cnpdia.embrapa.br}start_time")
-        new_time = datetime(*strptime(value.text, "%Y-%m-%dT%H:%M:%S")[0:6])        
+        new_time = datetime(*strptime(value.text, "%Y-%m-%dT%H:%M:%S")[0:6])
         new_point.start_time = new_time
     
         value = pnt.find("{http://cnpdia.embrapa.br}end_time")
@@ -52,7 +59,12 @@ class point(object):
         return new_point
     
     
-class track(object):
+class Track(object):
+    ''' A track is defined as a path followed by the insect inside an area,
+        without leaving it.
+
+        This class contains many attributes used to calculate the statistics.'''
+
     def __init__(self):
         self.point_list = []
         self.lenght = 0
@@ -66,6 +78,8 @@ class track(object):
         self.end_time_time = 0
     
     def object_to_xml(self, tracks):
+        ''' Convert the instance to a lxml element '''
+
         new_track = etree.SubElement(tracks, "track")
         
         element = etree.SubElement(new_track, "residence")
@@ -94,7 +108,9 @@ class track(object):
             pnt.object_to_xml(points)
     
     def build_from_xml(self, trk):
-        new_track = track()
+        ''' Create a Track instance from a lxml element.'''
+
+        new_track = Track()
         
         element = trk.find("{http://cnpdia.embrapa.br}residence")
         new_track.residence = float(element.text)
@@ -111,15 +127,15 @@ class track(object):
         element = trk.find("{http://cnpdia.embrapa.br}standard_deviation")
         new_track.standard_deviation = float(element.text)
         
-        element = trk.find("{http://cnpdia.embrapa.br}angular_standard_deviation")
-        new_track.angular_standard_deviation = float(element.text)
+        elm = trk.find("{http://cnpdia.embrapa.br}angular_standard_deviation")
+        new_track.angular_standard_deviation = float(elm.text)
         
         element = trk.find("{http://cnpdia.embrapa.br}direction_changes")
         new_track.direction_changes = int(element.text)
         
         points = trk.find("{http://cnpdia.embrapa.br}points")
         for pnt in points:
-            new_point = point().build_from_xml(pnt)
+            new_point = Point().build_from_xml(pnt)
             new_track.point_list.append(new_point)
        
         new_track.start_time = new_track.point_list[1].start_time
@@ -128,80 +144,96 @@ class track(object):
         return new_track
        
        
-class shape(object):
-    """
-    Abstract class. Defines basic functions needed by the video processor
-    that must be implemented in derived classes.
-    """
+class Shape(object):
+    ''' Abstract class. Defines basic functions needed by the video processor
+        that must be implemented in derived classes. '''
     
-    def __init__(self):
-        pass
-    
-    def contains(self, Point = None):
+    def contains(self, value):
+        ''' Verify if the given point value is inside the shape. '''
+
         pass
     
     def area(self):
+        ''' Return the area of the shape. '''
+
         pass
 
-    def draw(self, canvas):
+    def draw(self, canvas, graph_context):
+        ''' Draw the shape in the given canvas using the given 
+            graphic context.'''
+
         pass
     
     def object_to_xml(self, root):
+        ''' Convert the instance to a lxml element '''
+
         pass
 
     def build_from_xml(self, root):
+        ''' From a lxml element build a Shape instance '''
+
         pass
 
 
-class rectangle(shape):
-    """
-    
-    """
+class Rectangle(Shape):
+    ''' Implements a Rectangle shape, based on the shape interface. '''
         
     def __init__(self):
+        super(Rectangle, self).__init__()
         self.x_center = None
         self.y_center = None
         self.height = None
         self.width = None
     
     def contains(self, value):
-        if value.x > self.x_center + self.width / 2 :
+        ''' Verify if the given point value is inside the shape. '''
+
+        if value.x_pos > self.x_center + self.width / 2 :
             return False            
-        elif value.x < self.x_center - self.width / 2 :
+        elif value.x_pos < self.x_center - self.width / 2 :
             return False
-        elif value.y > self.y_center + self.height / 2 :
+        elif value.y_pos > self.y_center + self.height / 2 :
             return False
-        elif value.y < self.y_center - self.height / 2 :
+        elif value.y_pos < self.y_center - self.height / 2 :
             return False
         else:
             return True
     
     def area(self):
+        ''' Return the area of the shape. '''
+
         return self.height * self.width
     
-    def draw(self, canvas, gc):
-        canvas.draw_rectangle(gc, False, self.x_center - self.width/2,
+    def draw(self, canvas, graph_context):
+        ''' Draw the shape in the given canvas '''
+
+        canvas.draw_rectangle(graph_context, False, 
+                              self.x_center - self.width/2,
                               self.y_center - self.height/2,
                               self.width, self.height)
                               
-    def build_from_xml(self, shape):
-        new_shape = rectangle()
+    def build_from_xml(self, shp):
+        ''' From a lxml element build a Rectangle instance '''
+
+        new_shape = Rectangle()
                             
-        value = shape.find("{http://cnpdia.embrapa.br}x_center")
+        value = shp.find("{http://cnpdia.embrapa.br}x_center")
         new_shape.x_center = int(value.text)
         
-        value = shape.find("{http://cnpdia.embrapa.br}y_center")
+        value = shp.find("{http://cnpdia.embrapa.br}y_center")
         new_shape.y_center = int(value.text)
         
-        value = shape.find("{http://cnpdia.embrapa.br}width")
+        value = shp.find("{http://cnpdia.embrapa.br}width")
         new_shape.width = int(value.text)
         
-        value = shape.find("{http://cnpdia.embrapa.br}height")
+        value = shp.find("{http://cnpdia.embrapa.br}height")
         new_shape.height = int(value.text)
         
         return new_shape
                 
     def object_to_xml(self, new_area):
+        ''' Convert the instance to a lxml element '''
+
         new_shape = etree.SubElement(new_area, "rectangle")
         
         element = etree.SubElement(new_shape, "x_center")
@@ -217,47 +249,62 @@ class rectangle(shape):
         element.text = str(self.height)
                         
                 
-class ellipse(shape):
-    """ http://en.wikipedia.org/wiki/Ellipse#Area """
+class Ellipse(Shape):
+    ''' Implements a Ellipse based on the shape interface.
+
+        Math formulas taken from http://en.wikipedia.org/wiki/Ellipse '''
+
     def __init__(self):
+        super(Ellipse, self).__init__()
         self.x_center = None
         self.y_center = None
         self.x_axis = None    
         self.y_axis = None
     
     def contains(self, value):
-        if pow(self.x_center - value.x, 2) / pow(self.x_axis, 2) + \
-            pow(self.y_center - value.y, 2) / pow(self.y_axis, 2) <= 1 :
+        ''' Verify if the given point value is inside the shape. '''
+
+        if pow(self.x_center - value.x_pos, 2) / pow(self.x_axis, 2) + \
+            pow(self.y_center - value.y_pos, 2) / pow(self.y_axis, 2) <= 1 :
             return True
         else:
             return False
         
     def area(self):
+        ''' Return the area of the shape. '''
+
         return pi * self.x_axis * self.y_axis
     
-    def draw(self, canvas, gc):
-        canvas.draw_arc(gc, False, int(self.x_center - self.x_axis),
+    def draw(self, canvas, graph_context):
+        ''' Draw the shape in the given canvas '''
+
+        canvas.draw_arc(graph_context, False, 
+                        int(self.x_center - self.x_axis),
                         int(self.y_center - self.y_axis),
                         int(self.x_axis * 2), int(self.y_axis * 2),
                         0, 360*64)    
     
-    def build_from_xml(self, shape):
-        new_shape = ellipse()            
-        value = shape.find("{http://cnpdia.embrapa.br}x_center")
+    def build_from_xml(self, shp):
+        ''' From a lxml element build a Ellipse instance '''
+
+        new_shape = Ellipse()            
+        value = shp.find("{http://cnpdia.embrapa.br}x_center")
         new_shape.x_center = int(value.text)
         
-        value = shape.find("{http://cnpdia.embrapa.br}y_center")
+        value = shp.find("{http://cnpdia.embrapa.br}y_center")
         new_shape.y_center = int(value.text)
         
-        value = shape.find("{http://cnpdia.embrapa.br}x_axis")
+        value = shp.find("{http://cnpdia.embrapa.br}x_axis")
         new_shape.x_axis = float(value.text)
         
-        value = shape.find("{http://cnpdia.embrapa.br}y_axis")
+        value = shp.find("{http://cnpdia.embrapa.br}y_axis")
         new_shape.y_axis = float(value.text)
         
         return new_shape
     
     def object_to_xml(self, new_area):
+        ''' Convert the instance to a lxml element '''
+
         new_shape = etree.SubElement(new_area, "ellipse")
         
         element = etree.SubElement(new_shape, "x_center")
@@ -273,47 +320,72 @@ class ellipse(shape):
         element.text = str(self.y_axis)
         
     
-class freeform(shape):
+class Freeform(Shape):
+    ''' Yet to implement. A poligon implementing the shape interface. '''
+
     def __init__(self):
+        super(Freeform, self).__init__() 
         pass    
     
     def contains(self, value):
+        ''' Verify if the given point value is inside the shape. '''
+
         pass
     
     def area(self):
+        ''' Return the area of the shape. '''
+
         pass
     
-    def draw(self, canvas, gc):
+    def draw(self, canvas, graph_context):
+        ''' Draw the shape in the given canvas '''
+
         pass        
     
-    def build_from_xml(self, shape):
-        new_shape = freeform()
+    def build_from_xml(self, shp):
+        ''' From a lxml element build a Freeform instance '''
+
+        return Freeform()
     
     def object_to_xml(self, new_area):
+        ''' Convert the instance to a lxml element '''
+
         new_shape = etree.SubElement(new_area, "freeform")
         
         return new_shape
     
     
-class line(shape):
+class Line(Shape):
+    ''' A simple shape used to define scales. '''
+
     def __init__(self):
+        super(Line, self).__init__()
         self.x_start = None
         self.y_start = None
         self.x_end = None    
         self.y_end = None
     
     def contains(self, value):
+        ''' Verify if the given point value is inside the shape. '''
+
         pass
             
     def area(self):
+        ''' Return the area of the shape. '''
+
         return 0
     
-    def draw(self, canvas, gc):
-        canvas.draw_line(gc, self.x_start, self.y_start,
-                             self.x_end, self.y_end)
+    def draw(self, canvas, graph_context):
+        ''' Draw the shape in the given canvas '''
+
+        canvas.draw_line(graph_context, 
+                         self.x_start, self.y_start,
+                         self.x_end, self.y_end)
     
     def build_from_xml(self, root):
-        new_shape = line()
+        ''' From a lxml element build a Line instance '''
+
+        new_shape = Line()
         
         value = root.find("{http://cnpdia.embrapa.br}x_start")
         new_shape.x_start = int(value.text)
@@ -330,6 +402,8 @@ class line(shape):
         return new_shape
     
     def object_to_xml(self, root):
+        ''' Convert the instance to a lxml element '''
+
         new_shape = etree.SubElement(root, "line")
         
         element = etree.SubElement(new_shape, "x_start")
@@ -346,15 +420,12 @@ class line(shape):
         
         return new_shape
     
-class area(object):
-    """
-    This class represents an area. An area contains 2 attributes: 
-    a shape,
-    and a name, to simplify the area identification for the user.
-    """
+class Area(object):
+    ''' This class represents an area. '''
     
-    def __init__(self, name=None, desc=None, shape=None):
-        self.shape = shape
+    def __init__(self, name=None, desc=None, shp=None):
+        super(Area, self).__init__()
+        self.shape = shp
         self.name = name
         self.description = desc
         self.track_list = []
@@ -365,6 +436,8 @@ class area(object):
         self.total_lenght = ''
     
     def object_to_xml(self, areas):
+        ''' Convert the instance to a lxml element '''
+
         new_area = etree.SubElement(areas, "area")
         
         self.shape.object_to_xml(new_area)
@@ -392,44 +465,47 @@ class area(object):
         for trk in self.track_list:
             trk.object_to_xml(tracks)
     
-    def build_from_xml(self, ar):
-        new_area = area()
-        shape = ar.find("{http://cnpdia.embrapa.br}ellipse")
-        if shape:
-            new_area.shape = ellipse().build_from_xml(shape)
+    def build_from_xml(self, root):
+        ''' From a lxml element build a Area instance '''
+
+        new_area = Area()
+        new_shape = root.find("{http://cnpdia.embrapa.br}ellipse")
+        if new_shape:
+            new_area.shape = Ellipse().build_from_xml(new_shape)
         else:
-            shape = ar.find("{http://cnpdia.embrapa.br}rectangle")
-            if shape:
-                new_area.shape = rectangle().build_from_xml(shape)
+            new_shape = root.find("{http://cnpdia.embrapa.br}rectangle")
+            if new_shape:
+                new_area.shape = Rectangle().build_from_xml(new_shape)
             else:
-                new_area.shape = freeform().build_from_xml(shape)
+                new_area.shape = Freeform().build_from_xml(new_shape)
         
-        element = ar.find("{http://cnpdia.embrapa.br}name")
+        element = root.find("{http://cnpdia.embrapa.br}name")
         new_area.name = element.text
         
-        element = ar.find("{http://cnpdia.embrapa.br}description")
+        element = root.find("{http://cnpdia.embrapa.br}description")
         new_area.description = element.text
         
-        element = ar.find("{http://cnpdia.embrapa.br}number_of_tracks")
+        element = root.find("{http://cnpdia.embrapa.br}number_of_tracks")
         if element.text:
             new_area.number_of_tracks = int(element.text)
         
         #TODO: this is a timedelta. build it correctly.
-        element = ar.find("{http://cnpdia.embrapa.br}residence")
+        element = root.find("{http://cnpdia.embrapa.br}residence")
         if element.text:
             new_area.residence = element.text
         
-        element = ar.find("{http://cnpdia.embrapa.br}residence_percentage")
+        element = root.find("{http://cnpdia.embrapa.br}residence_percentage")
         if element.text:
             new_area.residence_percentage = float(element.text)
         
-        element = ar.find("{http://cnpdia.embrapa.br}total_lenght")
+        element = root.find("{http://cnpdia.embrapa.br}total_lenght")
         if element.text:
             new_area.total_lenght = float(element.text)
     
-        tracks = ar.find("{http://cnpdia.embrapa.br}tracks")
+        tracks = root.find("{http://cnpdia.embrapa.br}tracks")
         for trk in tracks:
-            new_track = track().build_from_xml(trk)
+            new_track = Track().build_from_xml(trk)
             new_area.track_list.append(new_track)    
 
         return new_area
+

@@ -3,15 +3,6 @@ SACAM
 
 Author: Luiz Irber <luiz.irber@gmail.com>
 
-This program allows you to create the Graphical User Interface (GUI) of your
-GTK+ program in a visual way. It started as a Glade-3 clone but now it is more
-complete and featured than its ancestor. It tries to be compatible with libglade
-but it can handle some widgets that still lack support in libglade.
-
-Gazpacho is also part of Gruppy, an LGPL'ed framework and set of tools to build
-ERP-like software systems for medium and small sized companies. Nevertheless it is
-not dependent of any part of it so you can use it by its own.
-
 SACAM's homepage is located at:
 http://repositorio.agrolivre.gov.br/projects/sacam/
 

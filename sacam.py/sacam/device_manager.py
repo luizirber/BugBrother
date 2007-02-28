@@ -1,7 +1,7 @@
-#/usr/bin/env python
+''' This module contains the DeviceManager class, which does the interfacing
+    with GStreamer. '''
 
 import gc
-gc.set_threshold(100)
 
 import pygtk
 pygtk.require('2.0')
@@ -16,11 +16,12 @@ import gst
 
 from kiwi.environ import environ
 
-from sacam.i18n import _, APP_NAME
+from sacam.videoprocessor import Videoprocessor
 
-from sacam.videoprocessor import videoprocessor
+from sacam.i18n import APP_NAME
 
-class Device_manager(object):
+class DeviceManager(object):
+    ''' Encapsulate the GStreamer funcionality and the videoprocessor. '''
    
     xml = None
     xid = None
@@ -41,7 +42,7 @@ class Device_manager(object):
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("delete-event", self.delete)
         
-        self.processor = videoprocessor()         
+        self.processor = Videoprocessor()         
         self.outputarea = video_output
         self.outputarea.connect("expose-event", self.expose_cb)
         self.processor_output = processor_output
@@ -51,6 +52,10 @@ class Device_manager(object):
         self.width, self.height = 320, 240
         self.norm, self.channel = None, None
         
+        self.pipeline_string = ''
+        self.null = None
+        self.frame_width = None
+        self.frame_height = None
         self.pipeline_play = None
         
         widget = self.xml.get_widget('buttonDefaultPipeline')
@@ -94,16 +99,20 @@ class Device_manager(object):
             print 'error!'
             
     def set_default_pipeline_string(self, button):
+        ''' Set the default pipeline string, using the v4lsrc element. '''
+
         pipeline_string = (
-            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
-            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '            
-            'identity name=null ! ffmpegcolorspace ! '
+           'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
+           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
+           'identity name=null ! ffmpegcolorspace ! '
            )%(self.device, self.width, self.height)
         
         self.pipeline_string = pipeline_string
         self.textview.get_buffer().set_text(pipeline_string)
         
-    def set_testing_pipeline_string(self, button):                
+    def set_testing_pipeline_string(self, button):
+        ''' Set the testing pipeline string, using the videotestsrc element. '''
+
         pipeline_string = (
             'videotestsrc name=source ! ffmpegcolorspace ! '                
             'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
@@ -114,6 +123,9 @@ class Device_manager(object):
         self.textview.get_buffer().set_text(pipeline_string)    
             
     def set_pipelines(self):
+        ''' Based on the current pipeline_string this function builds the
+            new pipeline, after verifying if it is valid. '''
+
         fake_sink = 'fakesink'
         video_sink = 'xvimagesink name=sink force-aspect-ratio=true'
         pipeline = gst.parse_launch(self.pipeline_string + fake_sink)
@@ -125,8 +137,8 @@ class Device_manager(object):
         else:
             if self.pipeline_play:
                 self.pipeline_play.set_state(gst.STATE_NULL)
-    	    pipeline.set_state(gst.STATE_NULL)
-    	    pipeline = gst.parse_launch(self.pipeline_string + video_sink)
+            pipeline.set_state(gst.STATE_NULL)
+            pipeline = gst.parse_launch(self.pipeline_string + video_sink)
             
         self.pipeline_play = pipeline
         self.source = pipeline.get_by_name("source")
@@ -138,52 +150,68 @@ class Device_manager(object):
         bus = pipeline.get_bus()
         bus.add_signal_watch()
 
-        self.pipeline_play.set_state(gst.STATE_PLAYING)
+        self.pipeline_play.set_state(gst.STATE_PAUSED)
 
         if self.channel:
-            print 'before: ', self.source.get_channel().label
             chan = self.source.find_channel_by_name(self.channel)
             self.source.set_channel(chan)
-            print 'after: ', self.source.get_channel().label
     
         if self.norm:
             norm = self.source.find_norm_by_name(self.norm)
             self.source.set_norm(norm)
 
         self.pipeline_play.set_state(gst.STATE_PLAYING)
-        print 'long after: ',self.source.get_channel().label
 
         return True
                     
     def pipeline_start(self):
+        ''' Start the current pipeline '''
+
         self.pipeline_play.set_state(gst.STATE_PLAYING)
 
     def pipeline_destroy(self):
+        ''' Put the current pipeline in a NULL state, meaning that it can be
+            destroyed. '''
+
         self.pipeline_play.set_state(gst.STATE_NULL)
 
     def expose_cb(self, wid, event):
+        ''' Callback function executed every time the outputarea is exposed. 
+ 
+            Needed to put the GStreamer sink on the outputarea. '''
+
         self.sink.set_xwindow_id(self.outputarea.window.xid)   
 
     def frame_setter(self, element, buf):
+        ''' Every time a new buffer is sent accross the pipeline its data 
+            is stored to be used afterwards. '''
+
         for structure in buf.caps:
-            if structure["format"]=="RGB24":
+            if structure["format"] == "RGB24":
                 if self.frame_format == None:
                     self.frame_format = structure["format"]            
                     self.frame_width = structure["width"]
                     self.frame_height = structure["height"]                
                 self.frame = buf.data
-            if structure["format"]=="YUV2":
+            if structure["format"] == "YUV2":
+                #TODO: implement colorspace conversion?
                 pass
                 
         
     def get_current_frame(self):
-        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, gtk.gdk.COLORSPACE_RGB, 
-                        False, 8, self.frame_width, self.frame_height, 
+        ''' Return a pixbuf from the current buffer. '''
+
+        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, 
+                        gtk.gdk.COLORSPACE_RGB, False, 8, 
+                        self.frame_width, self.frame_height, 
                         self.frame_width*3)
         return self.pixbuf
         
     def start_video(self, widget, project):
-#        self.timeout_id = gobject.timeout_add(200, self.processor.process_video,
+        ''' Start the video processing of the input. '''
+
+#        self.timeout_id = gobject.timeout_add(200, 
+#                                    self.processor.process_video,
 #                                    self.get_current_frame(),
 #                                    self.processor_output, project)
         self.processor.process_video(self.get_current_frame(), 
@@ -196,6 +224,8 @@ class Device_manager(object):
         return True 
           
     def input_combo_change(self, combo):
+        ''' Update the input type combo, showing the extra properties. '''
+
         option = combo.get_active()
 
         widget = self.xml.get_widget('hboxBttv')
@@ -217,6 +247,8 @@ class Device_manager(object):
             print 'not implemented yet'
     
     def set_combo_width(self, input_option, combo):
+        ''' Update the width of the video based on the input type '''
+
         model = gtk.ListStore(gobject.TYPE_INT)
         input_type = input_option.get_active()
         if input_type == 0:
@@ -236,18 +268,24 @@ class Device_manager(object):
             combo.set_active_iter(itr)
     
     def combo_width_change(self, combo):
+        ''' Set the video width based on the current combo value. '''
+
         temp = combo.get_active_iter()
         value = combo.get_model().get_value(temp, 0)
         self.width = value
         self.set_default_pipeline_string(None)
 
     def combo_height_change(self, combo):
+        ''' Set the video height based on the current combo value. '''
+
         temp = combo.get_active_iter()
         value = combo.get_model().get_value(temp, 0)
         self.height = value
         self.set_default_pipeline_string(None)
 
     def set_combo_height(self, input_option, combo):
+        ''' Update the height of the video based on the input type '''
+
         model = gtk.ListStore(gobject.TYPE_INT)
         input_type = input_option.get_active()
         if input_type == 0:
@@ -267,12 +305,16 @@ class Device_manager(object):
             combo.set_active_iter(itr)
 
     def combo_device_change(self, combo):
+        ''' Set the video device based '''
+
         temp = combo.get_active_iter()
         value = combo.get_model().get_value(temp, 0)
         self.device = str(value)
         self.set_default_pipeline_string(None)
 
     def set_combo_device(self, input_type, combo):
+        ''' Update the video device based on the input type '''
+
         model = gtk.ListStore(gobject.TYPE_STRING)
         # TODO: how to verify if a device exists?
         model.append( ['/dev/video0'] )
@@ -292,21 +334,27 @@ class Device_manager(object):
         combo.set_model(model)
 
     def combo_channel_change(self, combo):
+        ''' Set the video device channel based on the combo value'''
+
         temp = combo.get_active_iter()
         value = combo.get_model().get_value(temp, 0)
         self.channel = str(value)
 
     def combo_norm_change(self, combo):
+        ''' Set the video device norm based on the combo value'''
+
         temp = combo.get_active_iter()
         value = combo.get_model().get_value(temp, 0)
         self.norm = str(value)
 
     def set_combo_channel(self, input_type, combo):
+        ''' Update the video device channel based on the current video device'''
+
         if input_type.get_active() == 0:
             # bttv selected
             try:
                 channels = [chan.label for chan in self.source.list_channels()]
-            except:
+            except AttributeError:
                 print "device doesn't support channels"
             else:
                 model = gtk.ListStore(gobject.TYPE_STRING)
@@ -315,11 +363,13 @@ class Device_manager(object):
                 combo.set_model(model)            
 
     def set_combo_norm(self, input_type, combo):
+        ''' Update the video device norm based on the current video device'''
+
         if input_type.get_active() == 0:
             # bttv selected
             try:
                 norms = [norm.label for norm in self.source.list_norms()]
-            except:
+            except AttributeError:
                 print "device doesn't support norm"
             else:
                 model = gtk.ListStore(gobject.TYPE_STRING)
@@ -328,6 +378,9 @@ class Device_manager(object):
                 combo.set_model(model)            
 
     def show_window(self, button):
+        ''' Show the DeviceManager dialog, and set the appropriate behavior
+            of its widgets. '''
+
         self.devicewindow.show_all()        
 
         widget = self.xml.get_widget('hboxBttv')
@@ -361,5 +414,6 @@ class Device_manager(object):
             self.devicewindow.hide_all()
         
     def delete(self, widget, event):
+        ''' Hide the dialog, instead of destroy it. '''
         self.devicewindow.hide_all()
         

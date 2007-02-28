@@ -17,17 +17,18 @@
 # This file contains code from Gazpacho
 # Copyright (C) 2005 by Async Open Source
 
+''' sacam module '''
+
 import os
 
 from kiwi.environ import Library
 
-dirname = os.path.abspath(
+DIRNAME = os.path.abspath(
     os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
 
-lib = Library('sacam', root=dirname)
-if lib.uninstalled:
-    lib.add_global_resource('glade', 'glade')
-    lib.add_global_resource('doc', 'doc')
-    lib.add_global_resource('xml', 'xml')
+LIB = Library('sacam', root=DIRNAME)
+if LIB.uninstalled:
+    LIB.add_global_resource('glade', 'glade')
+    LIB.add_global_resource('doc', 'doc')
+    LIB.add_global_resource('xml', 'xml')
 #lib.enable_translation("sacam")
-

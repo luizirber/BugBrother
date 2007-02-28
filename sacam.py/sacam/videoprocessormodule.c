@@ -375,11 +375,11 @@ Videoprocessor_process_video(Videoprocessor* self, PyObject *args)
         ptemp = PyObject_CallObject(PyObject_PointType, NULL);
 
         value = Py_BuildValue("i", self->middle_width);        
-        PyObject_SetAttrString(ptemp, "x", value);
+        PyObject_SetAttrString(ptemp, "x_pos", value);
         Py_XDECREF(value);
         
         value = Py_BuildValue("i", self->middle_height);  
-        PyObject_SetAttrString(ptemp, "y", value);
+        PyObject_SetAttrString(ptemp, "y_pos", value);
         Py_XDECREF(value);
         
         PyObject_SetAttrString(ptemp, "start_time", begin);
@@ -414,7 +414,7 @@ static PyMethodDef Videoprocessor_methods[] = {
 static PyTypeObject VideoprocessorType = {
     PyObject_HEAD_INIT(NULL)
     0,                                           /* ob_size */
-    "videoprocessor.videoprocessor",             /* tp_name */
+    "videoprocessor.Videoprocessor",             /* tp_name */
     sizeof(Videoprocessor),                      /* tp_basicsize */
     0,                                           /* tp_itemsize */
     (destructor)Videoprocessor_dealloc,          /* tp_dealloc */
@@ -433,7 +433,7 @@ static PyTypeObject VideoprocessorType = {
     0,                                           /* tp_setattro */
     0,                                           /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,    /* tp_flags*/
-    "videoprocessor object",                     /* tp_doc */
+    "Videoprocessor object",                     /* tp_doc */
     0,                                           /* tp_traverse */
     0,                                           /* tp_clear */
     0,                                           /* tp_richcompare */
@@ -476,7 +476,7 @@ initvideoprocessor(void)
         return;
 
     Py_INCREF(&VideoprocessorType);
-    PyModule_AddObject(m, "videoprocessor", 
+    PyModule_AddObject(m, "Videoprocessor", 
                        (PyObject *)&VideoprocessorType);
 
     PyDateTime_IMPORT;
@@ -491,7 +491,7 @@ initvideoprocessor(void)
     
     module = PyImport_ImportModule("areas");
     if (module) {
-        PyObject_PointType = (PyTypeObject*)PyObject_GetAttrString(module, "point");
+        PyObject_PointType = (PyTypeObject*)PyObject_GetAttrString(module, "Point");
         Py_DECREF(module);
     }
 }

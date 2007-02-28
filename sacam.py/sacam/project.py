@@ -1,8 +1,11 @@
+''' Define the project and experiment classes. 
+
+    A project is composed of many experiments with some common attributes.'''
+
 import os
 
 from math import pi, sqrt, acos
 from copy import deepcopy
-import cPickle
 from csv import writer
 from datetime import datetime, timedelta
 from time import strptime
@@ -12,26 +15,27 @@ from kiwi.environ import environ
 from lxml import etree
 
 from sacam.i18n import _
-from sacam.areas import track, rectangle, ellipse, point, area, freeform, line
+from sacam.areas import Track, Rectangle, Ellipse, Point, Area, Line
 
-class project(object):
-    """
-    this class contains data used to define a project.
-    """
+class Project(object):
+    ''' This class contains data used to define a project. '''
     
     def __init__(self):
         self.filename = ''
         self.attributes = {}
         self.refimage = ''
         self.experiment_list = []
-        self.experiment_list.append(experiment())
+        self.experiment_list.append(Experiment())
         self.current_experiment = self.experiment_list[-1]
         self.bug_max_speed = 3
         self.bug_size = 39
         self.attributes[_("Project Name")] = _("Project")
     
     def load(self, filename):
-        ''' TODO: If returned value is None, there is an error! '''
+        ''' Given a filename open a project saved on disk.
+
+            TODO: If returned value is None, there is an error! '''
+
         prj = None
         try:
             #open the file for reading
@@ -43,8 +47,8 @@ class project(object):
             schema = etree.parse(schemafile)
             relax_schema = etree.RelaxNG(schema)
             
-            ## Parse the file, validate, and then iterate thru it
-            ## to build the project instance            
+            # Parse the file, validate, and then iterate thru it
+            # to build the project instance            
             parser = etree.XMLParser(ns_clean=True)
             xml_tree = etree.parse(projfile, parser)
             if not relax_schema.validate(xml_tree):
@@ -52,7 +56,7 @@ class project(object):
                 print 'error'
                 # TODO: error handling
             else:
-                prj = project()
+                prj = Project()
                 prj.filename = filename
                 
                 # get the <project> tag
@@ -81,8 +85,8 @@ class project(object):
                 # Fifth step: experiment list
                 experiments = root.find("{http://cnpdia.embrapa.br}experiments")
                 prj.experiment_list = []
-                for el in experiments:
-                    new_exp = experiment().build_from_xml(el)
+                for elt in experiments:
+                    new_exp = Experiment().build_from_xml(elt)
                     prj.experiment_list.append(new_exp)
                 if prj.experiment_list:
                     prj.current_experiment = prj.experiment_list[-1]
@@ -93,10 +97,13 @@ class project(object):
         return prj
             
     def save(self):
+        ''' Save the current project in an xml file. '''
+
         projfile = file(self.filename,'w')
         projfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
         
-        root = etree.Element('project',attrib={'xmlns':"http://cnpdia.embrapa.br"})
+        root = etree.Element('project',
+                              attrib={'xmlns':"http://cnpdia.embrapa.br"})
         tree = etree.ElementTree(root)
         
         attr = etree.SubElement(root, "attributes")
@@ -123,11 +130,13 @@ class project(object):
             if exp.finished:
                 exp.object_to_xml(experiments)
         
-        tree.write(projfile,"UTF-8",pretty_print=True)
+        tree.write(projfile, "UTF-8", pretty_print=True)
         projfile.close()
         
     def export(self, filename):
-        fw = writer(open(filename, 'wb'), 'excel')
+        ''' Export the project to a CSV file '''
+
+        filewriter = writer(open(filename, 'wb'), 'excel')
         export_rows = []
         
         # write the header of the file, with info about the project
@@ -135,20 +144,26 @@ class project(object):
             export_rows.append( (key, self.attributes[key]) )
             
         # for each experiment, collect all the data needed            
-        for experiment in self.experiment_list:
-            experiment_rows = experiment.export()
+        for exper in self.experiment_list:
+            experiment_rows = exper.export()
             for row in experiment_rows:
                 export_rows.append(row)
                 
         # at last, save the rows in the file
-        fw.writerows(export_rows)
+        filewriter.writerows(export_rows)
 
     def new_experiment_from_current(self):
-        exp = experiment()
+        ''' Creates a new experiment using the data from the current one. 
+ 
+            The data includes areas, scales and measurement unit, but doesn't
+            include points lists, for example. '''
+
+        exp = Experiment()
         
-        # TODO:take a look at this
+        # TODO:take a look at this, sometimes this fails
         exp.attributes = deepcopy(self.current_experiment.attributes)
-        exp.measurement_unit = deepcopy(self.current_experiment.measurement_unit)
+        exp.measurement_unit = deepcopy(
+                                  self.current_experiment.measurement_unit)
         exp.x_scale_ratio = deepcopy(self.current_experiment.x_scale_ratio)
         exp.y_scale_ratio = deepcopy(self.current_experiment.y_scale_ratio)
         exp.threshold = deepcopy(self.current_experiment.threshold)
@@ -158,11 +173,9 @@ class project(object):
         self.experiment_list.append(exp)
         self.current_experiment = exp
     
-class experiment(object):
-    """
-    a project consist of various experiment. every experiment is an instance
-    of this class.
-    """
+class Experiment(object):
+    ''' A project consist of many experiment. Every experiment is an instance
+        of this class. '''
         
     def __init__(self):
         self.point_list = []
@@ -180,6 +193,8 @@ class experiment(object):
         self.finished = False        
     
     def object_to_xml(self, experiments):
+        ''' Create a lxml element from the current instance '''
+
         new_experiment = etree.SubElement(experiments, 'experiment')
         
         attr = etree.SubElement(new_experiment, 'attributes')
@@ -219,111 +234,125 @@ class experiment(object):
             pnt.object_to_xml(points)
             
         areas = etree.SubElement(new_experiment, "areas")
-        for ar in self.areas_list:
-            ar.object_to_xml(areas)
+        for each in self.areas_list:
+            each.object_to_xml(areas)
     
-    def build_from_xml(self, el):
-        exp = experiment()
-        attributes = el.find("{http://cnpdia.embrapa.br}attributes")
+    def build_from_xml(self, elt):
+        ''' Create a new instance from a lxml element '''
+
+        exp = Experiment()
+        attributes = elt.find("{http://cnpdia.embrapa.br}attributes")
         for attr in attributes:
             key, value = attr.text.split(":")
             exp.attributes[key] = value
         
-        element = el.find("{http://cnpdia.embrapa.br}measurement_unit")
+        element = elt.find("{http://cnpdia.embrapa.br}measurement_unit")
         exp.measurement_unit = element.text
         
-        element = el.find("{http://cnpdia.embrapa.br}start_time")
+        element = elt.find("{http://cnpdia.embrapa.br}start_time")
         new_time = datetime(*strptime(element.text, "%Y-%m-%dT%H:%M:%S")[0:6])
         exp.start_time = new_time
         
-        element = el.find("{http://cnpdia.embrapa.br}end_time")
+        element = elt.find("{http://cnpdia.embrapa.br}end_time")
         new_time = datetime(*strptime(element.text, "%Y-%m-%dT%H:%M:%S")[0:6])
         exp.end_time = new_time
         
-        element = el.find("{http://cnpdia.embrapa.br}x_scale_ratio")
+        element = elt.find("{http://cnpdia.embrapa.br}x_scale_ratio")
         exp.x_scale_ratio = float(element.text)
         
-        element = el.find("{http://cnpdia.embrapa.br}y_scale_ratio")
+        element = elt.find("{http://cnpdia.embrapa.br}y_scale_ratio")
         exp.y_scale_ratio = float(element.text)
         
-        element = el.find("{http://cnpdia.embrapa.br}scale_shape")
+        element = elt.find("{http://cnpdia.embrapa.br}scale_shape")
         shape_type = element.getchildren()
         if shape_type:
             if shape_type[0].tag == "{http://cnpdia.embrapa.br}line":
-                exp.scale_shape = line().build_from_xml(shape_type[0])
+                exp.scale_shape = Line().build_from_xml(shape_type[0])
             elif shape_type[0].tag == "{http://cnpdia.embrapa.br}ellipse":
-                exp.scale_shape = ellipse().build_from_xml(shape_type[0])
+                exp.scale_shape = Ellipse().build_from_xml(shape_type[0])
             elif shape_type[0].tag == "{http://cnpdia.embrapa.br}rectangle":
-                exp.scale_shape = rectangle().build_from_xml(shape_type[0])
+                exp.scale_shape = Rectangle().build_from_xml(shape_type[0])
         
-        element = el.find("{http://cnpdia.embrapa.br}threshold")
+        element = elt.find("{http://cnpdia.embrapa.br}threshold")
         exp.threshold = int(element.text)
         
-        element = el.find("{http://cnpdia.embrapa.br}release_area")
+        element = elt.find("{http://cnpdia.embrapa.br}release_area")
         exp.release_area = [int(i) for i in element.text[1:-1].split(',')]
     
-        points = el.find("{http://cnpdia.embrapa.br}points")
+        points = elt.find("{http://cnpdia.embrapa.br}points")
         for pnt in points:
-            new_point = point().build_from_xml(pnt)
+            new_point = Point().build_from_xml(pnt)
             exp.point_list.append(new_point)
             
-        areas = el.find("{http://cnpdia.embrapa.br}areas")
-        for ar in areas:
-            new_area = area().build_from_xml(ar)
+        areas = elt.find("{http://cnpdia.embrapa.br}areas")
+        for each in areas:
+            new_area = Area().build_from_xml(each)
             exp.areas_list.append(new_area)
+     
         return exp
     
     def export(self):
+        ''' Export the experiment to CSV format.'''
+
         rows = []
         
         for key in self.attributes:
             rows.append( (key, self.attributes[key]) )
         
         # for each area in the experiment, export name and shape
-        for area in self.areas_list:
+        for item in self.areas_list:
             rows.append( ("") )
-            rows.append( (_("Area Name: "), area.name) )
-            rows.append( (_("Area Description: "), area.description) )                        
-            if isinstance(area.shape, rectangle):
+            rows.append( (_("Area Name: "), item.name) )
+            rows.append( (_("Area Description: "), item.description) )
+            if isinstance(item.shape, Rectangle):
                 rows.append( (_("Area Shape: "), _("Rectangle")) )
-            elif isinstance(area.shape, ellipse):
+            elif isinstance(item.shape, Ellipse):
                 rows.append( (_("Area Shape: "), _("Ellipse")) )
-            
+
             #for each track in area, export the data needed
-            if area.track_list == []:
-                rows.append( (_("Insect didn't entered in this area, no data available"), "") )
+            if item.track_list == []:
+                string = "Insect didn't entered in this area, no data available"
+                rows.append( ( _(string), "") ) 
             else:
                 rows.append( (_("Track List: "), "") )                
                 rows.append( ("", _("Start Time "), _("End Time "), 
                                 _("Residence "), _("Tortuosity "), 
                                 _("Lenght (") + self.measurement_unit + ") ", 
-                                _("Average Speed (") + self.measurement_unit + "/s): ", 
+                                _("Average Speed (") \
+                                   + self.measurement_unit + "/s): ", 
                                 _("Standard Deviation :"),
                                 _("Angular Average Deviation :")) )
-                for track in area.track_list:
-                    rows.append( ("", track.start_time, track.end_time, 
-                                    track.total_time, track.tortuosity,
-                                    track.lenght,
-                                    track.meanLinSpeed, 
-                                    track.LinSpeedDeviation,
-                                    track.AngleSpeedDeviation) )
+                for trk in item.track_list:
+                    rows.append( ("", trk.start_time, trk.end_time, 
+                                    trk.total_time, trk.tortuosity,
+                                    trk.lenght,
+                                    trk.meanLinSpeed, 
+                                    trk.LinSpeedDeviation,
+                                    trk.AngleSpeedDeviation) )
             
                 rows.append( ('') )
                 rows.append( (_("Resume: "),"") )
-                rows.append( (_("Residence: "), area.residence) )
-                rows.append( (_("Residence (%): "), area.residence_percentage * 100) )
+                rows.append( (_("Residence: "), item.residence) )
+                rows.append( (_("Residence (%): "), 
+                              item.residence_percentage * 100) )
                 rows.append( (_("Tortuosity: "), "") )
-                rows.append( (_("Average Lenght (") + self.measurement_unit + "): ", 
-                                area.total_lenght / area.number_of_tracks) )
-                rows.append( (_("Total Lenght (") + self.measurement_unit + "): ", area.total_lenght) )
+                rows.append( (_("Average Lenght (") \
+                                 + self.measurement_unit + "): ", 
+                              item.total_lenght / item.number_of_tracks) )
+                rows.append( (_("Total Lenght (") \
+                                 + self.measurement_unit + "): ",
+                              item.total_lenght) )
                 
-                #TODO: this value is different from the calculated in the track. Hum.
-                value = area.total_lenght / \
-                        (float(area.residence.seconds) + float(area.residence.microseconds/1000000))
-                rows.append( (_("Average Speed (") + self.measurement_unit + "/s): ", value) )
+                #TODO: this value is different from the calculated in the track
+                value = item.total_lenght \
+                         / (float(item.residence.seconds) \
+                            + float(item.residence.microseconds/1000000))
+                rows.append( (_("Average Speed (") + self.measurement_unit \
+                                + "/s): ",
+                              value) )
     
                 rows.append( (_("Standard Deviation :"), "") )
-                rows.append( (_("Angular Average Deviation :"), "") )            
+                rows.append( (_("Angular Average Deviation :"), "") )
                     
             rows.append( ('') )
             rows.append( ('') )
@@ -331,165 +360,182 @@ class experiment(object):
         return rows
     
     def prepare_point_list(self):
-        #discard the points where the insect didn't 
-        #move outside a defined threshold
+        ''' Clear the point list to speed up the stats generation.
+
+            Discard the points where the insect didn't move inside a 
+            defined threshold.'''
         pass    
     
     def prepare_areas_list(self):
-        for area in self.areas_list:
+        ''' Generate the tracks inside each area.'''
+        for item in self.areas_list:
             temp_list = []            
-            for point in self.point_list:
-                if area.shape.contains(point):
-                    if not area.started:
-                        temp_list.append(point)
-                        area.started = True                    
+            for pnt in self.point_list:
+                if item.shape.contains(pnt):
+                    if not item.started:
+                        temp_list.append(pnt)
+                        item.started = True                    
                     else:
-                        temp_list.append(point)
+                        temp_list.append(pnt)
                 else:
-                    if area.started:
-                        temp_track = track()
+                    if item.started:
+                        temp_track = Track()
                         temp_track.point_list = deepcopy(temp_list)
-                        area.track_list.append(temp_track)
+                        item.track_list.append(temp_track)
                         temp_list = []
-                    area.started = False
+                    item.started = False
             #in this case, every point in point_list in inside the area
-            if area.started:
-                temp_track = track()
+            if item.started:
+                temp_track = Track()
                 temp_track.point_list = deepcopy(temp_list)
-                area.track_list.append(temp_track)
+                item.track_list.append(temp_track)
                 temp_list = []
             
     def prepare_stats(self):
+        ''' Generates the statistical data.'''
         self.start_time = self.point_list[0].start_time
         self.end_time = self.point_list[-1].end_time
-        for area in self.areas_list:
-            area.number_of_tracks = 0
-            area.residence_percentage = 0
-            area.residence = timedelta()
-            area.total_lenght = 0
-            for track in area.track_list:
-                track.angleSpeedQuadSum = 0
-                track.linSpeedQuadSum = 0
-                track.linSpeedSum = 0
-                track.lenght = 0
-                track.totalSections = 0
-                track.LinSpeedDeviation = 0
-                track.AngleSpeedDeviation = 0
-                track.tortuosity = 0
-                track.meanLinSpeed = 0
-                track.meanAngleSpeed = 0
-                track.angleSpeedSum = 0
-                track.totalAngles = 0
-                track.total_time = track.point_list[-1].end_time - track.point_list[0].start_time
-                track.start_time = track.point_list[0].start_time
-                track.end_time = track.point_list[-1].end_time
+        for item in self.areas_list:
+            item.number_of_tracks = 0
+            item.residence_percentage = 0
+            item.residence = timedelta()
+            item.total_lenght = 0
+            for trk in item.track_list:
+                trk.angleSpeedQuadSum = 0
+                trk.linSpeedQuadSum = 0
+                trk.linSpeedSum = 0
+                trk.lenght = 0
+                trk.totalSections = 0
+                trk.LinSpeedDeviation = 0
+                trk.AngleSpeedDeviation = 0
+                trk.tortuosity = 0
+                trk.meanLinSpeed = 0
+                trk.meanAngleSpeed = 0
+                trk.angleSpeedSum = 0
+                trk.totalAngles = 0
+                trk.total_time = trk.point_list[-1].end_time - \
+                                 trk.point_list[0].start_time
+                trk.start_time = trk.point_list[0].start_time
+                trk.end_time = trk.point_list[-1].end_time
                 
                 first_point = None
-                previous_point = track.point_list[0]
+                previous_point = trk.point_list[0]
                 current_point = None
-                for point in track.point_list[1:] :
-                    current_point = point
+                for pnt in trk.point_list[1:] :
+                    current_point = pnt
                     
-                    temp = pow((previous_point.x - current_point.x) +
-                               (previous_point.y - current_point.y), 2)
-                    track.distancePixels = sqrt(temp)
+                    temp = pow((previous_point.x_pos - current_point.x_pos) +
+                               (previous_point.y_pos - current_point.y_pos), 2)
+                    trk.distancePixels = sqrt(temp)
                     #TODO: currently using only x_scale_ratio
-                    track.distanceScaled = float(track.distancePixels) / self.x_scale_ratio
-                    linTimeDelta = current_point.end_time - previous_point.end_time
-                    linTimeDelta = float(linTimeDelta.seconds) + float(linTimeDelta.microseconds)/1000000
-                    track.linearSpeed = float(track.distanceScaled) / linTimeDelta
-                    track.linSpeedQuadSum += pow(track.linearSpeed, 2)
-                    track.linSpeedSum += track.linearSpeed
-                    track.lenght += track.distanceScaled
-                    track.meanLinSpeed += track.linearSpeed
-                    track.totalSections += 1
+                    value = float(trk.distancePixels) / self.x_scale_ratio
+                    trk.distanceScaled = value
+
+                    value = current_point.end_time - previous_point.end_time
+                    linTimeDelta = value
+
+                    microseconds = float(linTimeDelta.microseconds)/1000000 
+                    linTimeDelta = float(linTimeDelta.seconds) + microseconds
+     
+                    value = float(trk.distanceScaled) / linTimeDelta
+                    trk.linearSpeed = value 
+                    trk.linSpeedQuadSum += pow(trk.linearSpeed, 2)
+                    trk.linSpeedSum += trk.linearSpeed
+                    trk.lenght += trk.distanceScaled
+                    trk.meanLinSpeed += trk.linearSpeed
+                    trk.totalSections += 1
                     
-                    if first_point and previous_point:                    
+                    if first_point and previous_point:
                         angleTimeDelta = current_point.end_time \
                                         - first_point.end_time
                         angleTimeDelta = float(angleTimeDelta.seconds) + \
-                                         float(angleTimeDelta.microseconds)/1000000
-                        angle = self.AngleCalc(first_point, previous_point,
-                                                current_point)
-                        track.angleSpeed = float(angle) / angleTimeDelta
-                        track.angleSpeedQuadSum += pow(track.angleSpeed, 2)
-                        track.angleSpeedSum += track.angleSpeed
-                        track.meanAngleSpeed += track.angleSpeed
-                        track.totalAngles += 1            
+                                      float(angleTimeDelta.microseconds)/1000000
+                        angle = self.angle_calc(first_point, previous_point,
+                                               current_point)
+                        trk.angleSpeed = float(angle) / angleTimeDelta
+                        trk.angleSpeedQuadSum += pow(trk.angleSpeed, 2)
+                        trk.angleSpeedSum += trk.angleSpeed
+                        trk.meanAngleSpeed += trk.angleSpeed
+                        trk.totalAngles += 1            
 
                     first_point = previous_point
                     previous_point = current_point
                     
-                if track.totalSections > 0:
-                    track.meanLinSpeed /= track.totalSections
-                    track.LinSpeedDeviation = track.linSpeedQuadSum - \
-                              ( pow(track.linSpeedSum,2)/track.totalSections )
-                    if track.LinSpeedDeviation < 0:
-                        track.LinSpeedDeviation = 0
-                    track.LinSpeedDeviation /= track.totalSections
-                    track.LinSpeedDeviation = sqrt(track.LinSpeedDeviation)
-                    if track.totalAngles > 0:
-                        track.meanAngleSpeed /= track.totalAngles
-                        track.AngleSpeedDeviation = track.angleSpeedQuadSum \
-                                   - (pow(track.angleSpeedSum,2) / track.totalAngles)
-                        if track.AngleSpeedDeviation < 0:
-                            track.AngleSpeedDeviation = 0;
-                        track.AngleSpeedDeviation /= track.totalAngles
-                        track.AngleSpeedDeviation = \
-                                                sqrt(track.AngleSpeedDeviation)
+                if trk.totalSections > 0:
+                    trk.meanLinSpeed /= trk.totalSections
+                    trk.LinSpeedDeviation = trk.linSpeedQuadSum - \
+                              ( pow(trk.linSpeedSum,2)/trk.totalSections )
+                    if trk.LinSpeedDeviation < 0:
+                        trk.LinSpeedDeviation = 0
+                    trk.LinSpeedDeviation /= trk.totalSections
+                    trk.LinSpeedDeviation = sqrt(trk.LinSpeedDeviation)
+                    if trk.totalAngles > 0:
+                        trk.meanAngleSpeed /= trk.totalAngles
+                        trk.AngleSpeedDeviation = trk.angleSpeedQuadSum \
+                              - (pow(trk.angleSpeedSum,2) / trk.totalAngles)
+                        if trk.AngleSpeedDeviation < 0:
+                            trk.AngleSpeedDeviation = 0;
+                        trk.AngleSpeedDeviation /= trk.totalAngles
+                        value = sqrt(trk.AngleSpeedDeviation)
+                        trk.AngleSpeedDeviation = value
                     else:
-                        track.meanAngleSpeed = 0
-                        track.AngleStandardDeviation = 0
+                        trk.meanAngleSpeed = 0
+                        trk.AngleStandardDeviation = 0
                     #tortuosity
-                    distance = pow(track.point_list[-1].x - track.point_list[0].x, 2) \
-                               + pow(track.point_list[-1].y - track.point_list[0].y, 2)
+                    sum1 = trk.point_list[-1].x_pos - trk.point_list[0].x_pos
+                    sum2 = trk.point_list[-1].y_pos - trk.point_list[0].y_pos
+                    value = pow(sum1, 2) + pow(sum2, 2)
                     #TODO: using x_scale_ratio only, must use y_scale_ratio too
-                    distance = sqrt(distance) / self.x_scale_ratio
-                    if track.lenght > 0:
-                        track.tortuosity = 1 - distance / track.lenght
+                    distance = sqrt(value) / self.x_scale_ratio
+                    if trk.lenght > 0:
+                        trk.tortuosity = 1 - distance / trk.lenght
                     else:
-                        track.tortuosity = 0
+                        trk.tortuosity = 0
                 else:
-                    track.meanLinSpeed = 0
-                    track.meanAngleSpeed = 0
-                    track.LinSpeedDeviation = 0                                  
-                    track.AngleSpeedDeviation = 0
+                    trk.meanLinSpeed = 0
+                    trk.meanAngleSpeed = 0
+                    trk.LinSpeedDeviation = 0 
+                    trk.AngleSpeedDeviation = 0
                 # sum up the variables to be able to calculate the resume
-                area.number_of_tracks += 1
-                area.residence += track.total_time
-                area.total_lenght += track.lenght
+                item.number_of_tracks += 1
+                item.residence += trk.total_time
+                item.total_lenght += trk.lenght
                 
             # calculate the variables of the resume
             total_time = self.end_time - self.start_time
-            area.residence_percentage = \
-                   (float(area.residence.seconds) + float(area.residence.microseconds)/1000000) / \
-                   (float(total_time.seconds) + float(total_time.microseconds)/1000000)
+            seconds = float(item.residence.seconds)
+            microseconds =  float(item.residence.microseconds)/1000000
+            total_sec = float(total_time.seconds) 
+            total_micsec = float(total_time.microseconds)/1000000
+            value = total_sec + total_micsec
+            item.residence_percentage = (seconds + microseconds) / value
             
         # TODO: maybe some options to show the report in the screen?
          
-    def AngleCalc(self, first_point, previous_point, current_point):
+    def angle_calc(self, first_point, previous_point, current_point):
         """ Calculate the angle using the Cosine Law
                          
-                         first
-                           +
-                         /  \
-                        /    \   
-                     a /      \ c
-                      /        \
-                     / \ C      \
-           previous + - - - - - +  current
-                          b
-        pow(c,2)  =  pow(a,2) + pow(b,2) - 2*a*b*cos(C)
-          where C = angle of vertex A1
+                          first            
+                            +              
+                          /  \             
+                         /    \            
+                      a /      \ c         
+                       /        \          
+                      / \ C      \         
+            previous + - - - - - +  current
+                          b                
+            pow(c,2)  =  pow(a,2) + pow(b,2) - 2*a*b*cos(C)
+            where C = angle of vertex A1
         """
-        a = sqrt(  pow((first_point.x - previous_point.x), 2)
-                 + pow((first_point.y - previous_point.y), 2) )
-        b = sqrt(  pow((previous_point.x - current_point.x), 2)
-                 + pow((previous_point.y - current_point.y), 2) )
-        c = sqrt(  pow((current_point.x - first_point.x), 2)
-                 + pow((current_point.y - first_point.y), 2) )
-        if (a != 0) and (b != 0):
-            angle = (pow(c,2) - pow(a,2) - pow(b,2)) / (-2*a*b)
+        a_edge = sqrt(  pow((first_point.x_pos - previous_point.x_pos), 2)
+                      + pow((first_point.y_pos - previous_point.y_pos), 2) )
+        b_edge = sqrt(  pow((previous_point.x_pos - current_point.x_pos), 2)
+                      + pow((previous_point.y_pos - current_point.y_pos), 2) )
+        c_edge = sqrt(  pow((current_point.x_pos - first_point.x_pos), 2)
+                      + pow((current_point.y_pos - first_point.y_pos), 2) )
+        if (a_edge != 0) and (b_edge != 0):
+            divisor = -2 * a_edge * b_edge
+            angle = (pow(c_edge, 2) - pow(a_edge, 2) - pow(b_edge, 2)) / divisor
             if angle > 1:
                 angle = 1
             elif angle < -1:
