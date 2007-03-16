@@ -1,4 +1,0 @@
-{ global:
-gst_plugin_desc;
-gst_sacamdetector_get_type;
-local: *; };
