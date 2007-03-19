@@ -68,10 +68,10 @@ class Track(object):
     def __init__(self):
         self.point_list = []
         self.lenght = 0
-        self.LinSpeedDeviation = 0
-        self.AngleSpeedDeviation = 0
+        self.lin_speed_deviation = 0
+        self.angle_speed_deviation = 0
         self.tortuosity = 0
-        self.meanLinSpeed = 0
+        self.mean_lin_speed = 0
         self.residence = 0
         self.direction_changes = 0
         self.start_time = 0
@@ -92,13 +92,13 @@ class Track(object):
         element.text = str(self.lenght)
                         
         element = etree.SubElement(new_track, "average_speed")
-        element.text = str(self.meanLinSpeed)
+        element.text = str(self.mean_lin_speed)
     
         element = etree.SubElement(new_track, "standard_deviation")
-        element.text = str(self.LinSpeedDeviation)
+        element.text = str(self.lin_speed_deviation)
     
         element = etree.SubElement(new_track, "angular_standard_deviation")
-        element.text = str(self.AngleSpeedDeviation)                        
+        element.text = str(self.angle_speed_deviation)                        
     
         element = etree.SubElement(new_track, "direction_changes")
         element.text = str(self.direction_changes)                        

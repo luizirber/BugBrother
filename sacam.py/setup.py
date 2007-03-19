@@ -2,7 +2,19 @@
 
 from commands import getoutput
 from kiwi.dist import setup, listfiles, listpackages
-from distutils.core import Extension
+from distutils.core import Extension, Command
+
+class lint(Command):
+
+    description = "Execute PyLint and return the result."
+
+    def run (self):
+        print 'hi'
+#        getoutput('pylint --rcfile tests/rc.pylint sacam/ > resultado')
+#        getoutput('cat resultado | less')
+#        getoutput('rm resultado')
+
+cmdclass = {'lint': lint}
 
 # flags used to compile the videoprocessor extension
 cflags = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 '
@@ -67,4 +79,6 @@ setup(name='sacam',
       resources = resources,
       global_resources = global_resources,
       templates = templates,
-      **kwargs)
+      cmdclass = cmdclass,
+      **kwargs
+     )

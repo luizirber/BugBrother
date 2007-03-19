@@ -326,9 +326,9 @@ class Experiment(object):
                     rows.append( ("", trk.start_time, trk.end_time, 
                                     trk.total_time, trk.tortuosity,
                                     trk.lenght,
-                                    trk.meanLinSpeed, 
-                                    trk.LinSpeedDeviation,
-                                    trk.AngleSpeedDeviation) )
+                                    trk.mean_lin_speed, 
+                                    trk.lin_speed_deviation,
+                                    trk.angle_speed_deviation) )
             
                 rows.append( ('') )
                 rows.append( (_("Resume: "),"") )
@@ -406,10 +406,10 @@ class Experiment(object):
                 trk.linSpeedSum = 0
                 trk.lenght = 0
                 trk.totalSections = 0
-                trk.LinSpeedDeviation = 0
-                trk.AngleSpeedDeviation = 0
+                trk.lin_speed_deviation = 0
+                trk.angle_speed_deviation = 0
                 trk.tortuosity = 0
-                trk.meanLinSpeed = 0
+                trk.mean_lin_speed = 0
                 trk.meanAngleSpeed = 0
                 trk.angleSpeedSum = 0
                 trk.totalAngles = 0
@@ -432,27 +432,28 @@ class Experiment(object):
                     trk.distanceScaled = value
 
                     value = current_point.end_time - previous_point.end_time
-                    linTimeDelta = value
+                    lin_time_delta = value
 
-                    microseconds = float(linTimeDelta.microseconds)/1000000 
-                    linTimeDelta = float(linTimeDelta.seconds) + microseconds
+                    seconds = float(lin_time_delta.seconds)
+                    microseconds = float(lin_time_delta.microseconds)/1000000 
+                    lin_time_delta = seconds + microseconds
      
-                    value = float(trk.distanceScaled) / linTimeDelta
+                    value = float(trk.distanceScaled) / lin_time_delta
                     trk.linearSpeed = value 
                     trk.linSpeedQuadSum += pow(trk.linearSpeed, 2)
                     trk.linSpeedSum += trk.linearSpeed
                     trk.lenght += trk.distanceScaled
-                    trk.meanLinSpeed += trk.linearSpeed
+                    trk.mean_lin_speed += trk.linearSpeed
                     trk.totalSections += 1
                     
                     if first_point and previous_point:
-                        angleTimeDelta = current_point.end_time \
+                        angle_time_delta = current_point.end_time \
                                         - first_point.end_time
-                        angleTimeDelta = float(angleTimeDelta.seconds) + \
-                                      float(angleTimeDelta.microseconds)/1000000
+                        angle_time_delta = float(angle_time_delta.seconds) + \
+                                    float(angle_time_delta.microseconds)/1000000
                         angle = self.angle_calc(first_point, previous_point,
                                                current_point)
-                        trk.angleSpeed = float(angle) / angleTimeDelta
+                        trk.angleSpeed = float(angle) / angle_time_delta
                         trk.angleSpeedQuadSum += pow(trk.angleSpeed, 2)
                         trk.angleSpeedSum += trk.angleSpeed
                         trk.meanAngleSpeed += trk.angleSpeed
@@ -462,22 +463,22 @@ class Experiment(object):
                     previous_point = current_point
                     
                 if trk.totalSections > 0:
-                    trk.meanLinSpeed /= trk.totalSections
-                    trk.LinSpeedDeviation = trk.linSpeedQuadSum - \
+                    trk.mean_lin_speed /= trk.totalSections
+                    trk.lin_speed_deviation = trk.linSpeedQuadSum - \
                               ( pow(trk.linSpeedSum,2)/trk.totalSections )
-                    if trk.LinSpeedDeviation < 0:
-                        trk.LinSpeedDeviation = 0
-                    trk.LinSpeedDeviation /= trk.totalSections
-                    trk.LinSpeedDeviation = sqrt(trk.LinSpeedDeviation)
+                    if trk.lin_speed_deviation < 0:
+                        trk.lin_speed_deviation = 0
+                    trk.lin_speed_deviation /= trk.totalSections
+                    trk.lin_speed_deviation = sqrt(trk.lin_speed_deviation)
                     if trk.totalAngles > 0:
                         trk.meanAngleSpeed /= trk.totalAngles
-                        trk.AngleSpeedDeviation = trk.angleSpeedQuadSum \
+                        trk.angle_speed_deviation = trk.angleSpeedQuadSum \
                               - (pow(trk.angleSpeedSum,2) / trk.totalAngles)
-                        if trk.AngleSpeedDeviation < 0:
-                            trk.AngleSpeedDeviation = 0;
-                        trk.AngleSpeedDeviation /= trk.totalAngles
-                        value = sqrt(trk.AngleSpeedDeviation)
-                        trk.AngleSpeedDeviation = value
+                        if trk.angle_speed_deviation < 0:
+                            trk.angle_speed_deviation = 0;
+                        trk.angle_speed_deviation /= trk.totalAngles
+                        value = sqrt(trk.angle_speed_deviation)
+                        trk.angle_speed_deviation = value
                     else:
                         trk.meanAngleSpeed = 0
                         trk.AngleStandardDeviation = 0
@@ -492,10 +493,10 @@ class Experiment(object):
                     else:
                         trk.tortuosity = 0
                 else:
-                    trk.meanLinSpeed = 0
+                    trk.mean_lin_speed = 0
                     trk.meanAngleSpeed = 0
-                    trk.LinSpeedDeviation = 0 
-                    trk.AngleSpeedDeviation = 0
+                    trk.lin_speed_deviation = 0 
+                    trk.angle_speed_deviation = 0
                 # sum up the variables to be able to calculate the resume
                 item.number_of_tracks += 1
                 item.residence += trk.total_time
