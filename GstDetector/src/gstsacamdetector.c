@@ -62,10 +62,6 @@ GST_STATIC_PAD_TEMPLATE ("sink",
     GST_STATIC_CAPS (GST_VIDEO_CAPS_BGRx)
     );
 
-/* GST_BOILERPLATE (GstSacamDetector, gst_sacamdetector, 
-                 GstVideoFilterClass, GST_TYPE_VIDEO_FILTER);
-*/
-
 static GstVideoFilterClass *parent_class = NULL;
 
 static void gst_sacamdetector_set_property (GObject * object, guint prop_id,
@@ -248,16 +244,16 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
       p = *src;
       q = *(src - 4);
 
-      /* difference between the current pixel and right neighbor. */
+      // difference between the current pixel and right neighbor.
       r = ((p & 0xff0000) - (q & 0xff0000)) >> 16;
       g = ((p & 0xff00) - (q & 0xff00)) >> 8;
       b = (p & 0xff) - (q & 0xff);
       r *= r;
       g *= g;
       b *= b;
-      r = r >> 5;           /* To lack the lower bit for saturated addition,  */
-      g = g >> 5;           /* devide the value with 32, instead of 16. It is */
-      b = b >> 4;           /* same as `v2 &= 0xfefeff' */
+      r = r >> 5;           // To lack the lower bit for saturated addition, 
+      g = g >> 5;           // devide the value with 32, instead of 16. It is 
+      b = b >> 4;           // same as `v2 &= 0xfefeff' 
       if (r > 127)
         r = 127;
       if (g > 127)
@@ -266,7 +262,7 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
         b = 255;
       v2 = (r << 17) | (g << 9) | b;
 
-      /* difference between the current pixel and upper neighbor. */
+      // difference between the current pixel and upper neighbor.
       q = *(src - filter->width * 4);
       r = ((p & 0xff0000) - (q & 0xff0000)) >> 16;
       g = ((p & 0xff00) - (q & 0xff00)) >> 8;
@@ -311,7 +307,7 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
       dest[filter->width * 3 + 1] = v2;
 
       src += 4;
-      dest += 4;
+      dest += 4; 
     }
     src += filter->width * 3 + 8 + filter->video_width_margin;
     dest += filter->width * 3 + 8 + filter->video_width_margin;
@@ -353,7 +349,7 @@ plugin_init (GstPlugin * plugin)
       0, "Sacam Motion Detector plugin");
 
   return gst_element_register (plugin, "SacamDetector",
-      GST_RANK_NONE, GST_TYPE_VIDEO_FILTER);
+      GST_RANK_NONE, GST_TYPE_SACAMDETECTOR);
 }
 
 GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
@@ -361,5 +357,5 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     "SacamDetector",
     "Sacam Motion Detector plugin",
     plugin_init, VERSION, "GPL", PACKAGE_NAME, 
-    "http://bugbrother.sourceforge.net/")
+    "http://bugbrother.sourceforge.net/");
 
