@@ -42,49 +42,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __GST_SACAMDETECTOR_H__
-#define __GST_SACAMDETECTOR_H__
-
 #include <gst/gst.h>
 
-#include <gst/video/gstvideofilter.h>
-
-G_BEGIN_DECLS
-
-/* #defines don't like whitespacey bits */
-#define GST_TYPE_SACAMDETECTOR \
-  (gst_sacamdetector_get_type())
-#define GST_SACAMDETECTOR(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_SACAMDETECTOR,GstSacamDetector))
-#define GST_SACAMDETECTOR_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_SACAMDETECTOR,GstSacamDetectorClass))
-#define GST_IS_SACAMDETECTOR(obj) \
-  (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_SACAMDETECTOR))
-#define GST_IS_SACAMDETECTOR_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_SACAMDETECTOR))
-
-typedef struct _GstSacamDetector      GstSacamDetector;
-typedef struct _GstSacamDetectorClass GstSacamDetectorClass;
-
-struct _GstSacamDetector
-{
-    GstVideoFilter videofilter;
-
-    gint width, height;
-    gint map_width, map_height;
-    guint32 *map;
-    gint video_width_margin;
-
-    gboolean silent;
-};
-
-struct _GstSacamDetectorClass 
-{
-    GstVideoFilterClass parent_class;
-};
-
 GType gst_sacamdetector_get_type (void);
-
-G_END_DECLS
-
-#endif /* __GST_SACAMDETECTOR_H__ */
