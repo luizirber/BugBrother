@@ -47,6 +47,12 @@ G_BEGIN_DECLS
 
 typedef struct _GstSacamDetector      GstSacamDetector;
 typedef struct _GstSacamDetectorClass GstSacamDetectorClass;
+typedef struct {
+    gint x_begin;
+    gint y_begin;
+    gint x_end;
+    gint y_end;
+} window;
 
 struct _GstSacamDetector
 {
@@ -56,6 +62,14 @@ struct _GstSacamDetector
     gint map_width, map_height;
     guint32 *map;
     gint video_width_margin;
+
+    GstBuffer *previous, *current;
+
+    gdouble bug_size;
+
+    gint threshold;
+
+    window tracking_area;
 
     gboolean silent;
 };
@@ -164,6 +178,13 @@ gst_sacamdetector_init (GstSacamDetector * filter,
 
   sacamdetector->map = NULL;
   sacamdetector->silent = FALSE;
+
+  sacamdetector->tracking_area.x_begin = 0;
+  sacamdetector->tracking_area.y_begin = 0;
+  sacamdetector->tracking_area.x_end = 640;
+  sacamdetector->tracking_area.y_end = 480;
+  
+  /* TODO: initialize the attributes */
 }
 
 static void
@@ -257,10 +278,11 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
                              GstBuffer * out)
 {
   GstSacamDetector *filter;
-  gint x, y, r, g, b;
+  gint x, y, r, g, b, p, q;
   guint32 *src, *dest;
-  guint32 p, q;
-  guint32 v0, v1, v2, v3;
+  gint x_start, x_end, y_start, y_end;
+  gint size;
+ 
   GstFlowReturn ret = GST_FLOW_OK;
 
   filter = GST_SACAMDETECTOR (trans);
@@ -269,84 +291,53 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
 
   src = (guint32 *) GST_BUFFER_DATA (in);
   dest = (guint32 *) GST_BUFFER_DATA (out);
-
+  
   src += filter->width * 4 + 4;
   dest += filter->width * 4 + 4;
 
-  for (y = 1; y < filter->map_height - 1; y++) {
-    for (x = 1; x < filter->map_width - 1; x++) {
+  size = (filter->tracking_area.y_end - filter->tracking_area.y_begin)/2;
+  if (size < filter->bug_size)
+      size = filter->bug_size;
+  y_start = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
+             - size;
+  if (y_start < 0)
+      y_start = 0;
+  y_end = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2 
+          + size;
+  if (y_end > filter->height)
+      y_end = filter->height;
+  
+  size = (filter->tracking_area.x_end - filter->tracking_area.x_begin)/2;
+  if (size < filter->bug_size)
+      size = filter->bug_size;
+  x_start = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2 
+             - size;
+  if (x_start < 0)
+      x_start = 0;
+  x_end = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2 
+           + size;
+  if (x_end > filter->width)
+      x_end = filter->width;
+/*
+  printf("width: %d, height: %d, map_width: %d, map_height: %d \n", 
+         filter->width, filter->height, filter->map_width, filter->map_height);
+  fflush(stdout);
+*/
+  for (y = y_start; y < y_end; y++) {
+    for (x = x_start; x < x_end; x++) {
 
-      p = *src;
-      q = *(src - 4);
+        p = *src;
 
-      // difference between the current pixel and right neighbor.
-      r = ((p & 0xff0000) - (q & 0xff0000)) >> 16;
-      g = ((p & 0xff00) - (q & 0xff00)) >> 8;
-      b = (p & 0xff) - (q & 0xff);
-      r *= r;
-      g *= g;
-      b *= b;
-      r = r >> 5;           // To lack the lower bit for saturated addition, 
-      g = g >> 5;           // devide the value with 32, instead of 16. It is 
-      b = b >> 4;           // same as `v2 &= 0xfefeff' 
-      if (r > 127)
-        r = 127;
-      if (g > 127)
-        g = 127;
-      if (b > 255)
-        b = 255;
-      v2 = (r << 17) | (g << 9) | b;
-
-      // difference between the current pixel and upper neighbor.
-      q = *(src - filter->width * 4);
-      r = ((p & 0xff0000) - (q & 0xff0000)) >> 16;
-      g = ((p & 0xff00) - (q & 0xff00)) >> 8;
-      b = (p & 0xff) - (q & 0xff);
-      r *= r;
-      g *= g;
-      b *= b;
-      r = r >> 5;
-      g = g >> 5;
-      b = b >> 4;
-      if (r > 127)
-        r = 127;
-      if (g > 127)
-        g = 127;
-      if (b > 255)
-        b = 255;
-      v3 = (r << 17) | (g << 9) | b;
-
-      v0 = filter->map[(y - 1) * filter->map_width * 2 + x * 2];
-      v1 = filter->map[y * filter->map_width * 2 + (x - 1) * 2 + 1];
-      filter->map[y * filter->map_width * 2 + x * 2] = v2;
-      filter->map[y * filter->map_width * 2 + x * 2 + 1] = v3;
-      r = v0 + v1;
-      g = r & 0x01010100;
-      dest[0] = r | (g - (g >> 8));
-      r = v0 + v3;
-      g = r & 0x01010100;
-      dest[1] = r | (g - (g >> 8));
-      dest[2] = v3;
-      dest[3] = v3;
-      r = v2 + v1;
-      g = r & 0x01010100;
-      dest[filter->width] = r | (g - (g >> 8));
-      r = v2 + v3;
-      g = r & 0x01010100;
-      dest[filter->width + 1] = r | (g - (g >> 8));
-      dest[filter->width + 2] = v3;
-      dest[filter->width + 3] = v3;
-      dest[filter->width * 2] = v2;
-      dest[filter->width * 2 + 1] = v2;
-      dest[filter->width * 3] = v2;
-      dest[filter->width * 3 + 1] = v2;
-
-      src += 4;
-      dest += 4; 
+        if ( x == y) {
+//            dest[0]=0x3;
+        }
+        src += 4;
+        dest += 4;
     }
     src += filter->width * 3 + 8 + filter->video_width_margin;
     dest += filter->width * 3 + 8 + filter->video_width_margin;
   }
+
 
   return ret;
 }
