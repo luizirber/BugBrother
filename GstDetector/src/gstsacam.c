@@ -27,6 +27,9 @@
 
 #include "gstsacam.h"
 
+GST_DEBUG_CATEGORY_STATIC (gst_sacam_debug);
+#define GST_CAT_DEFAULT gst_sacam_debug
+
 struct _elements_entry
 {
   gchar *name;
@@ -42,9 +45,9 @@ static gboolean
 plugin_init (GstPlugin * plugin)
 {
 
-/*  GST_DEBUG_CATEGORY_INIT (gst_sacam_debug, "Sacam",
+  GST_DEBUG_CATEGORY_INIT (gst_sacam_debug, "Sacam",
       0, "Sacam Motion Detector and Tracking plugins");
-*/
+
 
   gint i = 0;
 
