@@ -1,4 +1,6 @@
-AC_INIT
+AC_INIT(SACAM Motion Tracking and Detection plugins, 0.1,
+        http://bugbrother.sourceforge.net/,
+        gst-sacam-plugins)
 
 dnl versions of gstreamer and plugins-base
 GST_MAJORMINOR=0.10

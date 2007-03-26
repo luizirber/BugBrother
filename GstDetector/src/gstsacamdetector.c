@@ -376,13 +376,3 @@ gst_sacamdetector_get_type (void)
   return sacamdetector_type;
 }
 
-
-static gboolean
-plugin_init (GstPlugin * plugin)
-{
-  GST_DEBUG_CATEGORY_INIT (gst_sacamdetector_debug, "SacamDetector",
-      0, "Sacam Motion Detector plugin");
-
-  return gst_element_register (plugin, "SacamDetector",
-      GST_RANK_NONE, GST_TYPE_SACAMDETECTOR);
-}

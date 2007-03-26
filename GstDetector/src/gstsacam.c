@@ -42,9 +42,9 @@ static gboolean
 plugin_init (GstPlugin * plugin)
 {
 
-  GST_DEBUG_CATEGORY_INIT (gst_sacam_debug, "Sacam",
+/*  GST_DEBUG_CATEGORY_INIT (gst_sacam_debug, "Sacam",
       0, "Sacam Motion Detector and Tracking plugins");
-
+*/
 
   gint i = 0;
 
@@ -62,4 +62,4 @@ GST_PLUGIN_DEFINE (GST_VERSION_MAJOR,
     GST_VERSION_MINOR,
     "SACAM",
     "SACAM plugins for motion tracking and detection",
-    plugin_init, VERSION, "GPL", GST_PACKAGE_NAME, GST_PACKAGE_ORIGIN);
+    plugin_init, VERSION, "GPL", PACKAGE_NAME, PACKAGE_BUGREPORT);
