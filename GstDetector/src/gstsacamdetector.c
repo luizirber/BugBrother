@@ -47,6 +47,7 @@ G_BEGIN_DECLS
 
 typedef struct _GstSacamDetector      GstSacamDetector;
 typedef struct _GstSacamDetectorClass GstSacamDetectorClass;
+
 typedef struct {
     gint x_begin;
     gint y_begin;
@@ -67,11 +68,11 @@ struct _GstSacamDetector
 
     gdouble bug_size;
 
-    gint threshold;
+    guint32 threshold;
 
     window tracking_area;
 
-    gboolean silent;
+    gboolean silent, first_run, draw_bounding_boxes, draw_track;
 };
 
 struct _GstSacamDetectorClass 
@@ -94,7 +95,11 @@ enum
 enum
 {
     ARG_0,
-    ARG_SILENT
+    ARG_SILENT,
+    ARG_THRESHOLD,
+    ARG_SIZE,
+    ARG_DRAW_BOXES,
+    ARG_DRAW_TRACK
 };
 
 static GstStaticPadTemplate src_factory =
@@ -160,9 +165,31 @@ gst_sacamdetector_class_init (gpointer klass, gpointer class_data)
   gobject_class->set_property = gst_sacamdetector_set_property;
   gobject_class->get_property = gst_sacamdetector_get_property;
  
+  g_object_class_install_property (gobject_class, ARG_DRAW_BOXES,
+      g_param_spec_boolean ("draw-boxes", "Draw Bounding Boxes",
+          "Draw the bounding boxes for the detected motion",
+          FALSE, G_PARAM_READWRITE));
+  
+  g_object_class_install_property (gobject_class, ARG_DRAW_TRACK,
+      g_param_spec_boolean ("draw-track", "Draw Track",
+          "Draw the track captured until now",
+          FALSE, G_PARAM_READWRITE));
+  
   g_object_class_install_property (gobject_class, ARG_SILENT,
       g_param_spec_boolean ("silent", "Silent", "Produce verbose output",
-          FALSE, G_PARAM_READWRITE));
+          TRUE, G_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, ARG_THRESHOLD,
+      g_param_spec_uint ("threshold", "Threshold", 
+          "Set the threshold for motion detection",
+	  0, 0xff, 0x30, /* min, max, default */
+          G_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, ARG_SIZE,
+      g_param_spec_uint ("size", "Size", 
+          "Set the size of the object to be tracked",
+	  0, 0xffffff, 30, /* min, max, default */
+          G_PARAM_READWRITE));
 
   trans_class->set_caps = GST_DEBUG_FUNCPTR (gst_sacamdetector_set_caps);
   trans_class->get_unit_size = 
@@ -184,6 +211,12 @@ gst_sacamdetector_init (GstSacamDetector * filter,
   sacamdetector->tracking_area.x_end = 640;
   sacamdetector->tracking_area.y_end = 480;
   
+  sacamdetector->first_run = TRUE;
+  sacamdetector->threshold = 0x303030;
+  sacamdetector->bug_size = 30;
+
+  sacamdetector->current = gst_buffer_new();
+  sacamdetector->previous = gst_buffer_new();
   /* TODO: initialize the attributes */
 }
 
@@ -194,8 +227,23 @@ gst_sacamdetector_set_property (GObject * object, guint prop_id,
   GstSacamDetector *filter = GST_SACAMDETECTOR (object);
 
   switch (prop_id) {
+    case ARG_DRAW_BOXES:
+      filter->draw_bounding_boxes = g_value_get_boolean (value);
+      break;
+    case ARG_DRAW_TRACK:
+      filter->draw_track = g_value_get_boolean (value);
+      break;
     case ARG_SILENT:
       filter->silent = g_value_get_boolean (value);
+      break;
+    case ARG_THRESHOLD:
+      filter->threshold = ( g_value_get_uint (value) << 16 |
+                            g_value_get_uint (value) << 8  |
+			    g_value_get_uint (value)
+                          );
+      break;
+    case ARG_SIZE:
+      filter->bug_size = g_value_get_uint (value);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -210,8 +258,20 @@ gst_sacamdetector_get_property (GObject * object, guint prop_id,
   GstSacamDetector *filter = GST_SACAMDETECTOR (object);
 
   switch (prop_id) {
+    case ARG_DRAW_BOXES:
+      g_value_set_boolean (value, filter->draw_bounding_boxes);
+      break;
+    case ARG_DRAW_TRACK:
+      g_value_set_boolean (value, filter->draw_track);
+      break;
     case ARG_SILENT:
       g_value_set_boolean (value, filter->silent);
+      break;
+    case ARG_THRESHOLD:         
+      g_value_set_uint (value, filter->threshold & 0xff);
+      break;
+    case ARG_SIZE:
+      g_value_set_uint (value, filter->bug_size);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -273,71 +333,133 @@ gst_sacamdetector_get_unit_size (GstBaseTransform * btrans, GstCaps * caps,
   return ret;
 }
 
+static void _gst_sacamdetector_set_current (GstSacamDetector *self, 
+                                            GstBuffer *buf) 
+{
+    gst_buffer_unref(self->current);
+    self->current = gst_buffer_copy(buf);
+}
+
+static void _gst_sacamdetector_set_previous (GstSacamDetector *self, 
+                                             GstBuffer *buf)
+{
+    gst_buffer_unref(self->previous);
+    self->previous = gst_buffer_copy(buf);
+}
+
 static GstFlowReturn
 gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in, 
                              GstBuffer * out)
 {
   GstSacamDetector *filter;
-  gint x, y, r, g, b, p, q;
-  guint32 *src, *dest;
+  gint x, y;
+  guint32 *dest;
   gint x_start, x_end, y_start, y_end;
   gint size;
- 
+  gboolean window_is_defined;
+  
   GstFlowReturn ret = GST_FLOW_OK;
 
   filter = GST_SACAMDETECTOR (trans);
 
   gst_buffer_stamp (out, in);
 
-  src = (guint32 *) GST_BUFFER_DATA (in);
+  if (filter->first_run == TRUE) {
+      _gst_sacamdetector_set_current(filter, in);
+      _gst_sacamdetector_set_previous(filter, in);
+      filter->first_run = FALSE;
+
+      return ret;
+  }
+
+  _gst_sacamdetector_set_previous(filter, filter->current);
+  _gst_sacamdetector_set_current(filter, in);
+
   dest = (guint32 *) GST_BUFFER_DATA (out);
   
-  src += filter->width * 4 + 4;
-  dest += filter->width * 4 + 4;
-
   size = (filter->tracking_area.y_end - filter->tracking_area.y_begin)/2;
   if (size < filter->bug_size)
       size = filter->bug_size;
   y_start = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
-             - size;
+            - size;
   if (y_start < 0)
       y_start = 0;
-  y_end = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2 
+  y_end = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
           + size;
   if (y_end > filter->height)
       y_end = filter->height;
   
   size = (filter->tracking_area.x_end - filter->tracking_area.x_begin)/2;
   if (size < filter->bug_size)
-      size = filter->bug_size;
-  x_start = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2 
-             - size;
+      size = filter->bug_size; 
+  x_start = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
+            - size;
   if (x_start < 0)
       x_start = 0;
-  x_end = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2 
-           + size;
+  x_end = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
+          + size;
   if (x_end > filter->width)
       x_end = filter->width;
-/*
-  printf("width: %d, height: %d, map_width: %d, map_height: %d \n", 
-         filter->width, filter->height, filter->map_width, filter->map_height);
-  fflush(stdout);
-*/
+  
+  window_is_defined = FALSE;
+
   for (y = y_start; y < y_end; y++) {
     for (x = x_start; x < x_end; x++) {
 
-        p = *src;
+        guint32 pixel_current, pixel_previous, min, max, *iter;
 
-        if ( x == y) {
-//            dest[0]=0x3;
+        iter = (guint32 *) GST_BUFFER_DATA (filter->current);
+	pixel_current = iter[y*filter->width + x];
+
+	iter = (guint32 *) GST_BUFFER_DATA (filter->previous);
+	pixel_previous = iter[y*filter->width + x];
+
+        if (pixel_previous > filter->threshold )
+	    min = pixel_previous - filter->threshold;
+        else
+	    min = 0;
+	
+	if (pixel_previous > (0xffffff - filter->threshold) )
+	    max = 0xffffffff;
+	else
+	    max = pixel_previous + filter->threshold;
+          
+        if ( (pixel_current < min ) || (pixel_current > max ) ) {
+            dest[y*filter->width + x] = 0xff0000ff;
+	    if (filter->silent == FALSE) {
+                printf("(%d, %d) prv:%x, cur:%x, thld:%x, max:%x, min:%x\n",
+	               x, y, pixel_previous, pixel_current, 
+                       filter->threshold, max, min);
+                fflush(stdout); 
+            }
+            if (window_is_defined == TRUE) {
+	        filter->tracking_area.y_end = y;
+		filter->tracking_area.x_end = x;
+	    }
+	    else {
+	        filter->tracking_area.y_begin = y;
+	        filter->tracking_area.x_begin = x;
+	        filter->tracking_area.y_end= y;
+	        filter->tracking_area.x_end= x;
+	        window_is_defined = TRUE;
+	    } 
         }
-        src += 4;
-        dest += 4;
     }
-    src += filter->width * 3 + 8 + filter->video_width_margin;
-    dest += filter->width * 3 + 8 + filter->video_width_margin;
   }
 
+  /* TODO: verify if the bounding boxes must be drawn. */
+  if (filter->draw_bounding_boxes == TRUE) {
+      printf("Bounding Boxes Drawn\n");
+  }
+
+  /* TODO: save the point on a list. data needed:
+   * x_pos, y_pos, begin_time, end_time
+   * x_pos and y_pos are the middle point of the filter->tracking_area */
+
+  /* TODO: verify if the track must be drawn. */
+  if (filter->draw_track == TRUE) {
+      printf("Track Drawn\n");
+  }
 
   return ret;
 }
