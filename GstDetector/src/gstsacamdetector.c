@@ -26,6 +26,8 @@
 #endif
 
 #include <string.h>
+#include <time.h>
+#include <sys/time.h>
 
 #include <gst/video/gstvideofilter.h>
 
@@ -72,7 +74,9 @@ struct _GstSacamDetector
 
     window tracking_area;
 
-    gboolean silent, first_run, draw_bounding_boxes, draw_track;
+    gboolean silent, first_run, draw_bounding_boxes, draw_track, active;
+    
+    GList *points = NULL;
 };
 
 struct _GstSacamDetectorClass 
@@ -99,7 +103,8 @@ enum
     ARG_THRESHOLD,
     ARG_SIZE,
     ARG_DRAW_BOXES,
-    ARG_DRAW_TRACK
+    ARG_DRAW_TRACK,
+    ARG_ACTIVE
 };
 
 static GstStaticPadTemplate src_factory =
@@ -165,6 +170,11 @@ gst_sacamdetector_class_init (gpointer klass, gpointer class_data)
   gobject_class->set_property = gst_sacamdetector_set_property;
   gobject_class->get_property = gst_sacamdetector_get_property;
  
+  g_object_class_install_property (gobject_class, ARG_ACTIVE,
+      g_param_spec_boolean ("active", "Active",
+          "If True, process the input. Else just pass it away.",
+          FALSE, G_PARAM_READWRITE));
+  
   g_object_class_install_property (gobject_class, ARG_DRAW_BOXES,
       g_param_spec_boolean ("draw-boxes", "Draw Bounding Boxes",
           "Draw the bounding boxes for the detected motion",
@@ -211,12 +221,15 @@ gst_sacamdetector_init (GstSacamDetector * filter,
   sacamdetector->tracking_area.x_end = 640;
   sacamdetector->tracking_area.y_end = 480;
   
+  sacamdetector->active = FALSE;
   sacamdetector->first_run = TRUE;
   sacamdetector->threshold = 0x303030;
   sacamdetector->bug_size = 30;
+  sacamdetector->points = NULL;
 
   sacamdetector->current = gst_buffer_new();
   sacamdetector->previous = gst_buffer_new();
+
   /* TODO: initialize the attributes */
 }
 
@@ -227,6 +240,9 @@ gst_sacamdetector_set_property (GObject * object, guint prop_id,
   GstSacamDetector *filter = GST_SACAMDETECTOR (object);
 
   switch (prop_id) {
+    case ARG_ACTIVE:
+      filter->active = g_value_get_boolean (value);
+      break;
     case ARG_DRAW_BOXES:
       filter->draw_bounding_boxes = g_value_get_boolean (value);
       break;
@@ -258,6 +274,9 @@ gst_sacamdetector_get_property (GObject * object, guint prop_id,
   GstSacamDetector *filter = GST_SACAMDETECTOR (object);
 
   switch (prop_id) {
+    case ARG_ACTIVE:
+      g_value_set_boolean (value, filter->active);
+      break;
     case ARG_DRAW_BOXES:
       g_value_set_boolean (value, filter->draw_bounding_boxes);
       break;
@@ -357,6 +376,9 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
   gint x_start, x_end, y_start, y_end;
   gint size;
   gboolean window_is_defined;
+  struct timeval begin_time, end_time;
+
+  tzset();
   
   GstFlowReturn ret = GST_FLOW_OK;
 
@@ -364,103 +386,139 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
 
   gst_buffer_stamp (out, in);
 
-  if (filter->first_run == TRUE) {
+  if (filter->active == TRUE) {
+      if (filter->first_run == TRUE) {
+          _gst_sacamdetector_set_current(filter, in);
+          _gst_sacamdetector_set_previous(filter, in);
+          filter->first_run = FALSE;
+	  
+	  return ret;
+      }
+
+      _gst_sacamdetector_set_previous(filter, filter->current);
       _gst_sacamdetector_set_current(filter, in);
-      _gst_sacamdetector_set_previous(filter, in);
-      filter->first_run = FALSE;
 
-      return ret;
-  }
+      dest = (guint32 *) GST_BUFFER_DATA (out);
 
-  _gst_sacamdetector_set_previous(filter, filter->current);
-  _gst_sacamdetector_set_current(filter, in);
+      size = (filter->tracking_area.y_end - filter->tracking_area.y_begin)/2;
+      if (size < filter->bug_size)
+          size = filter->bug_size;
+      y_start = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
+              - size;
+      if (y_start < 0)
+          y_start = 0;
+      y_end = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
+              + size;
+      if (y_end > filter->height)
+          y_end = filter->height;
 
-  dest = (guint32 *) GST_BUFFER_DATA (out);
+      size = (filter->tracking_area.x_end - filter->tracking_area.x_begin)/2;
+      if (size < filter->bug_size)
+          size = filter->bug_size; 
+      x_start = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
+                - size;
+      if (x_start < 0)
+          x_start = 0;
+      x_end = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
+              + size;
+      if (x_end > filter->width)
+          x_end = filter->width;
+
+      window_is_defined = FALSE;
+      
+      gettimeofday (&begin_time, &(struct timezone){timezone, daylight} );
+
+      for (y = y_start; y < y_end; y++) {
+          for (x = x_start; x < x_end; x++) {
+
+              guint32 pixel_current, pixel_previous, min, max, *iter;
+
+              iter = (guint32 *) GST_BUFFER_DATA (filter->current);
+              pixel_current = iter[y*filter->width + x];
+
+              iter = (guint32 *) GST_BUFFER_DATA (filter->previous);
+              pixel_previous = iter[y*filter->width + x];
+
+              if (pixel_previous > filter->threshold )
+                  min = pixel_previous - filter->threshold;
+              else
+                  min = 0;
+
+              if (pixel_previous > (0xffffff - filter->threshold) )
+                  max = 0xffffffff;
+              else
+                  max = pixel_previous + filter->threshold;
+                
+              if ( (pixel_current < min ) || (pixel_current > max ) ) {
+                  dest[y*filter->width + x] = 0xff0000ff;
+ /*                 if (filter->silent == FALSE) {
+                      printf("(%d, %d) p:%x, c:%x, t:%x, max:%x, min:%x\n",
+                         x, y, pixel_previous, pixel_current, 
+			 filter->threshold, max, min);
+                      fflush(stdout); 
+                  }
+*/		  
+                  if (window_is_defined == TRUE) {
+                      filter->tracking_area.y_end = y;
+                      filter->tracking_area.x_end = x;
+                  }
+                  else {
+                      filter->tracking_area.y_begin = y;
+                      filter->tracking_area.x_begin = x;
+                      filter->tracking_area.y_end= y;
+                      filter->tracking_area.x_end= x;
+                      window_is_defined = TRUE;
+                  } 
+              }
+          }
+      }
+
+      gettimeofday (&end_time, NULL);
   
-  size = (filter->tracking_area.y_end - filter->tracking_area.y_begin)/2;
-  if (size < filter->bug_size)
-      size = filter->bug_size;
-  y_start = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
-            - size;
-  if (y_start < 0)
-      y_start = 0;
-  y_end = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
-          + size;
-  if (y_end > filter->height)
-      y_end = filter->height;
-  
-  size = (filter->tracking_area.x_end - filter->tracking_area.x_begin)/2;
-  if (size < filter->bug_size)
-      size = filter->bug_size; 
-  x_start = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
-            - size;
-  if (x_start < 0)
-      x_start = 0;
-  x_end = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
-          + size;
-  if (x_end > filter->width)
-      x_end = filter->width;
-  
-  window_is_defined = FALSE;
+      /* TODO: verify if the bounding boxes must be drawn. */
+      if (filter->draw_bounding_boxes == TRUE) {
+          printf("Bounding Boxes Drawn\n");
+      }
 
-  for (y = y_start; y < y_end; y++) {
-    for (x = x_start; x < x_end; x++) {
+      /* TODO: save the point on a list. data needed:
+       * x_pos, y_pos, begin_time, end_time
+       * x_pos and y_pos are the middle point of the filter->tracking_area 
+       *
+       * To store the milliseconds, append it in the end of the timestamp.
+       * Example: "%Y-%m-%dT%H:%M:%S.milliseconds"
+       * */
 
-        guint32 pixel_current, pixel_previous, min, max, *iter;
+      struct tm* ptm;
+      char time_string[40];
+      long milliseconds;
 
-        iter = (guint32 *) GST_BUFFER_DATA (filter->current);
-	pixel_current = iter[y*filter->width + x];
+      ptm = localtime (&begin_time.tv_sec);
+      strftime (time_string, sizeof(time_string), "%Y-%m-%dT%H:%M:%S", ptm);
+      milliseconds = begin_time.tv_usec / 1000;
+      sprintf(time_string, "%s.%03ld\n", time_string, milliseconds);
 
-	iter = (guint32 *) GST_BUFFER_DATA (filter->previous);
-	pixel_previous = iter[y*filter->width + x];
+      /* TODO: how to save the data? put on a struct, create a GObject? */
 
-        if (pixel_previous > filter->threshold )
-	    min = pixel_previous - filter->threshold;
-        else
-	    min = 0;
-	
-	if (pixel_previous > (0xffffff - filter->threshold) )
-	    max = 0xffffffff;
-	else
-	    max = pixel_previous + filter->threshold;
-          
-        if ( (pixel_current < min ) || (pixel_current > max ) ) {
-            dest[y*filter->width + x] = 0xff0000ff;
-	    if (filter->silent == FALSE) {
-                printf("(%d, %d) prv:%x, cur:%x, thld:%x, max:%x, min:%x\n",
-	               x, y, pixel_previous, pixel_current, 
-                       filter->threshold, max, min);
-                fflush(stdout); 
-            }
-            if (window_is_defined == TRUE) {
-	        filter->tracking_area.y_end = y;
-		filter->tracking_area.x_end = x;
-	    }
-	    else {
-	        filter->tracking_area.y_begin = y;
-	        filter->tracking_area.x_begin = x;
-	        filter->tracking_area.y_end= y;
-	        filter->tracking_area.x_end= x;
-	        window_is_defined = TRUE;
-	    } 
-        }
-    }
+      /* TODO: which one is better? prepend and reverse, or just append? 
+      filter->points = g_list_append(filter->points, data);
+      
+      filter->points = g_list_prepend(filter->points, data);
+      filter->points = g_list_reverse(filter->points);
+      */
+
+      if (filter->silent == FALSE) {
+	  printf("%s", time_string);
+          printf("delta: %ld.%ld\n", 
+	          end_time.tv_sec - begin_time.tv_sec, 
+		  end_time.tv_sec - begin_time.tv_usec);
+	  fflush(stdout);
+      }
+
+      /* TODO: verify if the track must be drawn. */
+      if (filter->draw_track == TRUE) {
+          printf("Track Drawn\n");
+      }
   }
-
-  /* TODO: verify if the bounding boxes must be drawn. */
-  if (filter->draw_bounding_boxes == TRUE) {
-      printf("Bounding Boxes Drawn\n");
-  }
-
-  /* TODO: save the point on a list. data needed:
-   * x_pos, y_pos, begin_time, end_time
-   * x_pos and y_pos are the middle point of the filter->tracking_area */
-
-  /* TODO: verify if the track must be drawn. */
-  if (filter->draw_track == TRUE) {
-      printf("Track Drawn\n");
-  }
-
   return ret;
 }
 
