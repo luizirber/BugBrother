@@ -30,7 +30,6 @@
 #include <sys/time.h>
 
 #include <gst/video/gstvideofilter.h>
-
 #include <gst/video/video.h>
 
 G_BEGIN_DECLS
@@ -74,9 +73,10 @@ struct _GstSacamDetector
 
     window tracking_area;
 
-    gboolean silent, first_run, draw_bounding_boxes, draw_track, active;
+    gboolean silent, first_run, active,
+             draw_bounding_boxes, draw_track, draw_mask;
     
-    GList *points = NULL;
+    GList *points;
 };
 
 struct _GstSacamDetectorClass 
@@ -104,7 +104,8 @@ enum
     ARG_SIZE,
     ARG_DRAW_BOXES,
     ARG_DRAW_TRACK,
-    ARG_ACTIVE
+    ARG_ACTIVE,
+    ARG_DRAW_MASK
 };
 
 static GstStaticPadTemplate src_factory =
@@ -175,6 +176,11 @@ gst_sacamdetector_class_init (gpointer klass, gpointer class_data)
           "If True, process the input. Else just pass it away.",
           FALSE, G_PARAM_READWRITE));
   
+  g_object_class_install_property (gobject_class, ARG_DRAW_MASK,
+      g_param_spec_boolean ("draw-mask", "Draw Motion Mask",
+          "Draw the mask for the detected motion",
+          FALSE, G_PARAM_READWRITE));
+  
   g_object_class_install_property (gobject_class, ARG_DRAW_BOXES,
       g_param_spec_boolean ("draw-boxes", "Draw Bounding Boxes",
           "Draw the bounding boxes for the detected motion",
@@ -223,6 +229,7 @@ gst_sacamdetector_init (GstSacamDetector * filter,
   
   sacamdetector->active = FALSE;
   sacamdetector->first_run = TRUE;
+  sacamdetector->draw_mask = FALSE;
   sacamdetector->threshold = 0x303030;
   sacamdetector->bug_size = 30;
   sacamdetector->points = NULL;
@@ -245,6 +252,9 @@ gst_sacamdetector_set_property (GObject * object, guint prop_id,
       break;
     case ARG_DRAW_BOXES:
       filter->draw_bounding_boxes = g_value_get_boolean (value);
+      break;
+    case ARG_DRAW_MASK:
+      filter->draw_mask = g_value_get_boolean (value);
       break;
     case ARG_DRAW_TRACK:
       filter->draw_track = g_value_get_boolean (value);
@@ -279,6 +289,9 @@ gst_sacamdetector_get_property (GObject * object, guint prop_id,
       break;
     case ARG_DRAW_BOXES:
       g_value_set_boolean (value, filter->draw_bounding_boxes);
+      break;
+    case ARG_DRAW_MASK:
+      g_value_set_boolean (value, filter->draw_mask);
       break;
     case ARG_DRAW_TRACK:
       g_value_set_boolean (value, filter->draw_track);
@@ -366,6 +379,41 @@ static void _gst_sacamdetector_set_previous (GstSacamDetector *self,
     self->previous = gst_buffer_copy(buf);
 }
 
+static void _draw_rectangle (guint32 *canvas, int canvas_width, 
+                             int canvas_height, int x_center, int y_center,
+                             int rect_width, int rect_height)
+{
+    int x, y;
+
+    x = x_center - rect_width/2;
+    if (x < 0)
+        x = 0;
+
+    y = y_center - rect_height/2;
+    if (y < 0)
+        y = 0;   
+
+    for (x; (x < x_center + rect_width/2) && (x < canvas_width); x++)
+        canvas[y*canvas_width + x] = 0x0;
+
+    x = x_center - rect_width/2;
+    if (x < 0)
+        x = 0;
+
+    for (y; (y < y_center + rect_height/2) && (y < canvas_height); y++) {
+        canvas[y*canvas_width + x] = 0x0;
+        if (y*canvas_width + x + rect_width < (y+1)*canvas_width)
+            canvas[y*canvas_width + x + rect_width] = 0x0;
+        else
+            canvas[(y+1)*canvas_width - 1] = 0x0;
+    }
+
+    y--;
+    for (x; (x < x_center + rect_width/2) && (x < canvas_width); x++)
+        canvas[y*canvas_width + x] = 0x0;
+
+}
+
 static GstFlowReturn
 gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in, 
                              GstBuffer * out)
@@ -375,6 +423,7 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
   guint32 *dest;
   gint x_start, x_end, y_start, y_end;
   gint size;
+  gint x_center, y_center, width, height;
   gboolean window_is_defined;
   struct timeval begin_time, end_time;
 
@@ -450,14 +499,8 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
                   max = pixel_previous + filter->threshold;
                 
               if ( (pixel_current < min ) || (pixel_current > max ) ) {
-                  dest[y*filter->width + x] = 0xff0000ff;
- /*                 if (filter->silent == FALSE) {
-                      printf("(%d, %d) p:%x, c:%x, t:%x, max:%x, min:%x\n",
-                         x, y, pixel_previous, pixel_current, 
-			 filter->threshold, max, min);
-                      fflush(stdout); 
-                  }
-*/		  
+                  if (filter->draw_mask == TRUE)
+                      dest[y*filter->width + x] = 0xff0000ff;
                   if (window_is_defined == TRUE) {
                       filter->tracking_area.y_end = y;
                       filter->tracking_area.x_end = x;
@@ -475,10 +518,14 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
 
       gettimeofday (&end_time, NULL);
   
+      width = filter->tracking_area.x_end - filter->tracking_area.x_begin;
+      height = filter->tracking_area.y_end - filter->tracking_area.y_begin;
+      x_center = filter->tracking_area.x_begin + width/2;
+      y_center = filter->tracking_area.y_begin + height/2;
       /* TODO: verify if the bounding boxes must be drawn. */
-      if (filter->draw_bounding_boxes == TRUE) {
-          printf("Bounding Boxes Drawn\n");
-      }
+      if (filter->draw_bounding_boxes == TRUE)
+          _draw_rectangle (dest, filter->width, filter->height,
+                           x_center, y_center, width, height);
 
       /* TODO: save the point on a list. data needed:
        * x_pos, y_pos, begin_time, end_time
