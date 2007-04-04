@@ -44,4 +44,4 @@
 
 #include <gst/gst.h>
 
-GType gst_sacamdetector_get_type (void);
+GType sacam_detector_get_type (void);

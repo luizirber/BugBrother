@@ -1,11 +1,10 @@
 /* GStreamer
  * Copyright (C) <1999> Erik Walthinsen <omega@cse.ogi.edu>
  *
- * EffecTV:
- * Copyright (C) 2001 FUKUCHI Kentarou
+ * SACAM:
+ * Copyright (C) 2007 Luiz Irber
  *
- * EffecTV is free software. * This library is free software;
- * you can redistribute it and/or
+ * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -34,29 +33,35 @@
 
 G_BEGIN_DECLS
 
-/* #defines don't like whitespacey bits */
 #define GST_TYPE_SACAMDETECTOR \
-  (gst_sacamdetector_get_type())
+  (sacam_detector_get_type())
 #define GST_SACAMDETECTOR(obj) \
-  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_SACAMDETECTOR,GstSacamDetector))
+  (G_TYPE_CHECK_INSTANCE_CAST((obj),GST_TYPE_SACAMDETECTOR,SacamDetector))
 #define GST_SACAMDETECTOR_CLASS(klass) \
-  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_SACAMDETECTOR,GstSacamDetectorClass))
+  (G_TYPE_CHECK_CLASS_CAST((klass),GST_TYPE_SACAMDETECTOR,SacamDetectorClass))
 #define GST_IS_SACAMDETECTOR(obj) \
   (G_TYPE_CHECK_INSTANCE_TYPE((obj),GST_TYPE_SACAMDETECTOR))
 #define GST_IS_SACAMDETECTOR_CLASS(klass) \
   (G_TYPE_CHECK_CLASS_TYPE((klass),GST_TYPE_SACAMDETECTOR))
 
-typedef struct _GstSacamDetector      GstSacamDetector;
-typedef struct _GstSacamDetectorClass GstSacamDetectorClass;
+typedef struct _SacamDetector      SacamDetector;
+typedef struct _SacamDetectorClass SacamDetectorClass;
 
 typedef struct {
     gint x_begin;
     gint y_begin;
     gint x_end;
     gint y_end;
-} window;
+} Window;
 
-struct _GstSacamDetector
+typedef struct {
+    gint x_pos;
+    gint y_pos;
+    char start[24];
+    char end[24];
+} Point;
+
+struct _SacamDetector
 {
     GstVideoFilter videofilter;
 
@@ -71,7 +76,7 @@ struct _GstSacamDetector
 
     guint32 threshold;
 
-    window tracking_area;
+    Window tracking_area;
 
     gboolean silent, first_run, active,
              draw_bounding_boxes, draw_track, draw_mask;
@@ -79,17 +84,17 @@ struct _GstSacamDetector
     GList *points;
 };
 
-struct _GstSacamDetectorClass 
+struct _SacamDetectorClass 
 {
     GstVideoFilterClass parent_class;
 };
 
-GType gst_sacamdetector_get_type (void);
+GType sacam_detector_get_type (void);
 
 G_END_DECLS
 
-GST_DEBUG_CATEGORY_STATIC (gst_sacamdetector_debug);
-#define GST_CAT_DEFAULT gst_sacamdetector_debug
+GST_DEBUG_CATEGORY_STATIC (sacamdetector_debug);
+#define GST_CAT_DEFAULT sacamdetector_debug
 
 enum
 {
@@ -124,30 +129,30 @@ GST_STATIC_PAD_TEMPLATE ("sink",
 
 static GstVideoFilterClass *parent_class = NULL;
 
-static void gst_sacamdetector_set_property (GObject * object, guint prop_id,
+static void sacam_detector_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec);
-static void gst_sacamdetector_get_property (GObject * object, guint prop_id,
+static void sacam_detector_get_property (GObject * object, guint prop_id,
     GValue * value, GParamSpec * pspec);
-static gboolean gst_sacamdetector_set_caps (GstBaseTransform * btrans, 
+static gboolean sacam_detector_set_caps (GstBaseTransform * btrans, 
     GstCaps * incaps, GstCaps * outcaps);
-static gboolean gst_sacamdetector_get_unit_size (GstBaseTransform * btrans, 
+static gboolean sacam_detector_get_unit_size (GstBaseTransform * btrans, 
     GstCaps * caps, guint * size);
-static GstFlowReturn gst_sacamdetector_transform (GstBaseTransform * trans,
+static GstFlowReturn sacam_detector_transform (GstBaseTransform * trans,
     GstBuffer * in, GstBuffer * out);
 
 static void
-gst_sacamdetector_base_init (gpointer g_class)
+sacam_detector_base_init (gpointer g_class)
 {
   GstElementClass *element_class = GST_ELEMENT_CLASS (g_class);
 
-  static const GstElementDetails sacamdetector_details = { 
+  static const GstElementDetails sacam_detector_details = { 
       "Sacam Motion Detector",
       "Filter/Video",
       "Apply motion detection on video",
       "Luiz Irber <luiz.irber@gmail.com>"
   };
 
-  gst_element_class_set_details (element_class, &sacamdetector_details);
+  gst_element_class_set_details (element_class, &sacam_detector_details);
 
   gst_element_class_add_pad_template (element_class,
       gst_static_pad_template_get (&sink_factory));
@@ -156,7 +161,7 @@ gst_sacamdetector_base_init (gpointer g_class)
 }
 
 static void
-gst_sacamdetector_class_init (gpointer klass, gpointer class_data)
+sacam_detector_class_init (gpointer klass, gpointer class_data)
 {
   GObjectClass *gobject_class;
   GstElementClass *element_class;
@@ -168,8 +173,8 @@ gst_sacamdetector_class_init (gpointer klass, gpointer class_data)
 
   parent_class = g_type_class_peek_parent (klass);
 
-  gobject_class->set_property = gst_sacamdetector_set_property;
-  gobject_class->get_property = gst_sacamdetector_get_property;
+  gobject_class->set_property = sacam_detector_set_property;
+  gobject_class->get_property = sacam_detector_get_property;
  
   g_object_class_install_property (gobject_class, ARG_ACTIVE,
       g_param_spec_boolean ("active", "Active",
@@ -207,17 +212,16 @@ gst_sacamdetector_class_init (gpointer klass, gpointer class_data)
 	  0, 0xffffff, 30, /* min, max, default */
           G_PARAM_READWRITE));
 
-  trans_class->set_caps = GST_DEBUG_FUNCPTR (gst_sacamdetector_set_caps);
-  trans_class->get_unit_size = 
-                       GST_DEBUG_FUNCPTR (gst_sacamdetector_get_unit_size);
-  trans_class->transform = GST_DEBUG_FUNCPTR (gst_sacamdetector_transform);
+  trans_class->set_caps = GST_DEBUG_FUNCPTR (sacam_detector_set_caps);
+  trans_class->get_unit_size = GST_DEBUG_FUNCPTR (sacam_detector_get_unit_size);
+  trans_class->transform = GST_DEBUG_FUNCPTR (sacam_detector_transform);
 }
 
 static void
-gst_sacamdetector_init (GstSacamDetector * filter, 
-                        GstSacamDetectorClass * gclass)
+sacam_detector_init (SacamDetector * filter, 
+                     SacamDetectorClass * gclass)
 {
-  GstSacamDetector *sacamdetector = GST_SACAMDETECTOR (filter);
+  SacamDetector *sacamdetector = GST_SACAMDETECTOR (filter);
 
   sacamdetector->map = NULL;
   sacamdetector->silent = FALSE;
@@ -241,10 +245,10 @@ gst_sacamdetector_init (GstSacamDetector * filter,
 }
 
 static void
-gst_sacamdetector_set_property (GObject * object, guint prop_id,
-    const GValue * value, GParamSpec * pspec)
+sacam_detector_set_property (GObject * object, guint prop_id,
+                            const GValue * value, GParamSpec * pspec)
 {
-  GstSacamDetector *filter = GST_SACAMDETECTOR (object);
+  SacamDetector *filter = GST_SACAMDETECTOR (object);
 
   switch (prop_id) {
     case ARG_ACTIVE:
@@ -278,10 +282,10 @@ gst_sacamdetector_set_property (GObject * object, guint prop_id,
 }
 
 static void
-gst_sacamdetector_get_property (GObject * object, guint prop_id,
-    GValue * value, GParamSpec * pspec)
+sacam_detector_get_property (GObject * object, guint prop_id,
+                            GValue * value, GParamSpec * pspec)
 {
-  GstSacamDetector *filter = GST_SACAMDETECTOR (object);
+  SacamDetector *filter = GST_SACAMDETECTOR (object);
 
   switch (prop_id) {
     case ARG_ACTIVE:
@@ -312,10 +316,10 @@ gst_sacamdetector_get_property (GObject * object, guint prop_id,
 }
 
 static gboolean
-gst_sacamdetector_set_caps (GstBaseTransform * btrans, GstCaps * incaps,
+sacam_detector_set_caps (GstBaseTransform * btrans, GstCaps * incaps,
     GstCaps * outcaps)
 {
-  GstSacamDetector *sacamdetector = GST_SACAMDETECTOR (btrans);
+  SacamDetector *sacamdetector = GST_SACAMDETECTOR (btrans);
   GstStructure *structure;
   gboolean ret = FALSE;
 
@@ -342,10 +346,10 @@ gst_sacamdetector_set_caps (GstBaseTransform * btrans, GstCaps * incaps,
 }
 
 static gboolean
-gst_sacamdetector_get_unit_size (GstBaseTransform * btrans, GstCaps * caps,
+sacam_detector_get_unit_size (GstBaseTransform * btrans, GstCaps * caps,
     guint * size)
 {
-  GstSacamDetector *filter;
+  SacamDetector *filter;
   GstStructure *structure;
   gboolean ret = FALSE;
   gint width, height;
@@ -365,14 +369,14 @@ gst_sacamdetector_get_unit_size (GstBaseTransform * btrans, GstCaps * caps,
   return ret;
 }
 
-static void _gst_sacamdetector_set_current (GstSacamDetector *self, 
-                                            GstBuffer *buf) 
+static void _sacam_detector_set_current (SacamDetector *self, 
+                                         GstBuffer *buf) 
 {
     gst_buffer_unref(self->current);
     self->current = gst_buffer_copy(buf);
 }
 
-static void _gst_sacamdetector_set_previous (GstSacamDetector *self, 
+static void _sacam_detector_set_previous (SacamDetector *self, 
                                              GstBuffer *buf)
 {
     gst_buffer_unref(self->previous);
@@ -393,8 +397,13 @@ static void _draw_rectangle (guint32 *canvas, int canvas_width,
     if (y < 0)
         y = 0;   
 
-    for (x; (x < x_center + rect_width/2) && (x < canvas_width); x++)
+    for (x; (x < x_center + rect_width/2) && (x < canvas_width); x++) {
         canvas[y*canvas_width + x] = 0x0;
+	if ((y + rect_height) * canvas_width + x < canvas_height * canvas_width)
+            canvas[(y + rect_height) * canvas_width + x] = 0x0;
+	else
+	    canvas[(canvas_height - 1) * canvas_width + x] = 0x0;
+    }
 
     x = x_center - rect_width/2;
     if (x < 0)
@@ -407,18 +416,20 @@ static void _draw_rectangle (guint32 *canvas, int canvas_width,
         else
             canvas[(y+1)*canvas_width - 1] = 0x0;
     }
+}
 
-    y--;
-    for (x; (x < x_center + rect_width/2) && (x < canvas_width); x++)
-        canvas[y*canvas_width + x] = 0x0;
-
+static void _draw_line (Point *current, guint32* dest) 
+{
+   printf("current: (%d, %d)\n",
+          current->x_pos, current->y_pos);
+   fflush(stdout);
 }
 
 static GstFlowReturn
-gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in, 
-                             GstBuffer * out)
+sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in, 
+                          GstBuffer * out)
 {
-  GstSacamDetector *filter;
+  SacamDetector *filter;
   gint x, y;
   guint32 *dest;
   gint x_start, x_end, y_start, y_end;
@@ -426,6 +437,9 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
   gint x_center, y_center, width, height;
   gboolean window_is_defined;
   struct timeval begin_time, end_time;
+  struct tm* ptm;
+  long milliseconds;
+  Point point;
 
   tzset();
   
@@ -437,15 +451,15 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
 
   if (filter->active == TRUE) {
       if (filter->first_run == TRUE) {
-          _gst_sacamdetector_set_current(filter, in);
-          _gst_sacamdetector_set_previous(filter, in);
+          _sacam_detector_set_current(filter, in);
+          _sacam_detector_set_previous(filter, in);
           filter->first_run = FALSE;
 	  
 	  return ret;
       }
 
-      _gst_sacamdetector_set_previous(filter, filter->current);
-      _gst_sacamdetector_set_current(filter, in);
+      _sacam_detector_set_previous(filter, filter->current);
+      _sacam_detector_set_current(filter, in);
 
       dest = (guint32 *) GST_BUFFER_DATA (out);
 
@@ -535,62 +549,71 @@ gst_sacamdetector_transform (GstBaseTransform * trans, GstBuffer * in,
        * Example: "%Y-%m-%dT%H:%M:%S.milliseconds"
        * */
 
-      struct tm* ptm;
-      char time_string[40];
-      long milliseconds;
-
-      ptm = localtime (&begin_time.tv_sec);
-      strftime (time_string, sizeof(time_string), "%Y-%m-%dT%H:%M:%S", ptm);
-      milliseconds = begin_time.tv_usec / 1000;
-      sprintf(time_string, "%s.%03ld\n", time_string, milliseconds);
-
-      /* TODO: how to save the data? put on a struct, create a GObject? */
-
-      /* TODO: which one is better? prepend and reverse, or just append? 
-      filter->points = g_list_append(filter->points, data);
+      point.x_pos = x_center;
+      point.y_pos = y_center;
       
-      filter->points = g_list_prepend(filter->points, data);
-      filter->points = g_list_reverse(filter->points);
-      */
+      ptm = localtime (&begin_time.tv_sec);
+      strftime (point.start, sizeof(point.start), "%Y-%m-%dT%H:%M:%S", ptm);
+      milliseconds = begin_time.tv_usec / 1000;
+      sprintf(point.start, "%s.%03ld", point.start, milliseconds);
+
+      ptm = localtime (&end_time.tv_sec);
+      strftime (point.end, sizeof(point.end), "%Y-%m-%dT%H:%M:%S", ptm);
+      milliseconds = end_time.tv_usec / 1000;
+      sprintf(point.end, "%s.%03ld", point.end, milliseconds);
 
       if (filter->silent == FALSE) {
-	  printf("%s", time_string);
-          printf("delta: %ld.%ld\n", 
+	  printf("%s delta: %ld.%ld\n", point.start,
 	          end_time.tv_sec - begin_time.tv_sec, 
 		  end_time.tv_sec - begin_time.tv_usec);
 	  fflush(stdout);
       }
 
+      /* TODO: which one is better? prepend and reverse, or just append?
+       * Probably just prepend, without reversing. If an app wanna use the 
+       * point list it should reverse the list. This way we don't loose
+       * CPU time reversing the list everytime.
+      filter->points = g_list_append(filter->points, data);
+      
+      filter->points = g_list_prepend(filter->points, data);
+      filter->points = g_list_reverse(filter->points);
+      */
+ 
+      /* TODO: verify the movement tolerance here, or let the app using
+       the pipeline determine this? */
+      filter->points = g_list_prepend(filter->points, &point);
+
       /* TODO: verify if the track must be drawn. */
       if (filter->draw_track == TRUE) {
-          printf("Track Drawn\n");
+          g_list_foreach (filter->points, _draw_line, dest);
       }
   }
   return ret;
 }
 
-GType
-gst_sacamdetector_get_type (void)
-{
-  static GType sacamdetector_type = 0;
 
-  if (!sacamdetector_type) {
-    static const GTypeInfo sacamdetector_info = {
-      sizeof (GstSacamDetectorClass),
-      gst_sacamdetector_base_init,
+GType
+sacam_detector_get_type (void)
+{
+  static GType sacam_detector_type = 0;
+
+  if (!sacam_detector_type) {
+    static const GTypeInfo sacam_detector_info = {
+      sizeof (SacamDetectorClass),
+      sacam_detector_base_init,
       NULL,
-      (GClassInitFunc) gst_sacamdetector_class_init,
+      (GClassInitFunc) sacam_detector_class_init,
       NULL,
       NULL,
-      sizeof (GstSacamDetector),
+      sizeof (SacamDetector),
       0,
-      (GInstanceInitFunc) gst_sacamdetector_init,
+      (GInstanceInitFunc) sacam_detector_init,
     };
 
-    sacamdetector_type =
+    sacam_detector_type =
         g_type_register_static (GST_TYPE_VIDEO_FILTER, "SacamDetector",
-        &sacamdetector_info, 0);
+        &sacam_detector_info, 0);
   }
-  return sacamdetector_type;
+  return sacam_detector_type;
 }
 
