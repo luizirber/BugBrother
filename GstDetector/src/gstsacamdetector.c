@@ -65,10 +65,9 @@ struct _SacamDetector
 {
     GstVideoFilter videofilter;
 
-    gint width, height;
+    gint width, height, video_width_margin;
     gint map_width, map_height;
-    guint32 *map;
-    gint video_width_margin;
+    guint32 *map, *canvas;
 
     GstBuffer *previous, *current;
 
@@ -418,12 +417,155 @@ static void _draw_rectangle (guint32 *canvas, int canvas_width,
     }
 }
 
-static void _draw_line (Point *current, guint32* dest) 
+static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
+                         int screenx, int screeny)
 {
-   printf("current: (%d, %d)\n",
-          current->x_pos, current->y_pos);
-   fflush(stdout);
+
+  /* Taken from http://www.google.com/codesearch?hl=en&q=+draw_line+show:qSfX2dzUpXA:Zg2Gy_rKebE:j6N7Sgjie0A&sa=N&cd=2&ct=rc&cs_p=http://freshmeat.net/redir/xine/11942/url_tgz/xine-lib-1.1.4.tar.gz&cs_f=xine-lib-1.1.4/src/post/goom/drawmethods.c#a0
+ */
+  int     x, y, dx, dy, yy, xx;
+  guint32* p;
+
+  if ((y1 < 0) || (y2 < 0) || (x1 < 0) || (x2 < 0) || (y1 >= screeny) || 
+      (y2 >= screeny) || (x1 >= screenx) || (x2 >= screenx))
+      return;
+  dx = x2 - x1;
+  dy = y2 - y1;
+  if (x1 > x2) {
+    int     tmp;
+
+    tmp = x1;
+    x1 = x2;
+    x2 = tmp;
+    tmp = y1;
+    y1 = y2;
+    y2 = tmp;
+    dx = x2 - x1;
+    dy = y2 - y1;
+  }
+
+  /* vertical line */
+  if (dx == 0) {
+    if (y1 < y2) {
+      p = data[(screenx * y1) + x1];
+      for (y = y1; y <= y2; y++) {
+          p[(screenx * y) + x1] = col;
+	  p += screenx;
+      }
+    }
+    else {
+      p = data[(screenx * y2) + x1];
+      for (y = y2; y <= y1; y++) {
+         p[(screenx * y) + x1] = col;
+         p += screenx;
+      }
+    }
+    return;
+  }
+  /* horizontal line */
+  if (dy == 0) {
+    if (x1 < x2) {
+      p = data[(screenx * y1) + x1];
+      for (x = x1; x <= x2; x++) {
+          p[(screenx * y1) + x] = col;
+          p++;
+      }
+      return;
+    }
+    else {
+      p = (data[(screenx * y1) + x2]);
+      for (x = x2; x <= x1; x++) {
+          p[(screenx * y1) + x] = col;
+          p++;
+      }
+      return;
+    }
+  }
+  /* 1    */
+  /* \   */
+  /* \  */
+  /* 2 */
+  if (y2 > y1) {
+    /* steep */
+    if (dy > dx) {
+      dx = ((dx << 16) / dy);
+      x = x1 << 16;
+      for (y = y1; y <= y2; y++) {
+          xx = x >> 16;
+          p = data[(screenx * y) + xx];
+          p[(screenx * y) + xx] = col;
+          if (xx < (screenx - 1)) {
+              p++;
+              p[(screenx * y) + xx] = col;
+          }
+          x += dx;
+      }
+      return;
+    }
+    /* shallow */
+    else {
+      dy = ((dy << 16) / dx);
+      y = y1 << 16;
+      for (x = x1; x <= x2; x++) {
+          yy = y >> 16;
+          p = (data[(screenx * yy) + x]);
+          p[(screenx * yy) + x] = col;
+          if (yy < (screeny - 1)) {
+              p += screeny;
+              p[(screenx * yy) + x] = col;
+          }
+          y += dy;
+      }
+    }
+  }
+  /* 2 */
+  /* /  */
+  /* /   */
+  /* 1    */
+  else {
+    /* steep */
+    if (-dy > dx) {
+      dx = ((dx << 16) / -dy);
+      x = (x1 + 1) << 16;
+      for (y = y1; y >= y2; y--) {
+          xx = x >> 16;
+          p = data[(screenx * y) + xx];
+          p[(screenx * y) + xx] = col;
+          if (xx < (screenx - 1)) {
+              p--;
+              p[(screenx * y) + xx] = col;
+          }
+          x += dx;
+      }
+      return;
+    }
+    /* shallow */
+    else {
+      dy = ((dy << 16) / dx);
+      y = y1 << 16;
+      for (x = x1; x <= x2; x++) {
+    	yy = y >> 16;
+    	p = (data[(screenx * yy) + x]);
+        p[(screenx * yy) + x] = col;
+    	if (yy < (screeny - 1)) {
+    	  p += screeny;
+          p[(screenx * yy) + x] = col;
+    	}
+    	y += dy;
+      }
+      return;
+    }
+  }
 }
+
+static void _draw_line (Point *current, SacamDetector* filter)
+{
+    __draw_line( filter->canvas, current->x_pos, current->y_pos, 
+                 ((Point *) filter->points->next->data)->x_pos, 
+                 ((Point *) filter->points->next->data)->y_pos,
+                 0x0, filter->width, filter->height);
+}
+
 
 static GstFlowReturn
 sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in, 
@@ -431,7 +573,6 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
 {
   SacamDetector *filter;
   gint x, y;
-  guint32 *dest;
   gint x_start, x_end, y_start, y_end;
   gint size;
   gint x_center, y_center, width, height;
@@ -461,7 +602,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       _sacam_detector_set_previous(filter, filter->current);
       _sacam_detector_set_current(filter, in);
 
-      dest = (guint32 *) GST_BUFFER_DATA (out);
+      filter->canvas = (guint32 *) GST_BUFFER_DATA (out);
 
       size = (filter->tracking_area.y_end - filter->tracking_area.y_begin)/2;
       if (size < filter->bug_size)
@@ -514,7 +655,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
                 
               if ( (pixel_current < min ) || (pixel_current > max ) ) {
                   if (filter->draw_mask == TRUE)
-                      dest[y*filter->width + x] = 0xff0000ff;
+                      filter->canvas[y*filter->width + x] = 0xff0000ff;
                   if (window_is_defined == TRUE) {
                       filter->tracking_area.y_end = y;
                       filter->tracking_area.x_end = x;
@@ -538,7 +679,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       y_center = filter->tracking_area.y_begin + height/2;
       /* TODO: verify if the bounding boxes must be drawn. */
       if (filter->draw_bounding_boxes == TRUE)
-          _draw_rectangle (dest, filter->width, filter->height,
+          _draw_rectangle (filter->canvas, filter->width, filter->height,
                            x_center, y_center, width, height);
 
       /* TODO: save the point on a list. data needed:
@@ -585,7 +726,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
 
       /* TODO: verify if the track must be drawn. */
       if (filter->draw_track == TRUE) {
-          g_list_foreach (filter->points, _draw_line, dest);
+          g_list_foreach (filter->points, _draw_line, filter);
       }
   }
   return ret;
