@@ -396,7 +396,7 @@ static void _draw_rectangle (guint32 *canvas, int canvas_width,
     if (y < 0)
         y = 0;   
 
-    for (x; (x < x_center + rect_width/2) && (x < canvas_width); x++) {
+    for (; (x < x_center + rect_width/2) && (x < canvas_width); x++) {
         canvas[y*canvas_width + x] = 0x0;
 	if ((y + rect_height) * canvas_width + x < canvas_height * canvas_width)
             canvas[(y + rect_height) * canvas_width + x] = 0x0;
@@ -408,7 +408,7 @@ static void _draw_rectangle (guint32 *canvas, int canvas_width,
     if (x < 0)
         x = 0;
 
-    for (y; (y < y_center + rect_height/2) && (y < canvas_height); y++) {
+    for (; (y < y_center + rect_height/2) && (y < canvas_height); y++) {
         canvas[y*canvas_width + x] = 0x0;
         if (y*canvas_width + x + rect_width < (y+1)*canvas_width)
             canvas[y*canvas_width + x + rect_width] = 0x0;
@@ -417,14 +417,15 @@ static void _draw_rectangle (guint32 *canvas, int canvas_width,
     }
 }
 
-static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
-                         int screenx, int screeny)
+static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, 
+                         guint32 col, int screenx, int screeny)
 {
+
 
   /* Taken from http://www.google.com/codesearch?hl=en&q=+draw_line+show:qSfX2dzUpXA:Zg2Gy_rKebE:j6N7Sgjie0A&sa=N&cd=2&ct=rc&cs_p=http://freshmeat.net/redir/xine/11942/url_tgz/xine-lib-1.1.4.tar.gz&cs_f=xine-lib-1.1.4/src/post/goom/drawmethods.c#a0
  */
   int     x, y, dx, dy, yy, xx;
-  guint32* p;
+  guint32 *p;
 
   if ((y1 < 0) || (y2 < 0) || (x1 < 0) || (x2 < 0) || (y1 >= screeny) || 
       (y2 >= screeny) || (x1 >= screenx) || (x2 >= screenx))
@@ -432,7 +433,7 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
   dx = x2 - x1;
   dy = y2 - y1;
   if (x1 > x2) {
-    int     tmp;
+    int tmp;
 
     tmp = x1;
     x1 = x2;
@@ -447,17 +448,15 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
   /* vertical line */
   if (dx == 0) {
     if (y1 < y2) {
-      p = data[(screenx * y1) + x1];
+      p = &(data[(screenx * y1) + x1]);
       for (y = y1; y <= y2; y++) {
           p[(screenx * y) + x1] = col;
-	  p += screenx;
       }
     }
     else {
-      p = data[(screenx * y2) + x1];
+      p = &(data[(screenx * y2) + x1]);
       for (y = y2; y <= y1; y++) {
          p[(screenx * y) + x1] = col;
-         p += screenx;
       }
     }
     return;
@@ -465,18 +464,16 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
   /* horizontal line */
   if (dy == 0) {
     if (x1 < x2) {
-      p = data[(screenx * y1) + x1];
+      p = &(data[(screenx * y1) + x1]);
       for (x = x1; x <= x2; x++) {
           p[(screenx * y1) + x] = col;
-          p++;
       }
       return;
     }
     else {
-      p = (data[(screenx * y1) + x2]);
+      p = &(data[(screenx * y1) + x2]);
       for (x = x2; x <= x1; x++) {
           p[(screenx * y1) + x] = col;
-          p++;
       }
       return;
     }
@@ -492,10 +489,9 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
       x = x1 << 16;
       for (y = y1; y <= y2; y++) {
           xx = x >> 16;
-          p = data[(screenx * y) + xx];
+          p = &(data[(screenx * y) + xx]);
           p[(screenx * y) + xx] = col;
           if (xx < (screenx - 1)) {
-              p++;
               p[(screenx * y) + xx] = col;
           }
           x += dx;
@@ -508,10 +504,9 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
       y = y1 << 16;
       for (x = x1; x <= x2; x++) {
           yy = y >> 16;
-          p = (data[(screenx * yy) + x]);
+          p = &(data[(screenx * yy) + x]);
           p[(screenx * yy) + x] = col;
           if (yy < (screeny - 1)) {
-              p += screeny;
               p[(screenx * yy) + x] = col;
           }
           y += dy;
@@ -529,10 +524,9 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
       x = (x1 + 1) << 16;
       for (y = y1; y >= y2; y--) {
           xx = x >> 16;
-          p = data[(screenx * y) + xx];
+          p = &(data[(screenx * y) + xx]);
           p[(screenx * y) + xx] = col;
           if (xx < (screenx - 1)) {
-              p--;
               p[(screenx * y) + xx] = col;
           }
           x += dx;
@@ -545,10 +539,9 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
       y = y1 << 16;
       for (x = x1; x <= x2; x++) {
     	yy = y >> 16;
-    	p = (data[(screenx * yy) + x]);
+    	p = &(data[(screenx * yy) + x]);
         p[(screenx * yy) + x] = col;
     	if (yy < (screeny - 1)) {
-    	  p += screeny;
           p[(screenx * yy) + x] = col;
     	}
     	y += dy;
@@ -560,10 +553,14 @@ static void __draw_line (guint32 *data, int x1, int y1, int x2, int y2, int col,
 
 static void _draw_line (Point *current, SacamDetector* filter)
 {
-    __draw_line( filter->canvas, current->x_pos, current->y_pos, 
-                 ((Point *) filter->points->next->data)->x_pos, 
-                 ((Point *) filter->points->next->data)->y_pos,
-                 0x0, filter->width, filter->height);
+    if ( filter->points->next == NULL )
+        return ; 
+    else {
+        __draw_line( filter->canvas, current->x_pos, current->y_pos, 
+                     ((Point *) filter->points->next->data)->x_pos, 
+                     ((Point *) filter->points->next->data)->y_pos,
+                     0xFF, filter->width, filter->height);
+    }
 }
 
 
@@ -580,7 +577,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
   struct timeval begin_time, end_time;
   struct tm* ptm;
   long milliseconds;
-  Point point;
+  Point *point;
 
   tzset();
   
@@ -690,21 +687,22 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
        * Example: "%Y-%m-%dT%H:%M:%S.milliseconds"
        * */
 
-      point.x_pos = x_center;
-      point.y_pos = y_center;
+      point = malloc( sizeof(Point));
+      point->x_pos = x_center;
+      point->y_pos = y_center;
       
       ptm = localtime (&begin_time.tv_sec);
-      strftime (point.start, sizeof(point.start), "%Y-%m-%dT%H:%M:%S", ptm);
+      strftime (point->start, sizeof(point->start), "%Y-%m-%dT%H:%M:%S", ptm);
       milliseconds = begin_time.tv_usec / 1000;
-      sprintf(point.start, "%s.%03ld", point.start, milliseconds);
+      sprintf(point->start, "%s.%03ld", point->start, milliseconds);
 
       ptm = localtime (&end_time.tv_sec);
-      strftime (point.end, sizeof(point.end), "%Y-%m-%dT%H:%M:%S", ptm);
+      strftime (point->end, sizeof(point->end), "%Y-%m-%dT%H:%M:%S", ptm);
       milliseconds = end_time.tv_usec / 1000;
-      sprintf(point.end, "%s.%03ld", point.end, milliseconds);
+      sprintf(point->end, "%s.%03ld", point->end, milliseconds);
 
       if (filter->silent == FALSE) {
-	  printf("%s delta: %ld.%ld\n", point.start,
+	  printf("%s delta: %ld.%ld\n", point->start,
 	          end_time.tv_sec - begin_time.tv_sec, 
 		  end_time.tv_sec - begin_time.tv_usec);
 	  fflush(stdout);
@@ -722,11 +720,12 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
  
       /* TODO: verify the movement tolerance here, or let the app using
        the pipeline determine this? */
-      filter->points = g_list_prepend(filter->points, &point);
+      filter->points = g_list_prepend(filter->points, point);
 
-      /* TODO: verify if the track must be drawn. */
       if (filter->draw_track == TRUE) {
-          g_list_foreach (filter->points, _draw_line, filter);
+          GList* first = filter->points;
+          g_list_foreach (filter->points, (GFunc)(_draw_line), filter);
+          filter->points = first;
       }
   }
   return ret;
