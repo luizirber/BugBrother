@@ -48,17 +48,10 @@ typedef struct _SacamDetector      SacamDetector;
 typedef struct _SacamDetectorClass SacamDetectorClass;
 
 typedef struct {
-    gint x_begin;
-    gint y_begin;
-    gint x_end;
-    gint y_end;
-} Window;
-
-typedef struct {
     gint x_pos;
     gint y_pos;
-    char start[24];
-    char end[24];
+    gchar start[24];
+    gchar end[24];
 } Point;
 
 struct _SacamDetector
@@ -75,7 +68,7 @@ struct _SacamDetector
 
     guint32 threshold;
 
-    Window tracking_area;
+    GValueArray *tracking_area;
 
     gboolean silent, first_run, active,
              draw_bounding_boxes, draw_track, draw_mask;
@@ -109,7 +102,8 @@ enum
     ARG_DRAW_BOXES,
     ARG_DRAW_TRACK,
     ARG_ACTIVE,
-    ARG_DRAW_MASK
+    ARG_DRAW_MASK,
+    ARG_TRACKING_AREA
 };
 
 static GstStaticPadTemplate src_factory =
@@ -211,6 +205,14 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
 	  0, 0xffffff, 30, /* min, max, default */
           G_PARAM_READWRITE));
 
+  g_object_class_install_property (gobject_class, ARG_TRACKING_AREA,
+      g_param_spec_value_array ("tracking-area", "Tracking Area",
+          "Current tracking area, in pixels", 
+          g_param_spec_int ("coord", "Coordinate part",
+              "Holds part of the coordinate",
+              0, 0xffffff, 0, G_PARAM_READWRITE),
+          G_PARAM_READWRITE));
+
   trans_class->set_caps = GST_DEBUG_FUNCPTR (sacam_detector_set_caps);
   trans_class->get_unit_size = GST_DEBUG_FUNCPTR (sacam_detector_get_unit_size);
   trans_class->transform = GST_DEBUG_FUNCPTR (sacam_detector_transform);
@@ -221,15 +223,21 @@ sacam_detector_init (SacamDetector * filter,
                      SacamDetectorClass * gclass)
 {
   SacamDetector *sacamdetector = GST_SACAMDETECTOR (filter);
+  GValue tmp = { 0, };
+  g_value_init(&tmp, G_TYPE_INT);
 
   sacamdetector->map = NULL;
   sacamdetector->silent = FALSE;
 
-  sacamdetector->tracking_area.x_begin = 0;
-  sacamdetector->tracking_area.y_begin = 0;
-  sacamdetector->tracking_area.x_end = 640;
-  sacamdetector->tracking_area.y_end = 480;
-  
+  sacamdetector->tracking_area = g_value_array_new(4);
+  g_value_set_int(&tmp, 0);
+  g_value_array_insert(sacamdetector->tracking_area, 0, &tmp); /* x0 */
+  g_value_array_insert(sacamdetector->tracking_area, 1, &tmp); /* y0 */
+  g_value_set_int(&tmp, 640);
+  g_value_array_insert(sacamdetector->tracking_area, 2, &tmp); /* x1 */
+  g_value_set_int(&tmp, 480);
+  g_value_array_insert(sacamdetector->tracking_area, 3, &tmp); /* y1 */
+
   sacamdetector->active = FALSE;
   sacamdetector->first_run = TRUE;
   sacamdetector->draw_mask = FALSE;
@@ -274,6 +282,19 @@ sacam_detector_set_property (GObject * object, guint prop_id,
     case ARG_SIZE:
       filter->bug_size = g_value_get_uint (value);
       break;
+    case ARG_TRACKING_AREA: {
+      GValueArray *va = g_value_get_boxed (value);
+/*    printf("(%d, %d)(%d, %d)", g_value_get_int(g_value_array_get_nth(va, 0)),
+                                 g_value_get_int(g_value_array_get_nth(va, 1)),
+                                 g_value_get_int(g_value_array_get_nth(va, 2)),
+                                 g_value_get_int(g_value_array_get_nth(va, 3)));
+*/
+      fflush(stdout);
+      if (filter->tracking_area)
+          g_value_array_free (filter->tracking_area);
+      filter->tracking_area = va != NULL ? g_value_array_copy (va) : NULL;
+      break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -307,6 +328,9 @@ sacam_detector_get_property (GObject * object, guint prop_id,
       break;
     case ARG_SIZE:
       g_value_set_uint (value, filter->bug_size);
+      break;
+    case ARG_TRACKING_AREA:
+      g_value_set_boxed (value, filter->tracking_area);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -561,13 +585,16 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
   SacamDetector *filter;
   gint x, y;
   gint x_start, x_end, y_start, y_end;
-  gint size;
+  gint size, sum;
   gint x_center, y_center, width, height;
   gboolean window_is_defined;
   struct timeval begin_time, end_time;
   struct tm* ptm;
   long milliseconds;
   Point *point;
+  gchar end_string[24];
+  GValue tmp = { 0, };
+  g_value_init(&tmp, G_TYPE_INT);
 
   tzset();
   
@@ -591,27 +618,33 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
 
       filter->canvas = (guint32 *) GST_BUFFER_DATA (out);
 
-      size = (filter->tracking_area.y_end - filter->tracking_area.y_begin)/2;
+      size =  g_value_get_int(g_value_array_get_nth(filter->tracking_area, 3))
+            - g_value_get_int(g_value_array_get_nth(filter->tracking_area, 1));
+      size = size / 2;
       if (size < filter->bug_size)
           size = filter->bug_size;
-      y_start = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
-              - size;
+      sum =  g_value_get_int(g_value_array_get_nth(filter->tracking_area, 3))
+           + g_value_get_int(g_value_array_get_nth(filter->tracking_area, 1));
+      sum = sum / 2;
+      y_start = sum - size;
       if (y_start < 0)
           y_start = 0;
-      y_end = (filter->tracking_area.y_begin + filter->tracking_area.y_end)/2
-              + size;
+      y_end = sum + size;
       if (y_end > filter->height)
           y_end = filter->height;
 
-      size = (filter->tracking_area.x_end - filter->tracking_area.x_begin)/2;
+      size =  g_value_get_int(g_value_array_get_nth(filter->tracking_area, 2))
+            - g_value_get_int(g_value_array_get_nth(filter->tracking_area, 0));
+      size = size / 2;
       if (size < filter->bug_size)
           size = filter->bug_size; 
-      x_start = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
-                - size;
+      sum =  g_value_get_int(g_value_array_get_nth(filter->tracking_area, 2))
+           + g_value_get_int(g_value_array_get_nth(filter->tracking_area, 0));
+      sum = sum / 2;
+      x_start = sum - size;
       if (x_start < 0)
           x_start = 0;
-      x_end = (filter->tracking_area.x_begin + filter->tracking_area.x_end)/2
-              + size;
+      x_end = sum + size;
       if (x_end > filter->width)
           x_end = filter->width;
 
@@ -644,14 +677,18 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
                   if (filter->draw_mask == TRUE)
                       filter->canvas[y*filter->width + x] = 0xff0000ff;
                   if (window_is_defined == TRUE) {
-                      filter->tracking_area.y_end = y;
-                      filter->tracking_area.x_end = x;
+                      g_value_set_int(&tmp, x);
+                      g_value_array_insert(filter->tracking_area, 2, &tmp);
+                      g_value_set_int(&tmp, y);
+                      g_value_array_insert(filter->tracking_area, 3, &tmp);
                   }
                   else {
-                      filter->tracking_area.y_begin = y;
-                      filter->tracking_area.x_begin = x;
-                      filter->tracking_area.y_end= y;
-                      filter->tracking_area.x_end= x;
+                      g_value_set_int(&tmp, x);
+                      g_value_array_insert(filter->tracking_area, 0, &tmp);
+                      g_value_array_insert(filter->tracking_area, 2, &tmp);
+                      g_value_set_int(&tmp, y);
+                      g_value_array_insert(filter->tracking_area, 1, &tmp);
+                      g_value_array_insert(filter->tracking_area, 3, &tmp);
                       window_is_defined = TRUE;
                   } 
               }
@@ -659,15 +696,19 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       }
 
       gettimeofday (&end_time, NULL);
-  
-      width = filter->tracking_area.x_end - filter->tracking_area.x_begin;
-      height = filter->tracking_area.y_end - filter->tracking_area.y_begin;
-      x_center = filter->tracking_area.x_begin + width/2;
-      y_center = filter->tracking_area.y_begin + height/2;
+      width =  g_value_get_int(g_value_array_get_nth(filter->tracking_area, 2))
+             - g_value_get_int(g_value_array_get_nth(filter->tracking_area, 0));
+      height = g_value_get_int(g_value_array_get_nth(filter->tracking_area, 3))
+             - g_value_get_int(g_value_array_get_nth(filter->tracking_area, 1));
+      x_center = g_value_get_int(g_value_array_get_nth(filter->tracking_area,0))
+                 + width / 2;
+      y_center = g_value_get_int(g_value_array_get_nth(filter->tracking_area,1))
+                 + height/2;
       /* TODO: verify if the bounding boxes must be drawn. */
       if (filter->draw_bounding_boxes == TRUE)
           _draw_rectangle (filter->canvas, filter->width, filter->height,
-                           x_center, y_center, width, height);
+//                           x_center, y_center, width, height);
+                        x_center, y_center, filter->bug_size, filter->bug_size);
 
       /* TODO: save the point on a list. data needed:
        * x_pos, y_pos, begin_time, end_time
@@ -676,44 +717,49 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
        * To store the milliseconds, append it in the end of the timestamp.
        * Example: "%Y-%m-%dT%H:%M:%S.milliseconds"
        * */
-
-      point = malloc( sizeof(Point));
-      point->x_pos = x_center;
-      point->y_pos = y_center;
-      
-      ptm = localtime (&begin_time.tv_sec);
-      strftime (point->start, sizeof(point->start), "%Y-%m-%dT%H:%M:%S", ptm);
-      milliseconds = begin_time.tv_usec / 1000;
-      sprintf(point->start, "%s.%03ld", point->start, milliseconds);
-
+    
       ptm = localtime (&end_time.tv_sec);
-      strftime (point->end, sizeof(point->end), "%Y-%m-%dT%H:%M:%S", ptm);
+      strftime (end_string, sizeof(end_string), "%Y-%m-%dT%H:%M:%S", ptm);
       milliseconds = end_time.tv_usec / 1000;
-      sprintf(point->end, "%s.%03ld", point->end, milliseconds);
+      sprintf(end_string, "%s.%03ld", end_string, milliseconds);
 
-      if (filter->silent == FALSE) {
-	  printf("%s delta: %ld.%ld\n", point->start,
+      if ( filter->points == NULL || (filter->points->data->x_pos != x_center 
+                                  && filter->points->data->y_pos != y_center)){
+          point = malloc( sizeof(Point));
+          point->x_pos = x_center;
+          point->y_pos = y_center;
+      
+          ptm = localtime (&begin_time.tv_sec);
+          strftime (point->start, sizeof(point->start),"%Y-%m-%dT%H:%M:%S",ptm);
+          milliseconds = begin_time.tv_usec / 1000;
+          sprintf(point->start, "%s.%03ld", point->start, milliseconds);
+
+          point->end = g_strndup(end_string, 23);
+
+          if (filter->silent == FALSE) {
+	      printf("%s delta: %ld.%ld\n", point->start,
 	          end_time.tv_sec - begin_time.tv_sec, 
 		  end_time.tv_sec - begin_time.tv_usec);
-	  fflush(stdout);
-      }
+              fflush(stdout);
+          }
 
-      /* TODO: which one is better? prepend and reverse, or just append?
-       * Probably just prepend, without reversing. If an app wanna use the 
-       * point list it should reverse the list. This way we don't loose
-       * CPU time reversing the list everytime.
-      filter->points = g_list_append(filter->points, data);
-      
-      filter->points = g_list_prepend(filter->points, data);
-      filter->points = g_list_reverse(filter->points);
-      */
+          /* TODO: which one is better? prepend and reverse, or just append?
+           * Probably just prepend, without reversing. If an app wanna use the 
+           * point list it should reverse the list. This way we don't loose
+           * CPU time reversing the list everytime.
+          filter->points = g_list_append(filter->points, data);
+         
+          filter->points = g_list_prepend(filter->points, data);
+          filter->points = g_list_reverse(filter->points);
+          */
  
-      /* TODO: verify the movement tolerance here, or let the app using
-       the pipeline determine this? */
-      filter->points = g_list_prepend(filter->points, point);
-
-//          g_list_foreach (filter->points, (GFunc)(_draw_line), filter);
-
+          /* TODO: verify the movement tolerance here, or let the app using
+           the pipeline determine this? */
+          filter->points = g_list_prepend(filter->points, point);
+      }
+      else 
+          filter->points->data->end = g_strndup(end_string, 23);
+      
       if (filter->draw_track == TRUE) {
           GList* iter = filter->points->next;
           while (iter) {
