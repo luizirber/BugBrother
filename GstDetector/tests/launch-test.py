@@ -20,6 +20,7 @@ def clicked_cb(output, event):
 def run():
     global sink
     global detector
+#    pipeline_string = "videotestsrc name=source ! " \
     pipeline_string = "v4lsrc name=source ! ffmpegcolorspace ! " \
                       "video/x-raw-rgb,width=640,height=480 ! " \
                       "motiondetector name=tracker active=true " \
@@ -33,11 +34,10 @@ def run():
     sink = pipeline.get_by_name("sink")
     detector = pipeline.get_by_name("tracker")
     detector.props.tracking_area = [50,50,70,70]
-    #chan = source.find_channel_by_name("Composite1")
     source.set_norm(source.list_norms()[1])
-    source.set_channel(source.list_channels()[1])
+    source.set_channel(source.list_channels()[2])
 
-    pipeline.set_state(gst.STATE_PLAYING) 
+    pipeline.set_state(gst.STATE_PLAYING)
 
 def main():
     w = gtk.Window()
@@ -46,12 +46,12 @@ def main():
     b.pack_start(d)
     w.add(b)
 
-    run() 
+    run()
 
     w.show_all()
 
     d.connect("expose-event", expose_cb)
-    d.add_events(  gtk.gdk.BUTTON_PRESS_MASK 
+    d.add_events(  gtk.gdk.BUTTON_PRESS_MASK
                       | gtk.gdk.BUTTON_RELEASE_MASK
                       | gtk.gdk.BUTTON_MOTION_MASK
                       | gtk.gdk.KEY_PRESS_MASK
