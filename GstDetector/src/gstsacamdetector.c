@@ -61,6 +61,13 @@ typedef struct {
     gchar end[24];
 } Point;
 
+typedef enum {
+    SACAM_DETECTOR_DRAW_METHOD_NONE  = 0,
+    SACAM_DETECTOR_DRAW_METHOD_MASK  = 1 << 0,
+    SACAM_DETECTOR_DRAW_METHOD_TRACK = 1 << 1,
+    SACAM_DETECTOR_DRAW_METHOD_BOX   = 1 << 2,
+} SacamDetectorDrawMethod;
+
 struct _SacamDetector
 {
     GstVideoFilter videofilter;
@@ -77,10 +84,11 @@ struct _SacamDetector
 
     Window tracking_area;
 
-    gboolean silent, first_run, active,
-             draw_bounding_boxes, draw_track, draw_mask;
+    gboolean silent, first_run, active;
 
     GList *points;
+
+    SacamDetectorDrawMethod draw_method;
 };
 
 struct _SacamDetectorClass
@@ -106,11 +114,10 @@ enum
     ARG_SILENT,
     ARG_THRESHOLD,
     ARG_SIZE,
-    ARG_DRAW_BOXES,
-    ARG_DRAW_TRACK,
+    ARG_DRAW,
     ARG_ACTIVE,
-    ARG_DRAW_MASK,
-    ARG_TRACKING_AREA
+    ARG_TRACKING_AREA,
+    ARG_POINT_LIST
 };
 
 static GstStaticPadTemplate src_factory =
@@ -128,6 +135,37 @@ GST_STATIC_PAD_TEMPLATE ("sink",
     );
 
 static GstVideoFilterClass *parent_class = NULL;
+
+#define SACAM_TYPE_DRAW_METHOD (sacam_detector_draw_method_get_type())
+
+static GType
+sacam_detector_draw_method_get_type(void)
+{
+    static GType detector_draw_method_type = 0;
+    static const GEnumValue detector_draw_methods[] = {
+      {SACAM_DETECTOR_DRAW_METHOD_NONE, "Don't draw anything", "none"},
+      {SACAM_DETECTOR_DRAW_METHOD_MASK, "Draw motion mask", "mask"},
+      {SACAM_DETECTOR_DRAW_METHOD_TRACK, "Draw motion track", "track"},
+      {SACAM_DETECTOR_DRAW_METHOD_BOX, "Draw motion box", "box"},
+      {SACAM_DETECTOR_DRAW_METHOD_MASK | SACAM_DETECTOR_DRAW_METHOD_TRACK,
+                                       "Draw mask+track","mask+track"},
+      {SACAM_DETECTOR_DRAW_METHOD_MASK | SACAM_DETECTOR_DRAW_METHOD_BOX,
+                                       "Draw mask+box", "mask+box"},
+      {SACAM_DETECTOR_DRAW_METHOD_TRACK | SACAM_DETECTOR_DRAW_METHOD_BOX,
+                                       "Draw track+box", "track+box"},
+      {SACAM_DETECTOR_DRAW_METHOD_MASK | SACAM_DETECTOR_DRAW_METHOD_TRACK |
+       SACAM_DETECTOR_DRAW_METHOD_BOX, "Draw all", "all"},
+      {0, NULL, NULL},
+    };
+
+    if (!detector_draw_method_type) {
+      detector_draw_method_type = g_enum_register_static ("SacamDetectorDrawMethods",
+          detector_draw_methods);
+    }
+
+    return detector_draw_method_type;
+}
+
 
 static void sacam_detector_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec);
@@ -181,20 +219,11 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
           "If True, process the input. Else just pass it away.",
           FALSE, G_PARAM_READWRITE));
 
-  g_object_class_install_property (gobject_class, ARG_DRAW_MASK,
-      g_param_spec_boolean ("draw-mask", "Draw Motion Mask",
-          "Draw the mask for the detected motion",
-          FALSE, G_PARAM_READWRITE));
-
-  g_object_class_install_property (gobject_class, ARG_DRAW_BOXES,
-      g_param_spec_boolean ("draw-boxes", "Draw Bounding Boxes",
-          "Draw the bounding boxes for the detected motion",
-          FALSE, G_PARAM_READWRITE));
-
-  g_object_class_install_property (gobject_class, ARG_DRAW_TRACK,
-      g_param_spec_boolean ("draw-track", "Draw Track",
-          "Draw the track captured until now",
-          FALSE, G_PARAM_READWRITE));
+  g_object_class_install_property (gobject_class, ARG_DRAW,
+      g_param_spec_enum ("draw", "Draw method",
+          "Set the drawing options",
+          SACAM_TYPE_DRAW_METHOD, SACAM_DETECTOR_DRAW_METHOD_TRACK,
+          G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, ARG_SILENT,
       g_param_spec_boolean ("silent", "Silent", "Produce verbose output",
@@ -219,7 +248,15 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
               "Holds part of the coordinate",
               0, 0xffffff, 0, G_PARAM_READWRITE),
           G_PARAM_READWRITE));
-
+/*
+  g_object_class_install_property (gobject_class, ARG_POINT_LIST,
+      g_param_spec_value_array ("point-list", "Point List",
+          "Point list, in reverse order",
+          g_param_spec_object ("point", "Point",
+              "A point in the track",
+              "aqui vai o tipo do objeto", G_PARAM_READABLE),
+          G_PARAM_READABLE));
+*/
   trans_class->set_caps = GST_DEBUG_FUNCPTR (sacam_detector_set_caps);
   trans_class->get_unit_size = GST_DEBUG_FUNCPTR (sacam_detector_get_unit_size);
   trans_class->transform = GST_DEBUG_FUNCPTR (sacam_detector_transform);
@@ -230,22 +267,8 @@ sacam_detector_init (SacamDetector * filter,
                      SacamDetectorClass * gclass)
 {
   SacamDetector *sacamdetector = GST_SACAMDETECTOR (filter);
-/*
-  GValue tmp = { 0, };
-  g_value_init(&tmp, G_TYPE_INT);
-*/
   sacamdetector->map = NULL;
   sacamdetector->silent = FALSE;
-/*
-  sacamdetector->tracking_area = g_value_array_new(4);
-  g_value_set_int(&tmp, 0);
-  g_value_array_insert(sacamdetector->tracking_area, 0, &tmp);
-  g_value_array_insert(sacamdetector->tracking_area, 1, &tmp);
-  g_value_set_int(&tmp, 640);
-  g_value_array_insert(sacamdetector->tracking_area, 2, &tmp);
-  g_value_set_int(&tmp, 480);
-  g_value_array_insert(sacamdetector->tracking_area, 3, &tmp);
-*/
 
   sacamdetector->tracking_area.x_begin = 0;
   sacamdetector->tracking_area.y_begin = 0;
@@ -254,15 +277,15 @@ sacam_detector_init (SacamDetector * filter,
 
   sacamdetector->active = FALSE;
   sacamdetector->first_run = TRUE;
-  sacamdetector->draw_mask = FALSE;
   sacamdetector->threshold = 0x303030;
   sacamdetector->bug_size = 30;
   sacamdetector->points = NULL;
+  sacamdetector->draw_method = SACAM_DETECTOR_DRAW_METHOD_TRACK;
 
   sacamdetector->current = gst_buffer_new();
   sacamdetector->previous = gst_buffer_new();
 
-  /* TODO: initialize the attributes */
+  /* TODO: initialize all the attributes */
 }
 
 static void
@@ -275,22 +298,17 @@ sacam_detector_set_property (GObject * object, guint prop_id,
     case ARG_ACTIVE:
       filter->active = g_value_get_boolean (value);
       break;
-    case ARG_DRAW_BOXES:
-      filter->draw_bounding_boxes = g_value_get_boolean (value);
+    case ARG_DRAW: {
+      filter->draw_method = g_value_get_enum (value);
       break;
-    case ARG_DRAW_MASK:
-      filter->draw_mask = g_value_get_boolean (value);
-      break;
-    case ARG_DRAW_TRACK:
-      filter->draw_track = g_value_get_boolean (value);
-      break;
+    }
     case ARG_SILENT:
       filter->silent = g_value_get_boolean (value);
       break;
     case ARG_THRESHOLD:
       filter->threshold = ( g_value_get_uint (value) << 16 |
                             g_value_get_uint (value) << 8  |
-			    g_value_get_uint (value)
+	                        g_value_get_uint (value)
                           );
       break;
     case ARG_SIZE:
@@ -327,14 +345,8 @@ sacam_detector_get_property (GObject * object, guint prop_id,
     case ARG_ACTIVE:
       g_value_set_boolean (value, filter->active);
       break;
-    case ARG_DRAW_BOXES:
-      g_value_set_boolean (value, filter->draw_bounding_boxes);
-      break;
-    case ARG_DRAW_MASK:
-      g_value_set_boolean (value, filter->draw_mask);
-      break;
-    case ARG_DRAW_TRACK:
-      g_value_set_boolean (value, filter->draw_track);
+    case ARG_DRAW:
+      g_value_set_enum (value, filter->draw_method);
       break;
     case ARG_SILENT:
       g_value_set_boolean (value, filter->silent);
@@ -366,7 +378,12 @@ sacam_detector_get_property (GObject * object, guint prop_id,
 
       g_value_set_boxed (value, tmp_array);
       break;
-    }
+    } /*
+    case ARG_POINT_LIST: {
+      TODO: build a g_value_array containing the point gobjects
+            return it as value.
+      break;
+    } */
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -607,7 +624,7 @@ static void _draw_line (Point *current, Point *next, SacamDetector* filter)
     if ( next != NULL ) {
         __draw_line( filter->canvas, current->x_pos, current->y_pos,
                      next->x_pos, next->y_pos,
-                     0xFF00FF, filter->width, filter->height);
+                     0xFF0000, filter->width, filter->height);
     }
     else
         return;
@@ -703,7 +720,8 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
                   max = pixel_previous + filter->threshold;
 
               if ( (pixel_current < min ) || (pixel_current > max ) ) {
-                  if (filter->draw_mask == TRUE)
+                  /* draw mask */
+                  if (filter->draw_method & SACAM_DETECTOR_DRAW_METHOD_MASK)
                       filter->canvas[y*filter->width + x] = 0xff0000ff;
                   if (window_is_defined == TRUE) {
                       filter->tracking_area.y_end = y;
@@ -726,7 +744,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       x_center = filter->tracking_area.x_begin + width/2;
       y_center = filter->tracking_area.y_begin + height/2;
 
-      if (filter->draw_bounding_boxes == TRUE)
+      if (filter->draw_method & SACAM_DETECTOR_DRAW_METHOD_BOX)
           _draw_rectangle (filter->canvas, filter->width, filter->height,
                         x_center, y_center, filter->bug_size, filter->bug_size);
 
@@ -763,7 +781,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
          the pipeline determine this? */
       filter->points = g_list_prepend(filter->points, point);
 
-      if (filter->draw_track == TRUE) {
+      if (filter->draw_method & SACAM_DETECTOR_DRAW_METHOD_TRACK) {
           GList* iter = filter->points->next;
           while (iter) {
               GList *prev = iter->prev;

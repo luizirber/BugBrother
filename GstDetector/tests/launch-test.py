@@ -3,14 +3,16 @@ import gtk
 
 sink = None
 detector = None
+size = 10
 
 def expose_cb(area, event):
     global sink
     sink.set_xwindow_id(area.window.xid)
 
 def clicked_cb(output, event):
-    x0, y0 = event.x - 25, event.y - 25
-    x1, y1 = event.x + 25, event.y + 25
+    global size;
+    x0, y0 = event.x - size/2, event.y - size/2
+    x1, y1 = event.x + size/2, event.y + size/2
     if x0 < 0: x0 = 0
     if x1 < 0: x1 = 0
     if y0 < 0: y0 = 0
@@ -20,12 +22,12 @@ def clicked_cb(output, event):
 def run():
     global sink
     global detector
-#    pipeline_string = "videotestsrc name=source ! " \
-    pipeline_string = "v4lsrc name=source ! ffmpegcolorspace ! " \
-                      "video/x-raw-rgb,width=640,height=480 ! " \
-                      "motiondetector name=tracker active=true " \
-                      "draw-boxes=true draw-track=true size=50 silent=true " \
-                      "threshold=100 ! ximagesink name=sink"
+#    pipeline_string = ( "v4lsrc name=source ! ffmpegcolorspace ! " \
+    pipeline_string = ("videotestsrc name=source ! "
+                       "video/x-raw-rgb,width=640,height=480 ! "
+                       "motiondetector name=tracker active=true "
+                       "draw=all size=%d silent=true "
+                       "threshold=100 ! ximagesink name=sink")%(size)
 
     pipeline = gst.parse_launch(pipeline_string)
     pipeline.set_state(gst.STATE_PAUSED)
@@ -34,8 +36,8 @@ def run():
     sink = pipeline.get_by_name("sink")
     detector = pipeline.get_by_name("tracker")
     detector.props.tracking_area = [50,50,70,70]
-    source.set_norm(source.list_norms()[1])
-    source.set_channel(source.list_channels()[2])
+#    source.set_norm(source.list_norms()[1])
+#    source.set_channel(source.list_channels()[2])
 
     pipeline.set_state(gst.STATE_PLAYING)
 

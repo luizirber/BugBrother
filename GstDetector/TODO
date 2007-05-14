@@ -1,0 +1,6 @@
+- Reimplement Point as a GObject
+- Discover how to add defined .h into the plugin. This way the drawing
+  functions can be shared.
+- Expose the colors of the track, box and mask as properties, so the user can
+  define them.
+- FUTURE: allow YUV caps, it's quicker than RGB. Reference: videoflip element.
