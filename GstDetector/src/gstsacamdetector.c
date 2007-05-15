@@ -83,7 +83,7 @@ struct _SacamDetector
 
     GList *points;
 
-    SacamDetectorDrawMethod draw_method;
+    SacamDrawMethod draw_method;
 };
 
 struct _SacamDetectorClass
@@ -138,18 +138,18 @@ sacam_detector_draw_method_get_type(void)
 {
     static GType detector_draw_method_type = 0;
     static const GEnumValue detector_draw_methods[] = {
-      {SACAM_DETECTOR_DRAW_METHOD_NONE, "Don't draw anything", "none"},
-      {SACAM_DETECTOR_DRAW_METHOD_MASK, "Draw motion mask", "mask"},
-      {SACAM_DETECTOR_DRAW_METHOD_TRACK, "Draw motion track", "track"},
-      {SACAM_DETECTOR_DRAW_METHOD_BOX, "Draw motion box", "box"},
-      {SACAM_DETECTOR_DRAW_METHOD_MASK | SACAM_DETECTOR_DRAW_METHOD_TRACK,
-                                       "Draw mask+track","mask+track"},
-      {SACAM_DETECTOR_DRAW_METHOD_MASK | SACAM_DETECTOR_DRAW_METHOD_BOX,
-                                       "Draw mask+box", "mask+box"},
-      {SACAM_DETECTOR_DRAW_METHOD_TRACK | SACAM_DETECTOR_DRAW_METHOD_BOX,
-                                       "Draw track+box", "track+box"},
-      {SACAM_DETECTOR_DRAW_METHOD_MASK | SACAM_DETECTOR_DRAW_METHOD_TRACK |
-       SACAM_DETECTOR_DRAW_METHOD_BOX, "Draw all", "all"},
+      {SACAM_DRAW_METHOD_NONE, "Don't draw anything", "none"},
+      {SACAM_DRAW_METHOD_MASK, "Draw motion mask", "mask"},
+      {SACAM_DRAW_METHOD_TRACK, "Draw motion track", "track"},
+      {SACAM_DRAW_METHOD_BOX, "Draw motion box", "box"},
+      {SACAM_DRAW_METHOD_MASK | SACAM_DRAW_METHOD_TRACK,
+                              "Draw mask+track","mask+track"},
+      {SACAM_DRAW_METHOD_MASK | SACAM_DRAW_METHOD_BOX,
+                              "Draw mask+box", "mask+box"},
+      {SACAM_DRAW_METHOD_TRACK | SACAM_DRAW_METHOD_BOX,
+                              "Draw track+box", "track+box"},
+      {SACAM_DRAW_METHOD_MASK | SACAM_DRAW_METHOD_TRACK |
+       SACAM_DRAW_METHOD_BOX, "Draw all", "all"},
       {0, NULL, NULL},
     };
 
@@ -217,7 +217,7 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
   g_object_class_install_property (gobject_class, ARG_DRAW,
       g_param_spec_enum ("draw", "Draw method",
           "Set the drawing options",
-          SACAM_TYPE_DRAW_METHOD, SACAM_DETECTOR_DRAW_METHOD_TRACK,
+          SACAM_TYPE_DRAW_METHOD, SACAM_DRAW_METHOD_TRACK,
           G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, ARG_SILENT,
@@ -275,7 +275,7 @@ sacam_detector_init (SacamDetector * filter,
   sacamdetector->threshold = 0x303030;
   sacamdetector->bug_size = 30;
   sacamdetector->points = NULL;
-  sacamdetector->draw_method = SACAM_DETECTOR_DRAW_METHOD_TRACK;
+  sacamdetector->draw_method = SACAM_DRAW_METHOD_TRACK;
 
   sacamdetector->current = gst_buffer_new();
   sacamdetector->previous = gst_buffer_new();
@@ -553,7 +553,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
                   max = pixel_previous + filter->threshold;
 
               if ( (pixel_current < min ) || (pixel_current > max ) ) {
-                  if (filter->draw_method & SACAM_DETECTOR_DRAW_METHOD_MASK)
+                  if (filter->draw_method & SACAM_DRAW_METHOD_MASK)
                       filter->canvas[y*filter->width + x] = 0xff0000ff;
                   if (window_is_defined == TRUE) {
                       filter->tracking_area.y_end = y;
@@ -576,7 +576,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       x_center = filter->tracking_area.x_begin + width/2;
       y_center = filter->tracking_area.y_begin + height/2;
 
-      if (filter->draw_method & SACAM_DETECTOR_DRAW_METHOD_BOX)
+      if (filter->draw_method & SACAM_DRAW_METHOD_BOX)
           _draw_rectangle (filter->canvas, filter->width, filter->height,
                         x_center, y_center, filter->bug_size, filter->bug_size);
 
@@ -613,7 +613,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
          the pipeline determine this? */
       filter->points = g_list_prepend(filter->points, point);
 
-      if (filter->draw_method & SACAM_DETECTOR_DRAW_METHOD_TRACK) {
+      if (filter->draw_method & SACAM_DRAW_METHOD_TRACK) {
           GList* iter = filter->points->next;
           while (iter) {
               GList *prev = iter->prev;
