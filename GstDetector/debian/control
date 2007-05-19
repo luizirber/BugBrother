@@ -1,0 +1,18 @@
+Source: sacam-gst-plugins
+Section: libs
+Priority: optional
+Maintainer: Luiz Irber <luiz.irber@gmail.com>
+Build-Depends: debhelper (>= 5), cdbs (>= 0.4.8), autotools-dev, pkg-config (>= 0.11.0), libgstreamer0.10-dev (>= 0.10.0)
+Standards-Version: 3.7.2
+
+Package: sacam-gst-plugins
+Architecture: any
+Section: libs
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Sacam motion detection and tracking plugins
+ This package contains the gstreamer plugins used by Sacam to do the
+ motion detection and tracking.
+ .
+ At the moment contains only one plugin, motiondetector.
+ .
+ Homepage: http://repositorio.agrolivre.gov.br/projects/sacam/
