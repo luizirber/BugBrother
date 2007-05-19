@@ -19,6 +19,11 @@ def clicked_cb(output, event):
     if y1 < 0: y1 = 0
     detector.props.tracking_area = [x0, y0, x1, y1]
 
+def print_list(widget):
+    global detector
+    for pnt in detector.props.point_list:
+        print "(", pnt.props.x_pos, ",", pnt.props.y_pos, ") start ", pnt.props.start, " end ", pnt.props.end
+
 def run():
     global sink
     global detector
@@ -59,6 +64,8 @@ def main():
                       | gtk.gdk.KEY_PRESS_MASK
                       | gtk.gdk.KEY_RELEASE_MASK   )
     d.connect("button-press-event", clicked_cb)
+
+    w.connect("destroy", print_list)
 
     gtk.main()
 

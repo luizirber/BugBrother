@@ -32,6 +32,7 @@
 #include <gst/video/video.h>
 
 #include "drawmethods.h"
+#include "sacam-point.h"
 
 G_BEGIN_DECLS
 
@@ -82,6 +83,8 @@ struct _SacamDetector
     gboolean silent, first_run, active;
 
     GList *points;
+
+    GValueArray *points_obj;
 
     SacamDrawMethod draw_method;
 };
@@ -243,15 +246,15 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
               "Holds part of the coordinate",
               0, 0xffffff, 0, G_PARAM_READWRITE),
           G_PARAM_READWRITE));
-/*
+
   g_object_class_install_property (gobject_class, ARG_POINT_LIST,
       g_param_spec_value_array ("point-list", "Point List",
           "Point list, in reverse order",
           g_param_spec_object ("point", "Point",
               "A point in the track",
-              "aqui vai o tipo do objeto", G_PARAM_READABLE),
+              SACAM_TYPE_POINT, G_PARAM_READABLE),
           G_PARAM_READABLE));
-*/
+
   trans_class->set_caps = GST_DEBUG_FUNCPTR (sacam_detector_set_caps);
   trans_class->get_unit_size = GST_DEBUG_FUNCPTR (sacam_detector_get_unit_size);
   trans_class->transform = GST_DEBUG_FUNCPTR (sacam_detector_transform);
@@ -373,12 +376,34 @@ sacam_detector_get_property (GObject * object, guint prop_id,
 
       g_value_set_boxed (value, tmp_array);
       break;
-    } /*
+    }
     case ARG_POINT_LIST: {
-      TODO: build a g_value_array containing the point gobjects
-            return it as value.
+      /* TODO: build a g_value_array containing the point gobjects
+            return it as value. */
+      GValueArray *tmp_array;
+      tmp_array = g_value_array_new(50);
+
+      GValue tmp_value = {0,};
+      g_value_init(&tmp_value, G_TYPE_OBJECT);
+
+      GList* iter = filter->points;
+      while (iter) {
+          GObject *obj;
+          obj = sacam_point_new_from_data(
+                              ((Point*)(iter->data))->x_pos,
+                              ((Point*)(iter->data))->y_pos,
+                              ((Point*)(iter->data))->start,
+                              ((Point*)(iter->data))->end
+                              );
+
+          g_value_set_object(&tmp_value, obj);
+          g_value_array_prepend(tmp_array, &tmp_value);
+          iter = iter->next;
+      }
+
+      g_value_set_boxed (value, tmp_array);
       break;
-    } */
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;

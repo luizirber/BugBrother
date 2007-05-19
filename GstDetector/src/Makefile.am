@@ -1,10 +1,11 @@
 plugin_LTLIBRARIES = libgstsacam.la
 
 # headers we need but don't want installed
-noinst_HEADERS = gstsacam.h drawmethods.h
+noinst_HEADERS = gstsacam.h drawmethods.h sacam-point.h
 
 #sources used to compile this plug-in
-libgstsacam_la_SOURCES = gstsacam.c gstsacamdetector.c drawmethods.c
+libgstsacam_la_SOURCES = gstsacam.c gstsacamdetector.c \
+                         drawmethods.c sacam-point.c
 
 #flags used to compile this plugin
 # add other _CFLAGS and _LIBS as needed
