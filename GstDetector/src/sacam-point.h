@@ -21,6 +21,9 @@ extern "C" {
 
 #define SACAM_POINT_GET_CLASS(obj)	G_TYPE_INSTANCE_GET_CLASS((obj), sacam_point_get_type(), SacamPointClass)
 
+/* Private structure type */
+typedef struct _SacamPointPrivate SacamPointPrivate;
+
 /*
  * Main object structure
  */
@@ -30,11 +33,8 @@ typedef struct _SacamPoint SacamPoint;
 #endif
 struct _SacamPoint {
 	GObject __parent__;
-	/*< public >*/
-	gchar * start;
-	gchar * end;
-	gint x_pos;
-	gint y_pos;
+	/*< private >*/
+	SacamPointPrivate *_priv;
 };
 
 /*
@@ -62,7 +62,6 @@ void 	sacam_point_set_x_pos	(SacamPoint * self,
 gint 	sacam_point_get_y_pos	(SacamPoint * self);
 void 	sacam_point_set_y_pos	(SacamPoint * self,
 					gint val);
-GObject * 	sacam_point_new	(void);
 GObject * 	sacam_point_new_from_data	(gint x,
 					gint y,
 					gchar * begin,

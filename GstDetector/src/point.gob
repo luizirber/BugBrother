@@ -2,10 +2,11 @@ requires 2.0.0
 
 %{
 #include "sacam-point.h"
+#include "sacam-point-private.h"
 %}
 
 class Sacam:Point from G:Object {
-    public gchar *start destroywith g_free;
+    private gchar *start destroywith g_free;
     property STRING start
         (nick = "Start",
          blurb = "Initial time in this point",
@@ -13,7 +14,7 @@ class Sacam:Point from G:Object {
          export,
          link);
 
-    public gchar *end destroywith g_free;
+    private gchar *end destroywith g_free;
     property STRING end
         (nick = "End",
          blurb = "Final time in this point",
@@ -21,7 +22,7 @@ class Sacam:Point from G:Object {
          export,
          link);
 
-    public gint x_pos;
+    private gint x_pos;
     property INT x_pos
         (nick = "X Position",
          blurb = "X position of the point",
@@ -31,7 +32,7 @@ class Sacam:Point from G:Object {
          export,
          link);
 
-    public gint y_pos;
+    private gint y_pos;
     property INT y_pos
         (nick = "Y Position",
          blurb = "Y position of the point",
@@ -42,18 +43,12 @@ class Sacam:Point from G:Object {
          link);
 
     public GObject *
-    new (void)
-    {
-        return (GObject *)GET_NEW;
-    }
-
-    public GObject *
     new_from_data (gint x, gint y,
                    gchar *begin, gchar* finish)
     {
         GObject *obj = (GObject *)GET_NEW;
-        g_object_set (G_OBJECT (obj), "y_pos", y);
         g_object_set (G_OBJECT (obj), "x_pos", x);
+        g_object_set (G_OBJECT (obj), "y_pos", y);
         g_object_set (G_OBJECT (obj), "start", g_strdup(begin));
         g_object_set (G_OBJECT (obj), "end", g_strdup(finish));
 

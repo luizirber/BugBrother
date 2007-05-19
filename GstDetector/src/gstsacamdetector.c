@@ -73,20 +73,15 @@ struct _SacamDetector
     guint32 *map, *canvas;
 
     GstBuffer *previous, *current;
+    SacamDrawMethod draw_method;
 
     gdouble bug_size;
-
     guint32 threshold;
-
     Window tracking_area;
-
     gboolean silent, first_run, active;
-
     GList *points;
+    gint tolerance;
 
-    GValueArray *points_obj;
-
-    SacamDrawMethod draw_method;
 };
 
 struct _SacamDetectorClass
@@ -109,13 +104,14 @@ enum
 enum
 {
     ARG_0,
-    ARG_SILENT,
-    ARG_THRESHOLD,
-    ARG_SIZE,
-    ARG_DRAW,
     ARG_ACTIVE,
-    ARG_TRACKING_AREA,
-    ARG_POINT_LIST
+    ARG_DRAW,
+    ARG_POINT_LIST,
+    ARG_SILENT,
+    ARG_SIZE,
+    ARG_THRESHOLD,
+    ARG_TOLERANCE,
+    ARG_TRACKING_AREA
 };
 
 static GstStaticPadTemplate src_factory =
@@ -230,13 +226,19 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
   g_object_class_install_property (gobject_class, ARG_THRESHOLD,
       g_param_spec_uint ("threshold", "Threshold",
           "Set the threshold for motion detection",
-	  0, 0xff, 0x30, /* min, max, default */
+          0, 0xff, 0x30, /* min, max, default */
+          G_PARAM_READWRITE));
+
+  g_object_class_install_property (gobject_class, ARG_TOLERANCE,
+      g_param_spec_uint ("tolerance", "Tolerance",
+          "Set the tolerance for motion detection",
+          0, G_MAXUINT, 0, /* min, max, default */
           G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, ARG_SIZE,
       g_param_spec_uint ("size", "Size",
           "Set the size of the object to be tracked",
-	  0, 0xffffff, 30, /* min, max, default */
+          0, G_MAXUINT, 10, /* min, max, default */
           G_PARAM_READWRITE));
 
   g_object_class_install_property (gobject_class, ARG_TRACKING_AREA,
@@ -249,7 +251,7 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
 
   g_object_class_install_property (gobject_class, ARG_POINT_LIST,
       g_param_spec_value_array ("point-list", "Point List",
-          "Point list, in reverse order",
+          "Point list, in time order",
           g_param_spec_object ("point", "Point",
               "A point in the track",
               SACAM_TYPE_POINT, G_PARAM_READABLE),
@@ -266,7 +268,7 @@ sacam_detector_init (SacamDetector * filter,
 {
   SacamDetector *sacamdetector = GST_SACAMDETECTOR (filter);
   sacamdetector->map = NULL;
-  sacamdetector->silent = FALSE;
+  sacamdetector->silent = TRUE;
 
   sacamdetector->tracking_area.x_begin = 0;
   sacamdetector->tracking_area.y_begin = 0;
@@ -276,7 +278,8 @@ sacam_detector_init (SacamDetector * filter,
   sacamdetector->active = FALSE;
   sacamdetector->first_run = TRUE;
   sacamdetector->threshold = 0x303030;
-  sacamdetector->bug_size = 30;
+  sacamdetector->tolerance = 0;
+  sacamdetector->bug_size = 10;
   sacamdetector->points = NULL;
   sacamdetector->draw_method = SACAM_DRAW_METHOD_TRACK;
 
@@ -309,6 +312,9 @@ sacam_detector_set_property (GObject * object, guint prop_id,
 	                        g_value_get_uint (value)
                           );
       break;
+    case ARG_TOLERANCE:
+      filter->tolerance = g_value_get_uint (value);
+      break;
     case ARG_SIZE:
       filter->bug_size = g_value_get_uint (value);
       break;
@@ -327,6 +333,9 @@ sacam_detector_set_property (GObject * object, guint prop_id,
 
       break;
     }
+    case ARG_POINT_LIST:
+      /* this should do nothing, because this property is read-only */
+      break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;
@@ -351,6 +360,9 @@ sacam_detector_get_property (GObject * object, guint prop_id,
       break;
     case ARG_THRESHOLD:
       g_value_set_uint (value, filter->threshold & 0xff);
+      break;
+    case ARG_TOLERANCE:
+      g_value_set_uint (value, filter->tolerance);
       break;
     case ARG_SIZE:
       g_value_set_uint (value, filter->bug_size);
@@ -378,8 +390,6 @@ sacam_detector_get_property (GObject * object, guint prop_id,
       break;
     }
     case ARG_POINT_LIST: {
-      /* TODO: build a g_value_array containing the point gobjects
-            return it as value. */
       GValueArray *tmp_array;
       tmp_array = g_value_array_new(50);
 
@@ -429,8 +439,8 @@ sacam_detector_set_caps (GstBaseTransform * btrans, GstCaps * incaps,
     g_free (sacamdetector->map);
     sacamdetector->map =
         (guint32 *) g_malloc (sacamdetector->map_width *
-	                      sacamdetector->map_height *
-			      sizeof (guint32) * 2);
+                              sacamdetector->map_height *
+                              sizeof (guint32) * 2);
     memset (sacamdetector->map, 0,
             sacamdetector->map_width * sacamdetector->map_height
             * sizeof (guint32) * 2);
@@ -487,6 +497,26 @@ static void _draw_line (Point *current, Point *next, SacamDetector* filter)
     }
     else
         return;
+}
+
+static void _create_point(Point* point, gint x_center, gint y_center,
+                    struct timeval begin_time, struct timeval end_time)
+{
+      struct tm* ptm;
+      long milliseconds;
+
+      point->x_pos = x_center;
+      point->y_pos = y_center;
+
+      ptm = localtime (&begin_time.tv_sec);
+      strftime (point->start, sizeof(point->start),"%Y-%m-%dT%H:%M:%S",ptm);
+      milliseconds = begin_time.tv_usec / 1000;
+      sprintf(point->start, "%s.%03ld", point->start, milliseconds);
+
+      ptm = localtime (&end_time.tv_sec);
+      strftime (point->end, sizeof(point->end), "%Y-%m-%dT%H:%M:%S", ptm);
+      milliseconds = end_time.tv_usec / 1000;
+      sprintf(point->end, "%s.%03ld", point->end, milliseconds);
 }
 
 static GstFlowReturn
@@ -605,7 +635,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
           _draw_rectangle (filter->canvas, filter->width, filter->height,
                         x_center, y_center, filter->bug_size, filter->bug_size);
 
-      /* TODO: save the point on a list. data needed:
+      /* save the point on a list. data needed:
        * x_pos, y_pos, begin_time, end_time
        * x_pos and y_pos are the middle point of the filter->tracking_area
        *
@@ -613,19 +643,30 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
        * Example: "%Y-%m-%dT%H:%M:%S.milliseconds"
        * */
 
-      point = malloc( sizeof(Point));
-      point->x_pos = x_center;
-      point->y_pos = y_center;
-
-      ptm = localtime (&begin_time.tv_sec);
-      strftime (point->start, sizeof(point->start),"%Y-%m-%dT%H:%M:%S",ptm);
-      milliseconds = begin_time.tv_usec / 1000;
-      sprintf(point->start, "%s.%03ld", point->start, milliseconds);
-
-      ptm = localtime (&end_time.tv_sec);
-      strftime (point->end, sizeof(point->end), "%Y-%m-%dT%H:%M:%S", ptm);
-      milliseconds = end_time.tv_usec / 1000;
-      sprintf(point->end, "%s.%03ld", point->end, milliseconds);
+      if (filter->points != NULL) {
+          if ( ( abs(((Point*)(filter->points->data))->x_pos - x_center)
+                 > filter->tolerance) ||
+               ( abs(((Point*)(filter->points->data))->y_pos - y_center)
+                 > filter->tolerance) ) {
+             point = malloc( sizeof(Point) );
+             _create_point (point, x_center, y_center, begin_time, end_time);
+             filter->points = g_list_prepend(filter->points, point);
+          }
+          else {
+              ptm = localtime (&end_time.tv_sec);
+              strftime (((Point*)(filter->points->data))->end,
+                        sizeof(((Point*)(filter->points->data))->end),
+                        "%Y-%m-%dT%H:%M:%S", ptm);
+              milliseconds = end_time.tv_usec / 1000;
+              sprintf(((Point*)(filter->points->data))->end, "%s.%03ld",
+                      ((Point*)(filter->points->data))->end, milliseconds);
+          }
+      }
+      else {
+          point = malloc( sizeof(Point) );
+          _create_point (point, x_center, y_center, begin_time, end_time);
+          filter->points = g_list_prepend(filter->points, point);
+      }
 
       if (filter->silent == FALSE) {
           printf("%s delta: %ld.%ld\n", point->start,
@@ -633,10 +674,6 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
               end_time.tv_sec - begin_time.tv_usec);
               fflush(stdout);
       }
-
-      /* TODO: verify the movement tolerance here, or let the app using
-         the pipeline determine this? */
-      filter->points = g_list_prepend(filter->points, point);
 
       if (filter->draw_method & SACAM_DRAW_METHOD_TRACK) {
           GList* iter = filter->points->next;

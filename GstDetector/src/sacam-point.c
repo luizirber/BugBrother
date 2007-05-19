@@ -20,6 +20,7 @@
 
 
 #include "sacam-point.h"
+#include "sacam-point-private.h"
 
 /* self casting macros */
 #define SELF(x) SACAM_POINT(x)
@@ -60,7 +61,6 @@ static GObjectClass *parent_class = NULL;
 #define self_set_x_pos sacam_point_set_x_pos
 #define self_get_y_pos sacam_point_get_y_pos
 #define self_set_y_pos sacam_point_set_y_pos
-#define self_new sacam_point_new
 #define self_new_from_data sacam_point_new_from_data
 GType
 sacam_point_get_type (void)
@@ -110,10 +110,11 @@ ___finalize(GObject *obj_self)
 {
 #define __GOB_FUNCTION__ "Sacam:Point::finalize"
 	SacamPoint *self G_GNUC_UNUSED = SACAM_POINT (obj_self);
+	gpointer priv G_GNUC_UNUSED = self->_priv;
 	if(G_OBJECT_CLASS(parent_class)->finalize) \
 		(* G_OBJECT_CLASS(parent_class)->finalize)(obj_self);
-	if(self->start) { g_free ((gpointer) self->start); self->start = NULL; }
-	if(self->end) { g_free ((gpointer) self->end); self->end = NULL; }
+	if(self->_priv->start) { g_free ((gpointer) self->_priv->start); self->_priv->start = NULL; }
+	if(self->_priv->end) { g_free ((gpointer) self->_priv->end); self->_priv->end = NULL; }
 }
 #undef __GOB_FUNCTION__
 
@@ -121,6 +122,7 @@ static void
 sacam_point_init (SacamPoint * o G_GNUC_UNUSED)
 {
 #define __GOB_FUNCTION__ "Sacam:Point::init"
+	o->_priv = G_TYPE_INSTANCE_GET_PRIVATE(o,SACAM_TYPE_POINT,SacamPointPrivate);
 }
 #undef __GOB_FUNCTION__
 static void 
@@ -128,6 +130,8 @@ sacam_point_class_init (SacamPointClass * c G_GNUC_UNUSED)
 {
 #define __GOB_FUNCTION__ "Sacam:Point::class_init"
 	GObjectClass *g_object_class G_GNUC_UNUSED = (GObjectClass*) c;
+
+	g_type_class_add_private(c,sizeof(SacamPointPrivate));
 
 	parent_class = g_type_class_ref (G_TYPE_OBJECT);
 
@@ -195,22 +199,22 @@ ___object_set_property (GObject *object,
 	switch (property_id) {
 	case PROP_START:
 		{
-{ char *old = self->start; self->start = g_value_dup_string (VAL); g_free (old); }
+{ char *old = self->_priv->start; self->_priv->start = g_value_dup_string (VAL); g_free (old); }
 		}
 		break;
 	case PROP_END:
 		{
-{ char *old = self->end; self->end = g_value_dup_string (VAL); g_free (old); }
+{ char *old = self->_priv->end; self->_priv->end = g_value_dup_string (VAL); g_free (old); }
 		}
 		break;
 	case PROP_X_POS:
 		{
-self->x_pos = g_value_get_int (VAL);
+self->_priv->x_pos = g_value_get_int (VAL);
 		}
 		break;
 	case PROP_Y_POS:
 		{
-self->y_pos = g_value_get_int (VAL);
+self->_priv->y_pos = g_value_get_int (VAL);
 		}
 		break;
 	default:
@@ -239,22 +243,22 @@ ___object_get_property (GObject *object,
 	switch (property_id) {
 	case PROP_START:
 		{
-g_value_set_string (VAL, self->start);
+g_value_set_string (VAL, self->_priv->start);
 		}
 		break;
 	case PROP_END:
 		{
-g_value_set_string (VAL, self->end);
+g_value_set_string (VAL, self->_priv->end);
 		}
 		break;
 	case PROP_X_POS:
 		{
-g_value_set_int (VAL, self->x_pos);
+g_value_set_int (VAL, self->_priv->x_pos);
 		}
 		break;
 	case PROP_Y_POS:
 		{
-g_value_set_int (VAL, self->y_pos);
+g_value_set_int (VAL, self->_priv->y_pos);
 		}
 		break;
 	default:
@@ -344,24 +348,14 @@ sacam_point_set_y_pos (SacamPoint * self, gint val)
 #undef __GOB_FUNCTION__
 
 GObject * 
-sacam_point_new (void)
-{
-#define __GOB_FUNCTION__ "Sacam:Point::new"
-{
-	
-        return (GObject *)GET_NEW;
-    }}
-#undef __GOB_FUNCTION__
-
-GObject * 
 sacam_point_new_from_data (gint x, gint y, gchar * begin, gchar * finish)
 {
 #define __GOB_FUNCTION__ "Sacam:Point::new_from_data"
 {
 	
         GObject *obj = (GObject *)GET_NEW;
-        g_object_set (G_OBJECT (obj), "y_pos", y);
         g_object_set (G_OBJECT (obj), "x_pos", x);
+        g_object_set (G_OBJECT (obj), "y_pos", y);
         g_object_set (G_OBJECT (obj), "start", g_strdup(begin));
         g_object_set (G_OBJECT (obj), "end", g_strdup(finish));
 

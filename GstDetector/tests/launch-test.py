@@ -4,6 +4,10 @@ import gtk
 sink = None
 detector = None
 size = 10
+width = 640
+height = 480
+tolerance = 10
+threshold = 100
 
 def expose_cb(area, event):
     global sink
@@ -29,10 +33,11 @@ def run():
     global detector
 #    pipeline_string = ( "v4lsrc name=source ! ffmpegcolorspace ! " \
     pipeline_string = ("videotestsrc name=source ! "
-                       "video/x-raw-rgb,width=640,height=480 ! "
+                       "video/x-raw-rgb,width=%d,height=%d ! "
                        "motiondetector name=tracker active=true "
-                       "draw=all size=%d silent=true "
-                       "threshold=100 ! ximagesink name=sink")%(size)
+                       "draw=all size=%d tolerance=%d "
+                       "threshold=%d ! ximagesink name=sink") \
+                       %(width, height, size, tolerance, threshold)
 
     pipeline = gst.parse_launch(pipeline_string)
     pipeline.set_state(gst.STATE_PAUSED)
@@ -48,6 +53,7 @@ def run():
 
 def main():
     w = gtk.Window()
+    w.set_default_size(width, height)
     b = gtk.HBox()
     d = gtk.DrawingArea()
     b.pack_start(d)
