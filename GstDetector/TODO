@@ -4,6 +4,7 @@
 - Expose the colors of the track, box and mask as properties, so the user can
   define them.
 - Preallocate the exact number of itens in filter->points.
-- Add a speed property
+- ALMOST: Add a speed property. Need to calculate how many pixels it becomes
+          when divided by the framerate.
 - FUTURE: allow YUV caps, it's quicker than RGB. Reference: videoflip element.
 

@@ -75,12 +75,13 @@ struct _SacamDetector
     GstBuffer *previous, *current;
     SacamDrawMethod draw_method;
 
-    gdouble bug_size;
+    gint bug_size;
+    gint tolerance;
+    gint bug_speed;
     guint32 threshold;
     Window tracking_area;
     gboolean silent, first_run, active;
     GList *points;
-    gint tolerance;
 
 };
 
@@ -109,6 +110,7 @@ enum
     ARG_POINT_LIST,
     ARG_SILENT,
     ARG_SIZE,
+    ARG_SPEED,
     ARG_THRESHOLD,
     ARG_TOLERANCE,
     ARG_TRACKING_AREA
@@ -241,6 +243,12 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
           0, G_MAXUINT, 10, /* min, max, default */
           G_PARAM_READWRITE));
 
+  g_object_class_install_property (gobject_class, ARG_SPEED,
+      g_param_spec_uint ("speed", "Speed",
+          "Set the maximum speed of the object to be tracked, in pixels/s",
+          0, G_MAXUINT, 10, /* min, max, default */
+          G_PARAM_READWRITE));
+
   g_object_class_install_property (gobject_class, ARG_TRACKING_AREA,
       g_param_spec_value_array ("tracking-area", "Tracking Area",
           "Current tracking area, in pixels",
@@ -280,6 +288,7 @@ sacam_detector_init (SacamDetector * filter,
   sacamdetector->threshold = 0x303030;
   sacamdetector->tolerance = 0;
   sacamdetector->bug_size = 10;
+  sacamdetector->bug_speed = 10;
   sacamdetector->points = NULL;
   sacamdetector->draw_method = SACAM_DRAW_METHOD_TRACK;
 
@@ -317,6 +326,9 @@ sacam_detector_set_property (GObject * object, guint prop_id,
       break;
     case ARG_SIZE:
       filter->bug_size = g_value_get_uint (value);
+      break;
+    case ARG_SPEED:
+      filter->bug_speed = g_value_get_uint (value);
       break;
     case ARG_TRACKING_AREA: {
       GValueArray *va = g_value_get_boxed (value);
@@ -366,6 +378,9 @@ sacam_detector_get_property (GObject * object, guint prop_id,
       break;
     case ARG_SIZE:
       g_value_set_uint (value, filter->bug_size);
+      break;
+    case ARG_SPEED:
+      g_value_set_uint (value, filter->bug_speed);
       break;
     case ARG_TRACKING_AREA: {
       GValueArray *tmp_array;
@@ -560,8 +575,10 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       size = size / 2;
       if (size < filter->bug_size)
           size = filter->bug_size;
+      /* size = size + filter->bug_speed; */
       sum =  filter->tracking_area.y_begin + filter->tracking_area.y_end;
       sum = sum / 2;
+      sum = sum + filter->bug_speed;
       y_start = sum - size;
       if (y_start < 0)
           y_start = 0;
@@ -573,8 +590,10 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       size = size / 2;
       if (size < filter->bug_size)
           size = filter->bug_size;
+      /* size = size + filter->bug_speed; */
       sum =  filter->tracking_area.x_end + filter->tracking_area.x_begin;
       sum = sum / 2;
+      sum = sum + filter->bug_speed;
       x_start = sum - size;
       if (x_start < 0)
           x_start = 0;
@@ -631,9 +650,17 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       x_center = filter->tracking_area.x_begin + width/2;
       y_center = filter->tracking_area.y_begin + height/2;
 
-      if (filter->draw_method & SACAM_DRAW_METHOD_BOX)
+      if (filter->draw_method & SACAM_DRAW_METHOD_BOX) {
+          /* draw the box surrounding the tracked object */
           _draw_rectangle (filter->canvas, filter->width, filter->height,
-                        x_center, y_center, filter->bug_size, filter->bug_size);
+                      x_center, y_center, filter->bug_size, filter->bug_size);
+          /* draw the box delimiting the maximum location where the
+           * tracked object can be. */
+          _draw_rectangle (filter->canvas, filter->width, filter->height,
+                           x_center, y_center,
+                           filter->bug_size + filter->bug_speed,
+                           filter->bug_size + filter->bug_speed);
+      }
 
       /* save the point on a list. data needed:
        * x_pos, y_pos, begin_time, end_time
