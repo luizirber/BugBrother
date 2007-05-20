@@ -25,7 +25,7 @@ class test_program(object):
         self.detector.props.tracking_area = [x0, y0, x1, y1]
 
     def print_list_and_exit(self, widget):
-        for pnt in self.detector.props.point_list:
+        for pnt in self.detector.props.track_list[0]:
             print "(", pnt.props.x_pos, ",", pnt.props.y_pos, ") start ", pnt.props.start, " end ", pnt.props.end
         self.pipeline.set_state(gst.STATE_NULL)
         gtk.main_quit()

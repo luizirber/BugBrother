@@ -107,12 +107,12 @@ enum
     ARG_0,
     ARG_ACTIVE,
     ARG_DRAW,
-    ARG_POINT_LIST,
     ARG_SILENT,
     ARG_SIZE,
     ARG_SPEED,
     ARG_THRESHOLD,
     ARG_TOLERANCE,
+    ARG_TRACK_LIST,
     ARG_TRACKING_AREA
 };
 
@@ -257,12 +257,15 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
               0, 0xffffff, 0, G_PARAM_READWRITE),
           G_PARAM_READWRITE));
 
-  g_object_class_install_property (gobject_class, ARG_POINT_LIST,
-      g_param_spec_value_array ("point-list", "Point List",
-          "Point list, in time order",
-          g_param_spec_object ("point", "Point",
-              "A point in the track",
-              SACAM_TYPE_POINT, G_PARAM_READABLE),
+  g_object_class_install_property (gobject_class, ARG_TRACK_LIST,
+      g_param_spec_value_array ("track-list", "Track List",
+          "Track list",
+          g_param_spec_value_array ("point-list", "Point List",
+              "Point list, in time order",
+              g_param_spec_object ("point", "Point",
+                  "A point in the track",
+                  SACAM_TYPE_POINT, G_PARAM_READABLE),
+              G_PARAM_READABLE),
           G_PARAM_READABLE));
 
   trans_class->set_caps = GST_DEBUG_FUNCPTR (sacam_detector_set_caps);
@@ -345,7 +348,7 @@ sacam_detector_set_property (GObject * object, guint prop_id,
 
       break;
     }
-    case ARG_POINT_LIST:
+    case ARG_TRACK_LIST:
       /* this should do nothing, because this property is read-only */
       break;
     default:
@@ -404,12 +407,18 @@ sacam_detector_get_property (GObject * object, guint prop_id,
       g_value_set_boxed (value, tmp_array);
       break;
     }
-    case ARG_POINT_LIST: {
-      GValueArray *tmp_array;
-      tmp_array = g_value_array_new(50);
+    case ARG_TRACK_LIST: {
+      GValueArray *array_of_tracks;
+      GValueArray *array_of_points;
+      GValue value_of_point = {0,};
+      GValue value_of_track = {0,};
 
-      GValue tmp_value = {0,};
-      g_value_init(&tmp_value, G_TYPE_OBJECT);
+      array_of_tracks = g_value_array_new(1);
+      /* TODO: figure out the exact size of the points value array */
+      array_of_points = g_value_array_new(50);
+
+      g_value_init(&value_of_track, G_TYPE_VALUE_ARRAY);
+      g_value_init(&value_of_point, G_TYPE_OBJECT);
 
       GList* iter = filter->points;
       while (iter) {
@@ -421,12 +430,14 @@ sacam_detector_get_property (GObject * object, guint prop_id,
                               ((Point*)(iter->data))->end
                               );
 
-          g_value_set_object(&tmp_value, obj);
-          g_value_array_prepend(tmp_array, &tmp_value);
+          g_value_set_object(&value_of_point, obj);
+          g_value_array_prepend(array_of_points, &value_of_point);
           iter = iter->next;
       }
 
-      g_value_set_boxed (value, tmp_array);
+      g_value_set_boxed(&value_of_track, array_of_points);
+      g_value_array_append(array_of_tracks, &value_of_track);
+      g_value_set_boxed(value, array_of_tracks);
       break;
     }
     default:
