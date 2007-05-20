@@ -82,6 +82,7 @@ struct _SacamDetector
     guint32 threshold;
     Window tracking_area;
     gboolean silent, first_run, active;
+    gint number_of_points;
     GList *points;
 
 };
@@ -294,6 +295,7 @@ sacam_detector_init (SacamDetector * filter,
   sacamdetector->tolerance = 0;
   sacamdetector->bug_size = 10;
   sacamdetector->bug_speed = 10;
+  sacamdetector->number_of_points = 0;
   sacamdetector->points = NULL;
   sacamdetector->draw_method = SACAM_DRAW_METHOD_TRACK;
 
@@ -416,8 +418,7 @@ sacam_detector_get_property (GObject * object, guint prop_id,
       GValue value_of_track = {0,};
 
       array_of_tracks = g_value_array_new(1);
-      /* TODO: figure out the exact size of the points value array */
-      array_of_points = g_value_array_new(50);
+      array_of_points = g_value_array_new(filter->number_of_points);
 
       g_value_init(&value_of_track, G_TYPE_VALUE_ARRAY);
       g_value_init(&value_of_point, G_TYPE_OBJECT);
@@ -691,6 +692,7 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
              point = malloc( sizeof(Point) );
              _create_point (point, x_center, y_center, begin_time, end_time);
              filter->points = g_list_prepend(filter->points, point);
+             filter->number_of_points++;
           }
           else {
               ptm = localtime (&end_time.tv_sec);
@@ -706,10 +708,12 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
           point = malloc( sizeof(Point) );
           _create_point (point, x_center, y_center, begin_time, end_time);
           filter->points = g_list_prepend(filter->points, point);
+          filter->number_of_points++;
       }
 
       if (filter->silent == FALSE) {
-          printf("%s delta: %ld.%ld\n", point->start,
+          printf("%s delta: %ld.%ld\n",
+              ((Point*)(filter->points->data))->start,
               end_time.tv_sec - begin_time.tv_sec,
               end_time.tv_sec - begin_time.tv_usec);
               fflush(stdout);
