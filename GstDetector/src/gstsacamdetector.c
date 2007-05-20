@@ -70,6 +70,7 @@ struct _SacamDetector
 
     gint width, height, video_width_margin;
     gint map_width, map_height;
+    gint framerate;
     guint32 *map, *canvas;
 
     GstBuffer *previous, *current;
@@ -279,6 +280,7 @@ sacam_detector_init (SacamDetector * filter,
 {
   SacamDetector *sacamdetector = GST_SACAMDETECTOR (filter);
   sacamdetector->map = NULL;
+  sacamdetector->framerate = 30;
   sacamdetector->silent = TRUE;
 
   sacamdetector->tracking_area.x_begin = 0;
@@ -453,6 +455,7 @@ sacam_detector_set_caps (GstBaseTransform * btrans, GstCaps * incaps,
   SacamDetector *sacamdetector = GST_SACAMDETECTOR (btrans);
   GstStructure *structure;
   gboolean ret = FALSE;
+  gint num, den;
 
   structure = gst_caps_get_structure (incaps, 0);
 
@@ -461,6 +464,9 @@ sacam_detector_set_caps (GstBaseTransform * btrans, GstCaps * incaps,
     sacamdetector->map_width = sacamdetector->width / 4;
     sacamdetector->map_height = sacamdetector->height / 4;
     sacamdetector->video_width_margin = sacamdetector->width % 4;
+
+    if (gst_structure_get_fraction (structure, "framerate", &num, &den))
+        sacamdetector->framerate = num/den;
 
     g_free (sacamdetector->map);
     sacamdetector->map =
@@ -586,14 +592,12 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       size = size / 2;
       if (size < filter->bug_size)
           size = filter->bug_size;
-      /* size = size + filter->bug_speed; */
       sum =  filter->tracking_area.y_begin + filter->tracking_area.y_end;
       sum = sum / 2;
-      sum = sum + filter->bug_speed;
-      y_start = sum - size;
+      y_start = sum - size - filter->bug_speed/filter->framerate;
       if (y_start < 0)
           y_start = 0;
-      y_end = sum + size;
+      y_end = sum + size + filter->bug_speed/filter->framerate;
       if (y_end > filter->height)
           y_end = filter->height;
 
@@ -601,14 +605,12 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       size = size / 2;
       if (size < filter->bug_size)
           size = filter->bug_size;
-      /* size = size + filter->bug_speed; */
       sum =  filter->tracking_area.x_end + filter->tracking_area.x_begin;
       sum = sum / 2;
-      sum = sum + filter->bug_speed;
-      x_start = sum - size;
+      x_start = sum - size - filter->bug_speed/filter->framerate;
       if (x_start < 0)
           x_start = 0;
-      x_end = sum + size;
+      x_end = sum + size + filter->bug_speed/filter->framerate;
       if (x_end > filter->width)
           x_end = filter->width;
 
@@ -668,9 +670,9 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
           /* draw the box delimiting the maximum location where the
            * tracked object can be. */
           _draw_rectangle (filter->canvas, filter->width, filter->height,
-                           x_center, y_center,
-                           filter->bug_size + filter->bug_speed,
-                           filter->bug_size + filter->bug_speed);
+                       x_center, y_center,
+                       filter->bug_size + filter->bug_speed,
+                       filter->bug_size + filter->bug_speed);
       }
 
       /* save the point on a list. data needed:

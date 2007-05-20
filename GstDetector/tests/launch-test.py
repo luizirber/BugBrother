@@ -6,6 +6,7 @@ class test_program(object):
     pipeline = None
     sink = None
     detector = None
+    framerate = "30/1"
     size = 30
     speed = 10
     width = 640
@@ -34,13 +35,14 @@ class test_program(object):
 
     def run_pipeline(self):
 #       pipeline_string = ( "v4lsrc name=source ! ffmpegcolorspace ! " \
-        pipeline_string = ("videotestsrc name=source ! "
-                           "video/x-raw-rgb,width=%d,height=%d ! "
-                           "motiondetector name=tracker active=true "
-                           "draw=all size=%d tolerance=%d speed=%d "
-                           "threshold=%d ! ximagesink name=sink") \
-                           %(self.width, self.height, self.size,
-                             self.tolerance, self.speed, self.threshold)
+        pipeline_string = ("videotestsrc name=source !"
+                           " video/x-raw-rgb,width=%d,height=%d,framerate=%s !"
+                           " motiondetector name=tracker active=true"
+                           " draw=all size=%d tolerance=%d speed=%d"
+                           " threshold=%d ! ximagesink name=sink") \
+                           %(self.width, self.height, self.framerate,
+                             self.size, self.tolerance, self.speed,
+                             self.threshold)
 
         self.pipeline = gst.parse_launch(pipeline_string)
         self.pipeline.set_state(gst.STATE_PAUSED)
