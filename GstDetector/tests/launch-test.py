@@ -7,6 +7,7 @@ class test_program(object):
     sink = None
     detector = None
     size = 30
+    speed = 10
     width = 640
     height = 480
     tolerance = 10
@@ -36,10 +37,10 @@ class test_program(object):
         pipeline_string = ("videotestsrc name=source ! "
                            "video/x-raw-rgb,width=%d,height=%d ! "
                            "motiondetector name=tracker active=true "
-                           "draw=all size=%d tolerance=%d "
+                           "draw=all size=%d tolerance=%d speed=%d "
                            "threshold=%d ! ximagesink name=sink") \
                            %(self.width, self.height, self.size,
-                             self.tolerance, self.threshold)
+                             self.tolerance, self.speed, self.threshold)
 
         self.pipeline = gst.parse_launch(pipeline_string)
         self.pipeline.set_state(gst.STATE_PAUSED)
@@ -91,6 +92,12 @@ class test_program(object):
         prop.set_range(0, min(self.height, self.width))
         prop.set_value(self.size)
         prop.connect("value-changed", self.set_scale, "size")
+
+        #speed property
+        prop = self.interface.get_widget("scaleSpeed")
+        prop.set_range(0, min(self.height, self.width))
+        prop.set_value(self.speed)
+        prop.connect("value-changed", self.set_scale, "speed")
 
         #threshold property
         prop = self.interface.get_widget("scaleThreshold")
