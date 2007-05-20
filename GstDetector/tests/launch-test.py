@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import gst
 import gtk
 import gtk.glade
@@ -28,8 +30,13 @@ class test_program(object):
 
     def print_list_and_exit(self, widget):
         self.detector.props.active = False
-        for pnt in self.detector.props.track_list[0]:
-            print "(", pnt.props.x_pos, ",", pnt.props.y_pos, ") start ", pnt.props.start, " end ", pnt.props.end
+        begin = datetime(1,1,1).now()
+        point_list = self.detector.props.track_list[0]
+        end = datetime(1,1,1).now()
+        print "tempo", end - begin
+        print "quantidade de pontos", len(point_list)
+#        for pnt in self.detector.props.track_list[0]:
+#            print "(", pnt.props.x_pos, ",", pnt.props.y_pos, ") start ", pnt.props.start, " end ", pnt.props.end
         self.pipeline.set_state(gst.STATE_NULL)
         gtk.main_quit()
 

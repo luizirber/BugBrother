@@ -354,10 +354,10 @@ sacam_point_new_from_data (gint x, gint y, gchar * begin, gchar * finish)
 {
 	
         GObject *obj = (GObject *)GET_NEW;
-        g_object_set (G_OBJECT (obj), "x_pos", x, NULL);
-        g_object_set (G_OBJECT (obj), "y_pos", y, NULL);
-        g_object_set (G_OBJECT (obj), "start", g_strdup(begin), NULL);
-        g_object_set (G_OBJECT (obj), "end", g_strdup(finish), NULL);
+        g_object_set (G_OBJECT (obj), "x_pos", x,
+                                      "y_pos", y,
+                                      "start", g_strdup(begin),
+                                      "end", g_strdup(finish), NULL);
 
         return obj;
     }}
