@@ -13,7 +13,7 @@ dnl and 2... for a prerelease
 
 dnl when going to/from release please set the nano correctly !
 dnl releases only do Wall, cvs and prerelease does Werror too
-AS_VERSION(sacamdetector, SACAMDETECTOR_VERSION, 0, 1, 0, 0,
+AS_VERSION(sacam-gst-plugins, SACAMDETECTOR_VERSION, 0, 1, 0, 0,
     SACAMDETECTOR_CVS="no", SACAMDETECTOR_CVS="yes")
 
 dnl AM_MAINTAINER_MODE provides the option to enable maintainer mode
