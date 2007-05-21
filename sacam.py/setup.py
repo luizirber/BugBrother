@@ -2,19 +2,7 @@
 
 from commands import getoutput
 from kiwi.dist import setup, listfiles, listpackages
-from distutils.core import Extension, Command
-
-class lint(Command):
-
-    description = "Execute PyLint and return the result."
-
-    def run (self):
-        print 'hi'
-#        getoutput('pylint --rcfile tests/rc.pylint sacam/ > resultado')
-#        getoutput('cat resultado | less')
-#        getoutput('rm resultado')
-
-cmdclass = {'lint': lint}
+from distutils.core import Extension
 
 # flags used to compile the videoprocessor extension
 cflags = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 '
@@ -22,7 +10,7 @@ cflags = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 '
 temp = cflags.replace('-I', '')
 includes = temp.split()
 
-libs_output = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 ' 
+libs_output = getoutput('pkg-config gdk-2.0 glib-2.0 gtk+-2.0 '
                         'pygtk-2.0 pygobject-2.0 --libs')
 lib_dirs = []
 libs = []
@@ -39,31 +27,30 @@ for item in libs_output.split():
 
 videoprocessor = Extension("sacam.videoprocessor",
                             include_dirs = includes,
-                            libraries = libs,   
+                            libraries = libs,
                             library_dirs = lib_dirs,
                             sources = ['sacam/videoprocessormodule.c'])
 
-templates = []
 data_files = [
      ('share/doc/sacam', ('AUTHORS', 'ChangeLog', 'CONTRIBUTORS',
                           'COPYING', 'README', 'NEWS')),
      ('share/doc/sacam', listfiles('doc', '*')),
      ('share/doc/sacam/examples', listfiles('examples', '*')),
+     ('share/applications', listfiles('.', 'sacam.desktop')),
      ('$datadir/glade', listfiles('glade', '*.glade')),
      ('$datadir/glade', listfiles('glade', '*.png')),
      ('$datadir/xml', listfiles('xml', '*.rng'))
      ]
-     
+
 resources = dict(locale='$prefix/share/locale')
 global_resources = dict(
      doc = '$prefix/share/doc/sacam',
      glade = '$datadir/glade',
      )
-     
+
 kwargs = {}
 scripts = ['bin/sacam']
-templates.append(('share/applications', ['sacam.desktop']))
-     
+
 setup(name='sacam',
       version='1.0',
       description='Sistema de Analise Comportamental de Animais em Movimento'
@@ -78,7 +65,5 @@ setup(name='sacam',
       data_files = data_files,
       resources = resources,
       global_resources = global_resources,
-      templates = templates,
-      cmdclass = cmdclass,
       **kwargs
      )

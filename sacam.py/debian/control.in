@@ -2,19 +2,22 @@ Source: sacam
 Section: science
 Priority: optional
 Maintainer: Luiz Irber <luiz.irber@gmail.com>
-Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python (>= 2.4), python-support (>= 0.3), python-all, python-kiwi, python-all-dev
+Build-Depends: cdbs (>= 0.4.43), debhelper (>= 5.0.37.2), python (>= 2.4),
+               python-support (>= 0.3), python-all, python-kiwi,
+               python-all-dev, python-gtk2-dev (>= 2.8.6)
 Standards-Version: 3.7.2
 
 Package: sacam
 Architecture: i386
-Depends: ${python:Depends}, python-gtk2 (>= 2.8.6), python-kiwi, python-lxml (>= 0.8), python-gst0.10 (>= 0.10.5)
+Depends: ${python:Depends}, python-gtk2 (>= 2.8.6), python-kiwi,
+         python-lxml (>= 0.8), python-gst0.10 (>= 0.10.5)
 Description: Sistema de Analise Comportamental de Animais em Movimento
  .
- SACAM stands for 'Sistema de Analise Comportamental de Animais em Movimento' in
- brazilian portuguese. It was developed in CNPDIA, the Brazilian National 
- Agricultural Instrumentation Center, one of the institutes of EMBRAPA, the 
- Brazilian Agricultural Research Enterprise. It's main purpose is to help 
+ SACAM stands for 'Sistema de Analise Comportamental de Animais em Movimento'
+ in brazilian portuguese. It was developed in CNPDIA, the Brazilian National
+ Agricultural Instrumentation Center, one of the institutes of EMBRAPA, the
+ Brazilian Agricultural Research Enterprise. It's main purpose is to help
  biologists in tasks such as tracking of animals in controlled environments.
- It generates statistical data that is meaningful for researchers. 
+ It generates statistical data that is meaningful for researchers.
  .
  Homepage: http://repositorio.agrolivre.gov.br/projects/sacam/
