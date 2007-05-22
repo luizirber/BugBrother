@@ -25,11 +25,11 @@ for item in libs_output.split():
               "`pkg-config glib-2.0 gdk-2.0 gtk+-2.0 "\
               "pygtk-2.0 pygobject-2.0 --libs`"
 
-videoprocessor = Extension("sacam.videoprocessor",
+videoprocessor = Extension("sacam.cvideoprocessor",
                             include_dirs = includes,
                             libraries = libs,
                             library_dirs = lib_dirs,
-                            sources = ['sacam/videoprocessormodule.c'])
+                            sources = ['sacam/cvideoprocessor.c'])
 
 data_files = [
      ('share/doc/sacam', ('AUTHORS', 'ChangeLog', 'CONTRIBUTORS',

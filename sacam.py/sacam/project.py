@@ -9,6 +9,7 @@ from copy import deepcopy
 from csv import writer
 from datetime import datetime, timedelta
 from time import strptime
+import re
 
 from gtk import gdk
 from kiwi.environ import environ
@@ -206,8 +207,9 @@ class Experiment(object):
         element.text = str(self.measurement_unit)
         
         element = etree.SubElement(new_experiment, "start_time")
-        new_time = self.point_list[0].start_time
-        element.text = new_time.strftime("%Y-%m-%dT%H:%M:%S")
+        new = self.point_list[0].start_time
+        element.text = new.strftime("%Y-%m-%dT%H:%M:%S") + '.' \
+                       + str(new.microsecond/1000)
         
         element = etree.SubElement(new_experiment, "end_time")
         new_time = self.point_list[-1].end_time        
@@ -249,8 +251,13 @@ class Experiment(object):
         element = elt.find("{http://cnpdia.embrapa.br}measurement_unit")
         exp.measurement_unit = element.text
         
+        timefmt = re.compile("(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)\.(\d+)")
+
         element = elt.find("{http://cnpdia.embrapa.br}start_time")
-        new_time = datetime(*strptime(element.text, "%Y-%m-%dT%H:%M:%S")[0:6])
+        tmp = timefmt.search(element.text)
+        args = [int(value) for value in tmp.groups()]
+        args[-1] *= 1000
+        new_time = datetime(*args)
         exp.start_time = new_time
         
         element = elt.find("{http://cnpdia.embrapa.br}end_time")

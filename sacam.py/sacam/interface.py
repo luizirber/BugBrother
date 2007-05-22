@@ -26,17 +26,17 @@ class Interface(object):
     ''' Main class, control the interface of the program.
 
         Composed of various classes.'''
-        
+
     def __init__(self):
-                
+
         gladefile = environ.find_resource('glade', 'sacam.glade')
         windowname = "mainwindow"
-        
+
         self.xml = gtk.glade.XML(gladefile, domain=APP_NAME)
         self.window = self.xml.get_widget(windowname)
-        
+
         self.project = Project()
-        
+
         outputarea = self.xml.get_widget("videoOutputArea")
         proc_output = self.xml.get_widget("trackArea")
         self.device_manager = DeviceManager(outputarea, proc_output)
@@ -47,33 +47,33 @@ class Interface(object):
         self.areasdiag = AreasDiag(self.project, self.xml)
         self.scalediag = ScaleDiag(self.xml, self.project)
         self.insectsizediag = InsectsizeDiag(self.xml)
-        
+
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
-        
+
         widget = self.xml.get_widget("buttonPreferences")
         widget.connect("clicked", self.device_manager.show_window)
-        
+
         widget = self.xml.get_widget("buttonSave")
         widget.connect("clicked", self.save_project)
-        
+
         widget = self.xml.get_widget("buttonOpen")
         widget.connect("clicked", self.load_project)
-        
+
         widget = self.xml.get_widget("buttonProcess")
-        widget.connect("clicked", self.process_lists)        
-        
+        widget.connect("clicked", self.process_lists)
+
         widget = self.xml.get_widget("buttonReport")
-        widget.connect("clicked", self.report)        
-        
+        widget.connect("clicked", self.report)
+
         self.video_hnd = None
         self.prop_hnd = None
         self.scale_hnd = None
         self.size_hnd = None
         self.refimg_hnd = None
         self.areas_hnd = None
-        self.connect_project_signals()        
-        
+        self.connect_project_signals()
+
         #the "invalid_*" variables
         self.invalid_size = True
         self.invalid_areas = True
@@ -81,7 +81,7 @@ class Interface(object):
         self.invalid_refimg = True
         self.invalid_speed = True
         self.invalid_path = True
-        
+
         #home dir
         home = os.curdir
         if 'HOME' in os.environ:
@@ -94,59 +94,59 @@ class Interface(object):
                     home = os.environ['HOMEDRIVE'] + os.environ['HOMEPATH']
                 else:
                     home = os.environ['HOMEPATH']
-        self.home = os.path.realpath(home) + os.sep        
-                
+        self.home = os.path.realpath(home) + os.sep
+
         self.window.connect("destroy", self.destroy)
-        self.window.show()        
-        
-        self.update_state()        
-        
+        self.window.show()
+
+        self.update_state()
+
     def main(self, argv):
         ''' Start the gtk main loop. '''
         gtk.main()
-                 
+
     def connect_project_signals(self):
         ''' Reconnect signals that refers to the current project.
-            
+
             Every time a project is created, some signals need to be
             reconnected. '''
-        widget = self.xml.get_widget("buttonStart")        
+        widget = self.xml.get_widget("buttonStart")
         if self.video_hnd:
             widget.disconnect(self.video_hnd)
         self.video_hnd = widget.connect("clicked", self.start_video,
                                          self.project)
-        
+
         widget = self.xml.get_widget("buttonProjProperties")
         if self.prop_hnd:
             widget.disconnect(self.prop_hnd)
         self.prop_hnd = widget.connect("clicked", self.propdiag.run,
                                         self.project, self.xml)
-                            
+
         widget = self.xml.get_widget("buttonScale")
         if self.scale_hnd:
-            widget.disconnect(self.scale_hnd)        
-        self.scale_hnd = widget.connect("clicked", self.scalediag.run, 
+            widget.disconnect(self.scale_hnd)
+        self.scale_hnd = widget.connect("clicked", self.scalediag.run,
                                          self.project, self)
-        
+
         widget = self.xml.get_widget("buttonInsectSize")
         if self.size_hnd:
             widget.disconnect(self.size_hnd)
         self.size_hnd = widget.connect("clicked", self.insectsizediag.run,
                                         self.project, self)
-                
+
         widget = self.xml.get_widget("buttonRefImg")
         if self.refimg_hnd:
             widget.disconnect(self.refimg_hnd)
-        self.refimg_hnd = widget.connect("clicked", self.refimgdiag.run, 
+        self.refimg_hnd = widget.connect("clicked", self.refimgdiag.run,
                                           self.project, self.device_manager,
                                           self)
-                                       
+
         widget = self.xml.get_widget("buttonAreas")
         if self.areas_hnd:
             widget.disconnect(self.areas_hnd)
-        self.areas_hnd = widget.connect("clicked", self.areasdiag.run, 
+        self.areas_hnd = widget.connect("clicked", self.areasdiag.run,
                                          self.project, self)
-    
+
     def new_project(self, widget):
         ''' Creates a new project.
 
@@ -154,35 +154,35 @@ class Interface(object):
             current project, and deals with the answer.
         '''
         if self.project:
-            diag = gtk.MessageDialog ( self.window, 
+            diag = gtk.MessageDialog ( self.window,
                             gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                            gtk.MESSAGE_QUESTION, 
+                            gtk.MESSAGE_QUESTION,
                             gtk.BUTTONS_YES_NO,
                             _("Do you want to save the current project?") )
             response = diag.run()
-            
+
             if response == gtk.RESPONSE_YES:
-                diag.destroy()                
+                diag.destroy()
                 self.save_project(None)
                 self.project = Project()
             else:
-                diag.destroy()                
+                diag.destroy()
                 self.project = Project()
-        
+
         response = self.propdiag.run(None, self.project, self.xml)
-        
+
         if response == False :
-            self.update_state()            
+            self.update_state()
             return
-              
-        self.device_manager.pipeline_start()               
-                
+
+        self.device_manager.pipeline_start()
+
         response = self.refimgdiag.run(None, self.project,
                                        self.device_manager, self)
         if response == False :
             self.update_state()
             return
-        
+
         response = self.areasdiag.run(None, self.project, self)
         if response == False :
             self.update_state()
@@ -192,14 +192,14 @@ class Interface(object):
         if response == False :
             self.update_state()
             return
-                
+
         response = self.insectsizediag.run(None, self.project, self)
         if response == False :
             self.update_state()
             return
-                
+
         self.update_state()
-                
+
     def load_project(self, widget):
         ''' Shows the load dialog.
 
@@ -213,16 +213,16 @@ class Interface(object):
                        (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                         gtk.STOCK_OK, gtk.RESPONSE_OK) )
         fsdial.set_current_folder(self.home)
-                
+
         response = fsdial.run()
-        
+
         if response != gtk.RESPONSE_OK:
             fsdial.destroy()
         else:
             filename = fsdial.get_filename()
-            self.update_state()            
+            self.update_state()
             fsdial.destroy()
-        
+
         if filename:
             prj = self.project.load(filename)
             if prj:
@@ -231,7 +231,7 @@ class Interface(object):
             else:
                 # TODO: print error
                 pass
-               
+
     def save_project(self, widget):
         ''' Shows the save dialog.
 
@@ -242,131 +242,104 @@ class Interface(object):
             fsdialog = gtk.FileChooserDialog(_("Save Project"), self.window,
                          gtk.FILE_CHOOSER_ACTION_SAVE,
                         (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                         gtk.STOCK_OK, gtk.RESPONSE_OK) )        
+                         gtk.STOCK_OK, gtk.RESPONSE_OK) )
             fsdialog.set_current_folder(self.home)
-            
+
             self.invalid_path = True
             while self.invalid_path:
-                response = fsdialog.run()                        
+                response = fsdialog.run()
                 if response == gtk.RESPONSE_OK :
-                    current = fsdialog.get_current_folder()     
+                    current = fsdialog.get_current_folder()
                     filepath = fsdialog.get_filename()
                     filename = filepath[len(current) + 1:]
                     try:
                         os.makedirs(filepath)
                     except OSError, why:
-                        errordiag = gtk.MessageDialog ( fsdialog, 
-                                           gtk.DIALOG_DESTROY_WITH_PARENT, 
-                                           gtk.MESSAGE_ERROR, 
+                        errordiag = gtk.MessageDialog ( fsdialog,
+                                           gtk.DIALOG_DESTROY_WITH_PARENT,
+                                           gtk.MESSAGE_ERROR,
                                            gtk.BUTTONS_OK,
                                            why.args[1] )
                         errordiag.run()
                         errordiag.destroy()
-                    else:                    
+                    else:
                         self.invalid_path = False
                         fsdialog.destroy()
-                else:                
-                    self.invalid_path = True                 
+                else:
+                    self.invalid_path = True
                     fsdialog.destroy()
                     return
-            
+
             self.project.filename = filepath + '/' + filename + '.exp'
             self.project.save()
         else:
             self.project.save()
-               
+
     def start_video(self, widget, prj):
         ''' Start the capturing process.
-            
+
             Currently it keeps calling the function. In the future try to
             implement it with a gobject.timeout '''
         notebook = self.xml.get_widget("mainNotebook")
         notebook.set_current_page(1)
-        
+
         x_pos, y_pos = self.device_manager.outputarea.window.get_position()
         rect = gtk.gdk.Rectangle(x_pos, y_pos,
                                  self.device_manager.frame_width,
                                  self.device_manager.frame_height)
-        self.device_manager.outputarea.size_allocate(rect) 
-        
+        self.device_manager.outputarea.size_allocate(rect)
+
         self.capturing_state()
 
         if self.device_manager.pipeline_play.get_state() != gst.STATE_PLAYING:
             self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
-        
-#        if ( widget.get_active() ):        
+
+#        if ( widget.get_active() ):
 #            self.device_manager.start_video(widget, project)
 #        else:
 #            gobject.source_remove(self.device_manager.timeout_id)
-            
-        self.running = widget.get_active()
-        if self.running:
+        if widget.get_active():
             image = gtk.Image()
-            image.set_from_stock(gtk.STOCK_MEDIA_STOP, 
+            image.set_from_stock(gtk.STOCK_MEDIA_STOP,
                                  gtk.ICON_SIZE_SMALL_TOOLBAR)
             widget.set_image(image)
-            while self.running:
-                self.device_manager.start_video(widget, prj)
-                
-                if prj.current_experiment.start_time:
-                    widget = self.xml.get_widget("labelTime")
-                    now = datetime(1, 1, 1).now()
-                    time = now - prj.current_experiment.start_time
-                    widget.set_text(str(time))
-                    
-                    widget = self.xml.get_widget("labelXPos")
-                    try: 
-                        value = str(prj.current_experiment.point_list[-1].x_pos)
-                    except IndexError:
-                        print 'Warning: No point in the list'
-                    else:
-                        widget.set_text(value)
-
-                    widget = self.xml.get_widget("labelYPos")
-                    try: 
-                        value = str(prj.current_experiment.point_list[-1].y_pos)
-                    except IndexError:
-                        print 'Warning: No point in the list'
-                    else:
-                        widget.set_text(value)
-                    
+            self.device_manager.start_video(prj)
         else:
             image = gtk.Image()
-            image.set_from_stock(gtk.STOCK_MEDIA_PLAY, 
-                                 gtk.ICON_SIZE_SMALL_TOOLBAR)
+            image.set_from_stock(gtk.STOCK_MEDIA_PLAY,
+                             gtk.ICON_SIZE_SMALL_TOOLBAR)
             widget.set_image(image)
+            self.device_manager.stop_video(prj)
             self.project.current_experiment.finished = True
-            prj.new_experiment_from_current()
+#            prj.new_experiment_from_current()
             self.update_state()
 
     def report(self, widget):
         ''' Shows the report dialog.
-
-            as
         '''
         fsdialog = gtk.FileChooserDialog(_("Save Report"), self.window,
                      gtk.FILE_CHOOSER_ACTION_SAVE,
                     (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
-                     gtk.STOCK_OK, gtk.RESPONSE_OK) )        
-        if self.project.filename:             
+                     gtk.STOCK_OK, gtk.RESPONSE_OK) )
+        if self.project.filename:
             fsdialog.set_current_folder(self.project.filename)
         else:
             fsdialog.set_current_folder(self.home)
-        
+
         response = fsdialog.run()
-        
+
         if response == gtk.RESPONSE_OK:
             filename = fsdialog.get_filename() + '.csv'
-            self.project.export(filename)            
+            self.project.export(filename)
             fsdialog.destroy()
-            msg = gtk.MessageDialog ( self.window, 
-                                      gtk.DIALOG_DESTROY_WITH_PARENT, 
-                                      gtk.MESSAGE_INFO, 
+            msg = gtk.MessageDialog ( self.window,
+                                      gtk.DIALOG_DESTROY_WITH_PARENT,
+                                      gtk.MESSAGE_INFO,
                                       gtk.BUTTONS_OK,
                                       _("Report generated.") )
             msg.run()
             msg.destroy()
-    
+
     def process_lists(self, wid):
         ''' Prepare and process the lists to generate statistics.
 
@@ -376,26 +349,26 @@ class Interface(object):
                 exp.prepare_point_list()
                 exp.prepare_areas_list()
                 exp.prepare_stats()
-               
+
     def update_state(self):
-        ''' Verify if the project values are consistent and update the 
+        ''' Verify if the project values are consistent and update the
             user interface. '''
         if len(self.project.current_experiment.areas_list) == 0:
             self.invalid_areas = True
         else:
             self.invalid_areas = False
-            
+
         if self.project.refimage:
             self.invalid_refimg = False
         else:
             self.invalid_refimg = True
-            
-        if self.project.filename:    
+
+        if self.project.filename:
             if os.path.exists(self.project.filename):
                 self.invalid_path = False
             else:
                 self.invalid_path = True
-            
+
         if self.project.bug_size:
             self.invalid_size = False
         else:
@@ -405,142 +378,142 @@ class Interface(object):
             self.invalid_speed = False
         else:
             self.invalid_speed = True
-            
+
         if self.project.current_experiment.x_scale_ratio \
            and self.project.current_experiment.y_scale_ratio:
             self.invalid_scale = False
         else:
             self.invalid_scale = True
-        
+
         self.connect_project_signals()
-        
+
         prj = self.project.attributes[_("Project Name")]
         exp = self.project.current_experiment.attributes[_("Experiment Name")]
         self.window.set_title( ("SACAM - %s - %s") % (prj, exp) )
-        
+
         self.ready_state()
 
     def capturing_state(self):
         ''' Set the user interface to capture mode, disabling some options. '''
         widget = self.xml.get_widget("buttonStart")
-        widget.set_sensitive(True)        
-       
+        widget.set_sensitive(True)
+
         widget = self.xml.get_widget("buttonNew")
-        widget.set_sensitive(False)        
+        widget.set_sensitive(False)
 
         widget = self.xml.get_widget("buttonOpen")
-        widget.set_sensitive(False)        
+        widget.set_sensitive(False)
 
         widget = self.xml.get_widget("buttonSave")
-        widget.set_sensitive(False)        
+        widget.set_sensitive(False)
 
         widget = self.xml.get_widget("buttonAreas")
-        widget.set_sensitive(False)                
-        
+        widget.set_sensitive(False)
+
         widget = self.xml.get_widget("buttonScale")
         widget.set_sensitive(False)
-        
+
         widget = self.xml.get_widget("buttonInsectSize")
-        widget.set_sensitive(False)                
-      
+        widget.set_sensitive(False)
+
         widget = self.xml.get_widget("buttonTortuosity")
-        widget.set_sensitive(False)        
-        
+        widget.set_sensitive(False)
+
         widget = self.xml.get_widget("buttonReport")
-        widget.set_sensitive(False)        
-            
+        widget.set_sensitive(False)
+
         widget = self.xml.get_widget("buttonPrint")
         widget.set_sensitive(False)
-        
+
         widget = self.xml.get_widget("buttonProcess")
-        widget.set_sensitive(False)                        
-        
+        widget.set_sensitive(False)
+
         widget = self.xml.get_widget("toggleTimer")
-        widget.set_sensitive(False)     
-        
+        widget.set_sensitive(False)
+
         widget = self.xml.get_widget("buttonAreas")
-        widget.set_sensitive(False)         
-        
+        widget.set_sensitive(False)
+
         widget = self.xml.get_widget("buttonProjProperties")
         widget.set_sensitive(False)
-                 
+
         widget = self.xml.get_widget("buttonRefImg")
         widget.set_sensitive(False)
-        
+
         widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(0).set_sensitive(False)                
-                           
+        widget.get_nth_page(0).set_sensitive(False)
+
         widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(2).set_sensitive(False)
-                           
+
     def ready_state(self):
         ''' Do the verifications needed to determinate if the capture process
             can be executed. '''
         self.device_manager.pipeline_start()
-        
+
         widget = self.xml.get_widget("buttonNew")
-        widget.set_sensitive(True)        
+        widget.set_sensitive(True)
 
         widget = self.xml.get_widget("buttonOpen")
-        widget.set_sensitive(True)        
-        
+        widget.set_sensitive(True)
+
         widget = self.xml.get_widget("buttonSave")
-        widget.set_sensitive(True)        
-        
+        widget.set_sensitive(True)
+
 #        if self.project.current_experiment.point_list == [] or \
 #           self.project.current_experiment.areas_list == []:
 #            pass
 #        else:
         widget = self.xml.get_widget("buttonTortuosity")
-        widget.set_sensitive(True)        
-    
+        widget.set_sensitive(True)
+
         widget = self.xml.get_widget("buttonReport")
-        widget.set_sensitive(True)        
-        
+        widget.set_sensitive(True)
+
         widget = self.xml.get_widget("buttonPrint")
         widget.set_sensitive(True)
-        
+
         if not self.invalid_refimg:
             widget = self.xml.get_widget("buttonProcess")
             widget.set_sensitive(True)
-            
+
         if self.invalid_refimg:
             pass
         else:
             widget = self.xml.get_widget("buttonAreas")
             widget.set_sensitive(True)
-                
-            widget = self.xml.get_widget("buttonScale")        
+
+            widget = self.xml.get_widget("buttonScale")
             widget.set_sensitive(True)
-            
+
             if self.invalid_scale:
                 pass
             else:
-                widget = self.xml.get_widget("buttonInsectSize")        
-                widget.set_sensitive(True)        
-                 
+                widget = self.xml.get_widget("buttonInsectSize")
+                widget.set_sensitive(True)
+
         widget = self.xml.get_widget("buttonRefImg")
-        widget.set_sensitive(True)                          
-        
+        widget.set_sensitive(True)
+
         widget = self.xml.get_widget("buttonProjProperties")
-        widget.set_sensitive(True)         
-            
+        widget.set_sensitive(True)
+
         widget = self.xml.get_widget("buttonStart")
         if self.invalid_size or self.invalid_areas or \
            self.invalid_scale or self.invalid_speed:
             widget.set_sensitive(False)
         else:
-            widget.set_sensitive(True)        
-       
+            widget.set_sensitive(True)
+
         widget = self.xml.get_widget("toggleTimer")
-        widget.set_sensitive(True)     
-        
+        widget.set_sensitive(True)
+
         widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(0).set_sensitive(True)        
-        
+        widget.get_nth_page(0).set_sensitive(True)
+
         widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(2).set_sensitive(True)                
-               
+        widget.get_nth_page(2).set_sensitive(True)
+
     def destroy(self, widget):
         ''' Stop the pipelines and quit the gtk main loop. '''
         self.device_manager.pipeline_destroy()

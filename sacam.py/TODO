@@ -92,6 +92,8 @@ PROJECT:
           the dialogs.
     - Calculate bug_size and bug_max_speed based on scale.
     - Save and load refimage
+    - Change {start|end}_time in experiment and point to match
+      experiment.start_time code
 
 EXPERIMENT:
     - verify the calculations, because of x_scale_ratio and y_scale_ratio

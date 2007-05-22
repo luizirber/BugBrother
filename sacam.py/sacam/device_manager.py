@@ -16,13 +16,14 @@ import gst
 
 from kiwi.environ import environ
 
-from sacam.videoprocessor import Videoprocessor
+from sacam.gstvideoprocessor import Videoprocessor
+#from sacam.pyvideoprocessor import Videoprocessor
 
 from sacam.i18n import APP_NAME
 
 class DeviceManager(object):
     ''' Encapsulate the GStreamer funcionality and the videoprocessor. '''
-   
+
     xml = None
     xid = None
     pipeline = None
@@ -33,39 +34,41 @@ class DeviceManager(object):
     outputarea = None
     frame = None
     pixbuf = None
-           
+
     def __init__(self, video_output, processor_output):
-        
+
         gladefile = environ.find_resource('glade', 'sacam.glade')
         windowname = "devicemanager"
         self.xml = gtk.glade.XML(gladefile, windowname, domain=APP_NAME)
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("delete-event", self.delete)
-        
-        self.processor = Videoprocessor()         
+
+        self.processor = Videoprocessor("motiondetector")
+#        self.processor = Videoprocessor("identity")
         self.outputarea = video_output
         self.outputarea.connect("expose-event", self.expose_cb)
         self.processor_output = processor_output
         self.frame_format = None
-        
+
         self.device = '/dev/video0'
         self.width, self.height = 320, 240
+        self.outputarea.set_size_request(self.width, self.height)
         self.norm, self.channel = None, None
-        
+
         self.pipeline_string = ''
         self.null = None
         self.frame_width = None
         self.frame_height = None
         self.pipeline_play = None
-        
+
         widget = self.xml.get_widget('buttonDefaultPipeline')
         widget.connect('clicked', self.set_default_pipeline_string)
-        
+
         widget = self.xml.get_widget('buttonTestingPipeline')
         widget.connect('clicked', self.set_testing_pipeline_string)
-                
+
         self.counter = 0
-        
+
         input_type = self.xml.get_widget('comboboxInputType')
         input_type.set_active(0)
         input_type.connect('changed', self.input_combo_change)
@@ -97,31 +100,32 @@ class DeviceManager(object):
         #self.set_default_pipeline_string(None)
         if not self.set_pipelines():
             print 'error!'
-            
+
     def set_default_pipeline_string(self, button):
         ''' Set the default pipeline string, using the v4lsrc element. '''
 
         pipeline_string = (
            'v4lsrc device=%s name=source ! ffmpegcolorspace ! '
-           'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
-           'identity name=null ! ffmpegcolorspace ! '
-           )%(self.device, self.width, self.height)
-        
+           'video/x-raw-rgb,format=ARGB,width=%d,height=%d ! '
+           '%s name=motionfilter ! '
+           )%(self.device, self.width, self.height,
+              self.processor.get_detector_name())
+
         self.pipeline_string = pipeline_string
         self.textview.get_buffer().set_text(pipeline_string)
-        
+
     def set_testing_pipeline_string(self, button):
         ''' Set the testing pipeline string, using the videotestsrc element. '''
 
         pipeline_string = (
-            'videotestsrc name=source ! ffmpegcolorspace ! '                
-            'video/x-raw-rgb,bpp=24,depth=24,format=RGB24,width=%d,height=%d ! '
-            'identity name=null ! ffmpegcolorspace ! '
-           )%(self.width, self.height)
+            'videotestsrc name=source ! ffmpegcolorspace ! '
+            'video/x-raw-rgb,format=ARGB,width=%d,height=%d ! '
+            '%s name=motionfilter ! '
+           )%(self.width, self.height, self.processor.get_detector_name())
 
         self.pipeline_string = pipeline_string
-        self.textview.get_buffer().set_text(pipeline_string)    
-            
+        self.textview.get_buffer().set_text(pipeline_string)
+
     def set_pipelines(self):
         ''' Based on the current pipeline_string this function builds the
             new pipeline, after verifying if it is valid. '''
@@ -139,14 +143,15 @@ class DeviceManager(object):
                 self.pipeline_play.set_state(gst.STATE_NULL)
             pipeline.set_state(gst.STATE_NULL)
             pipeline = gst.parse_launch(self.pipeline_string + video_sink)
-            
+
         self.pipeline_play = pipeline
         self.source = pipeline.get_by_name("source")
 
-        self.null = pipeline.get_by_name("null")
-        self.null.connect("handoff", self.frame_setter)
+        motionfilter = pipeline.get_by_name("motionfilter")
+        self.processor.set_detector(motionfilter)
+        motionfilter.connect("handoff", self.frame_setter)
         self.sink = self.pipeline_play.get_by_name("sink")
-                
+
         bus = pipeline.get_bus()
         bus.add_signal_watch()
 
@@ -155,15 +160,17 @@ class DeviceManager(object):
         if self.channel:
             chan = self.source.find_channel_by_name(self.channel)
             self.source.set_channel(chan)
-    
+
         if self.norm:
             norm = self.source.find_norm_by_name(self.norm)
             self.source.set_norm(norm)
 
+        self.outputarea.set_size_request(self.width, self.height)
+
         self.pipeline_play.set_state(gst.STATE_PLAYING)
 
         return True
-                    
+
     def pipeline_start(self):
         ''' Start the current pipeline '''
 
@@ -177,52 +184,45 @@ class DeviceManager(object):
 
     def expose_cb(self, wid, event):
         ''' Callback function executed every time the outputarea is exposed. 
- 
+
             Needed to put the GStreamer sink on the outputarea. '''
 
-        self.sink.set_xwindow_id(self.outputarea.window.xid)   
+        self.sink.set_xwindow_id(self.outputarea.window.xid)
 
     def frame_setter(self, element, buf):
-        ''' Every time a new buffer is sent accross the pipeline its data 
+        ''' Every time a new buffer is sent accross the pipeline its data
             is stored to be used afterwards. '''
 
         for structure in buf.caps:
-            if structure["format"] == "RGB24":
+            if structure["format"] == "ARGB":
                 if self.frame_format == None:
-                    self.frame_format = structure["format"]            
+                    self.frame_format = structure["format"]
                     self.frame_width = structure["width"]
-                    self.frame_height = structure["height"]                
+                    self.frame_height = structure["height"]
                 self.frame = buf.data
             if structure["format"] == "YUV2":
                 #TODO: implement colorspace conversion?
                 pass
-                
-        
+
     def get_current_frame(self):
         ''' Return a pixbuf from the current buffer. '''
 
-        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame, 
-                        gtk.gdk.COLORSPACE_RGB, False, 8, 
-                        self.frame_width, self.frame_height, 
+        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame,
+                        gtk.gdk.COLORSPACE_RGB, False, 8,
+                        self.frame_width, self.frame_height,
                         self.frame_width*3)
         return self.pixbuf
-        
-    def start_video(self, widget, project):
+
+    def start_video(self, project):
         ''' Start the video processing of the input. '''
 
-#        self.timeout_id = gobject.timeout_add(200, 
-#                                    self.processor.process_video,
-#                                    self.get_current_frame(),
-#                                    self.processor_output, project)
-        self.processor.process_video(self.get_current_frame(), 
-                                     self.processor_output, project)
-        self.counter += 1
-        if self.counter == 10:
-            gc.collect()
-            self.counter = 0
-                                             
-        return True 
-          
+        self.processor.start(self.get_current_frame(),
+                             self.processor_output, project)
+        return True
+
+    def stop_video(self, project):
+        self.processor.stop(project)
+
     def input_combo_change(self, combo):
         ''' Update the input type combo, showing the extra properties. '''
 
@@ -230,7 +230,7 @@ class DeviceManager(object):
 
         widget = self.xml.get_widget('hboxBttv')
         widget.props.visible = False
-        
+
         widget = self.xml.get_widget('vboxWebcam')
         widget.props.visible = False
 
@@ -241,11 +241,11 @@ class DeviceManager(object):
         elif option == 1:
             # webcam selected
             box = self.xml.get_widget('vboxWebcam')
-            box.props.visible = True            
+            box.props.visible = True
         elif option == 2:
             # firewire selected
             print 'not implemented yet'
-    
+
     def set_combo_width(self, input_option, combo):
         ''' Update the width of the video based on the input type '''
 
@@ -266,7 +266,7 @@ class DeviceManager(object):
         combo.set_model(model)
         if itr:
             combo.set_active_iter(itr)
-    
+
     def combo_width_change(self, combo):
         ''' Set the video width based on the current combo value. '''
 
@@ -360,7 +360,7 @@ class DeviceManager(object):
                 model = gtk.ListStore(gobject.TYPE_STRING)
                 for item in channels:
                     model.append([item])
-                combo.set_model(model)            
+                combo.set_model(model)
 
     def set_combo_norm(self, input_type, combo):
         ''' Update the video device norm based on the current video device'''
@@ -375,17 +375,17 @@ class DeviceManager(object):
                 model = gtk.ListStore(gobject.TYPE_STRING)
                 for item in norms:
                     model.append([item])
-                combo.set_model(model)            
+                combo.set_model(model)
 
     def show_window(self, button):
         ''' Show the DeviceManager dialog, and set the appropriate behavior
             of its widgets. '''
 
-        self.devicewindow.show_all()        
+        self.devicewindow.show_all()
 
         widget = self.xml.get_widget('hboxBttv')
         widget.props.visible = False
-        
+
         widget = self.xml.get_widget('vboxWebcam')
         widget.props.visible = False
 
@@ -412,8 +412,8 @@ class DeviceManager(object):
             self.devicewindow.hide_all()
         else:
             self.devicewindow.hide_all()
-        
+
     def delete(self, widget, event):
         ''' Hide the dialog, instead of destroy it. '''
         self.devicewindow.hide_all()
-        
+

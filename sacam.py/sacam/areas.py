@@ -13,11 +13,11 @@ class Point(object):
         point (start_time - end_time) and in which areas the point 
         is contained. '''
         
-    def __init__(self):
-        self.x_pos = ''
-        self.y_pos = ''
-        self.start_time = ''
-        self.end_time = ''
+    def __init__(self, x='', y='', start='', end=''):
+        self.x_pos = x
+        self.y_pos = y
+        self.start_time = start
+        self.end_time = end
         
     def object_to_xml(self, points):
         ''' Convert the instance to a lxml element. '''
