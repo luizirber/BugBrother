@@ -30,6 +30,7 @@
 
 #include <gst/video/gstvideofilter.h>
 #include <gst/video/video.h>
+#include <gst/gstmarshal.h>
 
 #include "drawmethods.h"
 #include "sacam-point.h"
@@ -90,6 +91,8 @@ struct _SacamDetector
 struct _SacamDetectorClass
 {
     GstVideoFilterClass parent_class;
+
+    void (*handoff) (GstElement *element, GstBuffer *buf, GstPad *pad);
 };
 
 GType sacam_detector_get_type (void);
@@ -101,7 +104,8 @@ GST_DEBUG_CATEGORY_STATIC (sacamdetector_debug);
 
 enum
 {
-    LAST_SIGNAL
+  SIGNAL_HANDOFF,
+  LAST_SIGNAL
 };
 
 enum
@@ -175,6 +179,8 @@ static gboolean sacam_detector_get_unit_size (GstBaseTransform * btrans,
     GstCaps * caps, guint * size);
 static GstFlowReturn sacam_detector_transform (GstBaseTransform * trans,
     GstBuffer * in, GstBuffer * out);
+
+static guint sacam_detector_signals[LAST_SIGNAL] = { 0 };
 
 static void
 sacam_detector_base_init (gpointer g_class)
@@ -269,6 +275,12 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
                   SACAM_TYPE_POINT, G_PARAM_READABLE),
               G_PARAM_READABLE),
           G_PARAM_READABLE));
+
+  sacam_detector_signals[SIGNAL_HANDOFF] =
+      g_signal_new ("handoff", G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST,
+      G_STRUCT_OFFSET (SacamDetectorClass, handoff), NULL, NULL,
+      gst_marshal_VOID__OBJECT_OBJECT, G_TYPE_NONE, 1,
+      GST_TYPE_BUFFER);
 
   trans_class->set_caps = GST_DEBUG_FUNCPTR (sacam_detector_set_caps);
   trans_class->get_unit_size = GST_DEBUG_FUNCPTR (sacam_detector_get_unit_size);
@@ -572,6 +584,9 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
   GstFlowReturn ret = GST_FLOW_OK;
 
   filter = GST_SACAMDETECTOR (trans);
+
+  g_signal_emit (G_OBJECT (filter), sacam_detector_signals[SIGNAL_HANDOFF], 0,
+      in);
 
   gst_buffer_stamp (out, in);
 
