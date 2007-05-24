@@ -131,7 +131,7 @@ class DeviceManager(object):
             new pipeline, after verifying if it is valid. '''
 
         fake_sink = 'fakesink'
-        video_sink = 'xvimagesink name=sink force-aspect-ratio=true'
+        video_sink = 'ximagesink name=sink force-aspect-ratio=true'
         pipeline = gst.parse_launch(self.pipeline_string + fake_sink)
         state_change = pipeline.set_state(gst.STATE_PAUSED)
 
@@ -208,9 +208,9 @@ class DeviceManager(object):
         ''' Return a pixbuf from the current buffer. '''
 
         self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame,
-                        gtk.gdk.COLORSPACE_RGB, False, 8,
+                        gtk.gdk.COLORSPACE_RGB, True, 8,
                         self.frame_width, self.frame_height,
-                        self.frame_width*3)
+                        self.frame_width*4)
         return self.pixbuf
 
     def start_video(self, project):

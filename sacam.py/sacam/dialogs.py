@@ -12,37 +12,37 @@ from sacam.areas import Ellipse, Rectangle, Area, Line
 from sacam.i18n import _
 
 class PropDiag(object):
-    ''' This dialog sets the project properties. '''    
+    ''' This dialog sets the project properties. '''
 
     def run(self, wid, project, xml):
         ''' Run the specific dialog and save the changes in the project. '''
 
-        propdiag = xml.get_widget("dialogProjProp"); 
+        propdiag = xml.get_widget("dialogProjProp");
         propdiag.show_all()
         experiment = project.current_experiment
-        
+
         entry_bio = xml.get_widget("entryNameProject")
         entry_exp = xml.get_widget("entryNameExperiment")
         entry_name = xml.get_widget("entryNameInsect")
         entry_comp = xml.get_widget("entryComp")
         entry_temp = xml.get_widget("entryTemp")
         hscale_threshold = xml.get_widget("hscaleThreshold")
-        
+
         try:
             temp = project.attributes[_("Project Name")]
-        except KeyError: 
+        except KeyError:
             entry_bio.props.text = ""
-        else: 
+        else:
             entry_bio.props.text = temp
-        
+
         try:
             temp = experiment.attributes[_("Experiment Name")]
         except KeyError:
             entry_exp.props.text = ""
-        else: 
+        else:
             entry_exp.props.text = temp
-        
-        try: 
+
+        try:
             temp = project.attributes[_("Insect Name")]
         except KeyError: 
             entry_name.props.text = ""
