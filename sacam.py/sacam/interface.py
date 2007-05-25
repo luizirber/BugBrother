@@ -285,8 +285,8 @@ class Interface(object):
 
         x_pos, y_pos = self.device_manager.outputarea.window.get_position()
         rect = gtk.gdk.Rectangle(x_pos, y_pos,
-                                 self.device_manager.frame_width,
-                                 self.device_manager.frame_height)
+                                 self.device_manager.frame["width"],
+                                 self.device_manager.frame["height"])
         self.device_manager.outputarea.size_allocate(rect)
 
         self.capturing_state()
@@ -311,7 +311,7 @@ class Interface(object):
             widget.set_image(image)
             self.device_manager.stop_video(prj)
             self.project.current_experiment.finished = True
-#            prj.new_experiment_from_current()
+            prj.new_experiment_from_current()
             self.update_state()
 
     def report(self, widget):

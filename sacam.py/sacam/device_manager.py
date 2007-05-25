@@ -48,7 +48,6 @@ class DeviceManager(object):
         self.outputarea = video_output
         self.outputarea.connect("expose-event", self.expose_cb)
         self.processor_output = processor_output
-        self.frame_format = None
 
         self.device = '/dev/video0'
         self.width, self.height = 320, 240
@@ -57,8 +56,6 @@ class DeviceManager(object):
 
         self.pipeline_string = ''
         self.null = None
-        self.frame_width = None
-        self.frame_height = None
         self.pipeline_play = None
 
         widget = self.xml.get_widget('buttonDefaultPipeline')
@@ -195,11 +192,8 @@ class DeviceManager(object):
 
         for structure in buf.caps:
             if structure["format"] == "ARGB":
-                if self.frame_format == None:
-                    self.frame_format = structure["format"]
-                    self.frame_width = structure["width"]
-                    self.frame_height = structure["height"]
-                self.frame = buf.data
+                self.frame = structure
+                self.frame_buf = buf.data
             if structure["format"] == "YUV2":
                 #TODO: implement colorspace conversion?
                 pass
@@ -207,10 +201,10 @@ class DeviceManager(object):
     def get_current_frame(self):
         ''' Return a pixbuf from the current buffer. '''
 
-        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame,
+        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame_buf,
                         gtk.gdk.COLORSPACE_RGB, True, 8,
-                        self.frame_width, self.frame_height,
-                        self.frame_width*4)
+                        self.frame["width"], self.frame["height"],
+                        self.frame["width"]*4)
         return self.pixbuf
 
     def start_video(self, project):
