@@ -8,7 +8,7 @@ pygtk.require('2.0')
 import gtk
 import gtk.glade
 import gobject
-gobject.threads_init()
+#gobject.threads_init()
 
 import pygst
 pygst.require('0.10')

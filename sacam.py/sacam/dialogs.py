@@ -100,6 +100,8 @@ class RefimgDiag(object):
         refimg_widget = self.xml.get_widget("imageRefImg")
         if project.refimage:
             refimg_widget.set_from_pixbuf(project.refimage)
+        refimg_widget.set_size_request(device.frame['width'],
+                                       device.frame['height'])
 
         refimg_diag = self.xml.get_widget("dialogRefImage");
         refimg_diag.show_all()
@@ -244,6 +246,8 @@ class AreasDiag(object):
         self.project = project
         model = self.xml.get_widget("treeviewAreas").get_model()
         output = self.xml.get_widget("drawingareaAreas")
+        output.set_size_request(project.refimage.props.width,
+                                project.refimage.props.height)
         if self.output_handler:
             output.disconnect(self.output_handler)
         self.output_handler = output.connect("expose_event", self.draw_expose,
@@ -661,6 +665,8 @@ class ScaleDiag(object):
 
         self.project = project
         output = self.xml.get_widget("drawingareaScale")
+        output.set_size_request(project.refimage.props.width,
+                                project.refimage.props.height)
         if self.output_handler:
             output.disconnect(self.output_handler)
         self.output_handler = output.connect("expose_event", self.draw_expose,
