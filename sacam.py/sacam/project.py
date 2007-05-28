@@ -10,6 +10,7 @@ from csv import writer
 from datetime import datetime, timedelta
 from time import strptime
 import re
+import bz2
 
 from gtk import gdk
 from kiwi.environ import environ
@@ -40,7 +41,8 @@ class Project(object):
         prj = None
         try:
             #open the file for reading
-            projfile = file(filename, "r")
+            #projfile = file(filename, "r")
+            projfile = bz2.BZ2File(filename, 'r')
         except:
             pass
         else:
@@ -100,7 +102,8 @@ class Project(object):
     def save(self):
         ''' Save the current project in an xml file. '''
 
-        projfile = file(self.filename,'w')
+#        projfile = file(self.filename,'w')
+        projfile = bz2.BZ2File(self.filename, 'w')
         projfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
 
         root = etree.Element('project',

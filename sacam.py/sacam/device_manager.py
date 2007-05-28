@@ -16,8 +16,8 @@ import gst
 
 from kiwi.environ import environ
 
-#from sacam.gstvideoprocessor import Videoprocessor
-from sacam.pyvideoprocessor import Videoprocessor
+from sacam.gstvideoprocessor import Videoprocessor
+#from sacam.pyvideoprocessor import Videoprocessor
 
 from sacam.i18n import APP_NAME
 
@@ -35,7 +35,7 @@ class DeviceManager(object):
     frame = None
     pixbuf = None
 
-    def __init__(self, video_output, processor_output):
+    def __init__(self, video_output):
 
         gladefile = environ.find_resource('glade', 'sacam.glade')
         windowname = "devicemanager"
@@ -43,11 +43,11 @@ class DeviceManager(object):
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("delete-event", self.delete)
 
-#        self.processor = Videoprocessor("motiondetector")
-        self.processor = Videoprocessor("identity")
+        self.processor = Videoprocessor("motiondetector")
+#        self.processor = Videoprocessor("identity")
         self.outputarea = video_output
         self.outputarea.connect("expose-event", self.expose_cb)
-        self.processor_output = processor_output
+        self.processor.output = video_output
 
         self.device = '/dev/video0'
         self.width, self.height = 320, 240
@@ -187,6 +187,8 @@ class DeviceManager(object):
         ''' Callback function executed every time the outputarea is exposed. 
 
             Needed to put the GStreamer sink on the outputarea. '''
+        self.outputarea.set_size_request(self.frame['width'],
+                                         self.frame['height'])
         if sys.platform == 'win32':
             self.sink.set_xwindow_id(self.outputarea.window.handle)
         else:
@@ -217,8 +219,7 @@ class DeviceManager(object):
         ''' Start the video processing of the input. '''
 
         self.processor.start(self.get_current_frame(),
-                             self.processor_output, project)
-        return True
+                             self.processor.output, project)
 
     def stop_video(self, project):
         self.processor.stop(project)

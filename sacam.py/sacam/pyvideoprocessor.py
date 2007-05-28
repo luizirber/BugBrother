@@ -51,7 +51,7 @@ class Videoprocessor(object):
                 if project.current_experiment.start_time == None:
                     project.current_experiment.start_time = datetime(1, 1, 1).now()
                 tsv = project.current_experiment.threshold
-                self.threshold = Numeric.array([tsv, tsv, tsv])
+                self.threshold = Numeric.array([tsv, tsv, tsv, tsv])
                 self.window = project.current_experiment.release_area
                 self.middle_height = (self.window[2] + self.window[0])/2
                 self.middle_width = (self.window[3] + self.window[1])/2
@@ -64,7 +64,7 @@ class Videoprocessor(object):
                 self.current = source
                 self.first_run = False
 
-                return True
+                # return True
             else:
                 self.previous = self.current
                 self.current = source

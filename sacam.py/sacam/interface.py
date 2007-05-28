@@ -38,8 +38,7 @@ class Interface(object):
         self.project = Project()
 
         outputarea = self.xml.get_widget("videoOutputArea")
-        proc_output = self.xml.get_widget("trackArea")
-        self.device_manager = DeviceManager(outputarea, proc_output)
+        self.device_manager = DeviceManager(outputarea)
         self.running = None
 
         self.propdiag = PropDiag()
@@ -280,14 +279,8 @@ class Interface(object):
 
             Currently it keeps calling the function. In the future try to
             implement it with a gobject.timeout '''
-        notebook = self.xml.get_widget("mainNotebook")
-        notebook.set_current_page(1)
-
-        x_pos, y_pos = self.device_manager.outputarea.window.get_position()
-        rect = gtk.gdk.Rectangle(x_pos, y_pos,
-                                 self.device_manager.frame["width"],
-                                 self.device_manager.frame["height"])
-        self.device_manager.outputarea.size_allocate(rect)
+#        notebook = self.xml.get_widget("mainNotebook")
+#        notebook.set_current_page(1)
 
         self.capturing_state()
 

@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+import sys
 
 import gst
 
@@ -8,9 +9,11 @@ from sacam.areas import Point
 class Videoprocessor(object):
     def __init__(self, name):
         self.detector = gst.element_factory_make(name)
+        self.output = None
 
     def start(self, source, output, project):
         self.detector.props.active = True
+        self.detector.props.draw = 'all'
 
     def stop(self, project):
         self.detector.props.active = False
@@ -28,6 +31,7 @@ class Videoprocessor(object):
             new = Point(pnt.props.x_pos, pnt.props.y_pos, start, end)
             point_list.append(new)
         project.current_experiment.point_list = point_list
+        self.detector.props.clear = True
 
     def set_detector(self, element):
         self.detector = element
