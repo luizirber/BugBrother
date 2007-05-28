@@ -112,6 +112,7 @@ enum
 {
     ARG_0,
     ARG_ACTIVE,
+    ARG_CLEAR,
     ARG_DRAW,
     ARG_SILENT,
     ARG_SIZE,
@@ -223,6 +224,11 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
           "If True, process the input. Else just pass it away.",
           FALSE, G_PARAM_READWRITE));
 
+  g_object_class_install_property (gobject_class, ARG_CLEAR,
+      g_param_spec_boolean ("clear", "Clear",
+          "Clear the current track_list.",
+          FALSE, G_PARAM_READWRITE));
+
   g_object_class_install_property (gobject_class, ARG_DRAW,
       g_param_spec_enum ("draw", "Draw method",
           "Set the drawing options",
@@ -322,10 +328,17 @@ sacam_detector_set_property (GObject * object, guint prop_id,
                             const GValue * value, GParamSpec * pspec)
 {
   SacamDetector *filter = GST_SACAMDETECTOR (object);
+  GstBaseTransform *btrans = GST_BASE_TRANSFORM (filter);
 
   switch (prop_id) {
     case ARG_ACTIVE:
       filter->active = g_value_get_boolean (value);
+      break;
+    case ARG_CLEAR:
+      g_mutex_lock (btrans->transform_lock);
+      g_list_free(filter->points);
+      filter->points = NULL;
+      g_mutex_unlock (btrans->transform_lock);
       break;
     case ARG_DRAW: {
       filter->draw_method = g_value_get_enum (value);
@@ -382,6 +395,9 @@ sacam_detector_get_property (GObject * object, guint prop_id,
   switch (prop_id) {
     case ARG_ACTIVE:
       g_value_set_boolean (value, filter->active);
+      break;
+    case ARG_CLEAR:
+      g_value_set_boolean (value, FALSE);
       break;
     case ARG_DRAW:
       g_value_set_enum (value, filter->draw_method);

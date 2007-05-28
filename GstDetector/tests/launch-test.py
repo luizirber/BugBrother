@@ -40,6 +40,15 @@ class test_program(object):
         self.pipeline.set_state(gst.STATE_NULL)
         gtk.main_quit()
 
+    def print_list(self, widget):
+        self.detector.props.active = False
+        begin = datetime(1,1,1).now()
+        point_list = self.detector.props.track_list[0]
+        end = datetime(1,1,1).now()
+        print "tempo", end - begin
+        print "quantidade de pontos", len(point_list)
+        self.detector.props.clear = True
+        self.detector.props.active = True
 
     def run_pipeline(self):
 #       pipeline_string = ( "v4lsrc name=source ! ffmpegcolorspace ! " \
@@ -127,6 +136,7 @@ class test_program(object):
         props = self.interface.get_widget("tableProps")
         draw_sink = self.interface.get_widget("drawingareaSink")
         draw_sink.set_size_request(self.width, self.height)
+        button = self.interface.get_widget("buttonPrint")
 
         self.run_pipeline()
         self.connect_props()
@@ -140,6 +150,8 @@ class test_program(object):
         draw_sink.connect("button-press-event", self.clicked_cb)
 
         window.connect("destroy", self.print_list_and_exit)
+
+        button.connect("clicked", self.print_list)
 
         window.show_all()
         gtk.main()
