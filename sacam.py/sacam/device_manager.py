@@ -1,7 +1,7 @@
 ''' This module contains the DeviceManager class, which does the interfacing
     with GStreamer. '''
 
-import gc
+import sys
 
 import pygtk
 pygtk.require('2.0')
@@ -16,8 +16,8 @@ import gst
 
 from kiwi.environ import environ
 
-from sacam.gstvideoprocessor import Videoprocessor
-#from sacam.pyvideoprocessor import Videoprocessor
+#from sacam.gstvideoprocessor import Videoprocessor
+from sacam.pyvideoprocessor import Videoprocessor
 
 from sacam.i18n import APP_NAME
 
@@ -43,8 +43,8 @@ class DeviceManager(object):
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("delete-event", self.delete)
 
-        self.processor = Videoprocessor("motiondetector")
-#        self.processor = Videoprocessor("identity")
+#        self.processor = Videoprocessor("motiondetector")
+        self.processor = Videoprocessor("identity")
         self.outputarea = video_output
         self.outputarea.connect("expose-event", self.expose_cb)
         self.processor_output = processor_output
@@ -128,7 +128,11 @@ class DeviceManager(object):
             new pipeline, after verifying if it is valid. '''
 
         fake_sink = 'fakesink'
-        video_sink = 'ximagesink name=sink force-aspect-ratio=true'
+        if sys.platform == "win32":
+            video_sink = 'directdrawsink name=sink keep-aspect-ratio=true'
+        else:
+            video_sink = 'ximagesink name=sink force-aspect-ratio=true'
+#        video_sink = 'autovideosink'
         pipeline = gst.parse_launch(self.pipeline_string + fake_sink)
         state_change = pipeline.set_state(gst.STATE_PAUSED)
 
@@ -183,8 +187,10 @@ class DeviceManager(object):
         ''' Callback function executed every time the outputarea is exposed. 
 
             Needed to put the GStreamer sink on the outputarea. '''
-
-        self.sink.set_xwindow_id(self.outputarea.window.xid)
+        if sys.platform == 'win32':
+            self.sink.set_xwindow_id(self.outputarea.window.handle)
+        else:
+            self.sink.set_xwindow_id(self.outputarea.window.xid)
 
     def frame_setter(self, element, buf):
         ''' Every time a new buffer is sent accross the pipeline its data
