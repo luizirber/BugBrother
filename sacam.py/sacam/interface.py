@@ -439,6 +439,8 @@ class Interface(object):
         widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(2).set_sensitive(False)
 
+        self.xml.get_widget("vboxProps").set_sensitive(True)
+
     def ready_state(self):
         ''' Do the verifications needed to determinate if the capture process
             can be executed. '''
@@ -506,6 +508,8 @@ class Interface(object):
 
         widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(2).set_sensitive(True)
+
+        self.xml.get_widget("vboxProps").set_sensitive(False)
 
     def destroy(self, widget):
         ''' Stop the pipelines and quit the gtk main loop. '''

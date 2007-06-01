@@ -3,6 +3,7 @@
 
 import sys
 
+import Numeric
 import pygtk
 pygtk.require('2.0')
 import gtk
@@ -208,7 +209,6 @@ class DeviceManager(object):
 
     def get_current_frame(self):
         ''' Return a pixbuf from the current buffer. '''
-
         self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame_buf,
                         gtk.gdk.COLORSPACE_RGB, True, 8,
                         self.frame["width"], self.frame["height"],
