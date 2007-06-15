@@ -218,8 +218,7 @@ class DeviceManager(object):
     def start_video(self, project):
         ''' Start the video processing of the input. '''
 
-        self.processor.start(self.get_current_frame(),
-                             self.processor.output, project)
+        self.processor.start(self.frame, project)
 
     def stop_video(self, project):
         self.processor.stop(project)
