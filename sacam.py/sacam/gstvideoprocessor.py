@@ -56,5 +56,9 @@ class Videoprocessor(object):
         size = self.detector.props.size
         x0, y0 = x_pos - size/2, y_pos - size/2
         x1, y1 = x_pos + size/2, y_pos + size/2
+        if x0 < 0: x0 = 0
+        if y0 < 0: y0 = 0
+        if x1 < 0: x1 = 0
+        if y1 < 0: y1 = 0
         self.detector.props.tracking_area = [x0, y0, x1, y1]
 
