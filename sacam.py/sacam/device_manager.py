@@ -9,7 +9,6 @@ pygtk.require('2.0')
 import gtk
 import gtk.glade
 import gobject
-gobject.threads_init()
 
 import pygst
 pygst.require('0.10')
@@ -18,7 +17,6 @@ import gst
 from kiwi.environ import environ
 
 from sacam.gstvideoprocessor import Videoprocessor
-#from sacam.pyvideoprocessor import Videoprocessor
 
 from sacam.i18n import APP_NAME
 
@@ -44,11 +42,17 @@ class DeviceManager(object):
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("delete-event", self.delete)
 
-        self.processor = Videoprocessor("motiondetector")
-#        self.processor = Videoprocessor("identity")
         self.outputarea = video_output
-        self.outputarea.connect("expose-event", self.expose_cb)
+        self.processor = Videoprocessor("motiondetector")
         self.processor.output = video_output
+#        self.processor = Videoprocessor("identity")
+        self.outputarea.connect("expose-event", self.expose_cb)
+        self.outputarea.add_events(  gtk.gdk.BUTTON_PRESS_MASK
+                                   | gtk.gdk.BUTTON_RELEASE_MASK
+                                   | gtk.gdk.BUTTON_MOTION_MASK
+                                   | gtk.gdk.KEY_PRESS_MASK
+                                   | gtk.gdk.KEY_RELEASE_MASK )
+        self.outputarea.connect("button-press-event", self.position_change)
 
         self.device = '/dev/video0'
         self.width, self.height = 320, 240
@@ -97,7 +101,57 @@ class DeviceManager(object):
         self.show_window(None)
         #self.set_default_pipeline_string(None)
         if not self.set_pipelines():
-            print 'error!'
+            print 'error!' #TODO
+
+    def position_change(self, widget, event):
+        self.processor.set_new_tracking_area(event.x, event.y)
+
+    def connect_processor_props(self, xml):
+        #draw property
+        prop = xml.get_widget("checkbuttonMask")
+        prop.set_active(self.processor.detector.props.draw & (1))
+        prop.connect("toggled", self.set_draw_methods, "mask")
+
+        prop = xml.get_widget("checkbuttonTrack")
+        prop.set_active(self.processor.detector.props.draw & (1 << 1))
+        prop.connect("toggled", self.set_draw_methods, "track")
+
+        prop = xml.get_widget("checkbuttonBox")
+        prop.set_active(self.processor.detector.props.draw & (1 << 2))
+        prop.connect("toggled", self.set_draw_methods, "box")
+
+        #size property
+        prop = xml.get_widget("scaleSize")
+        prop.set_range(0, min(self.frame["height"], self.frame["width"]))
+        prop.set_value(self.processor.detector.props.size)
+        prop.connect("value-changed", self.set_scale, "size")
+
+        #speed property
+        prop = xml.get_widget("scaleSpeed")
+        prop.set_range(0, min(self.frame["height"], self.frame["width"]))
+        prop.set_value(self.processor.detector.props.speed)
+        prop.connect("value-changed", self.set_scale, "speed")
+
+        #threshold property
+        prop = xml.get_widget("scaleThreshold")
+        prop.set_value(self.processor.detector.props.threshold)
+        prop.connect("value-changed", self.set_scale, "threshold")
+
+        #tolerance property
+        prop = xml.get_widget("scaleTolerance")
+        prop.set_range(0, min(self.frame["height"], self.frame["width"]))
+        prop.set_value(self.processor.detector.props.tolerance)
+        prop.connect("value-changed", self.set_scale, "tolerance")
+
+    def set_draw_methods(self, button, type):
+        self.processor.draw[type] = button.get_active()
+
+        self.processor.detector.props.draw = self.processor.draw["mask"] \
+                                        | self.processor.draw["track"] << 1 \
+                                        | self.processor.draw["box"]   << 2
+
+    def set_scale(self, scale, prop):
+        self.processor.set_property(prop, int(scale.get_value()))
 
     def set_default_pipeline_string(self, button):
         ''' Set the default pipeline string, using the v4lsrc element. '''
@@ -215,7 +269,7 @@ class DeviceManager(object):
                         self.frame["width"]*4)
         return self.pixbuf
 
-    def start_video(self, project):
+    def start_video(self, project, wait_click=False):
         ''' Start the video processing of the input. '''
 
         self.processor.start(self.frame, project)
@@ -231,8 +285,8 @@ class DeviceManager(object):
         widget = self.xml.get_widget('hboxBttv')
         widget.props.visible = False
 
-        widget = self.xml.get_widget('vboxWebcam')
-        widget.props.visible = False
+#        widget = self.xml.get_widget('vboxWebcam')
+#        widget.props.visible = False
 
         if option == 0:
             # bttv selected
@@ -240,8 +294,9 @@ class DeviceManager(object):
             box.props.visible = True
         elif option == 1:
             # webcam selected
-            box = self.xml.get_widget('vboxWebcam')
-            box.props.visible = True
+            pass
+#            box = self.xml.get_widget('vboxWebcam')
+#            box.props.visible = True
         elif option == 2:
             # firewire selected
             print 'not implemented yet'
@@ -386,8 +441,8 @@ class DeviceManager(object):
         widget = self.xml.get_widget('hboxBttv')
         widget.props.visible = False
 
-        widget = self.xml.get_widget('vboxWebcam')
-        widget.props.visible = False
+#        widget = self.xml.get_widget('vboxWebcam')
+#        widget.props.visible = False
 
         height = self.xml.get_widget('comboboxHeight')
         width = self.xml.get_widget('comboboxWidth')

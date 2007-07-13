@@ -7,8 +7,6 @@ import pygtk
 pygtk.require('2.0')
 import gtk
 import gtk.glade
-import gobject
-#gobject.threads_init()
 
 import pygst
 pygst.require('0.10')
@@ -35,11 +33,16 @@ class Interface(object):
         self.xml = gtk.glade.XML(gladefile, domain=APP_NAME)
         self.window = self.xml.get_widget(windowname)
 
-        self.project = Project()
-
         outputarea = self.xml.get_widget("videoOutputArea")
         self.device_manager = DeviceManager(outputarea)
+        self.device_manager.connect_processor_props(self.xml)
         self.running = None
+
+        self.project = Project()
+        self.project.current_experiment.release_area = [ \
+                           0, 0,
+                           self.device_manager.frame["width"],
+                           self.device_manager.frame["height"] ]
 
         self.propdiag = PropDiag()
         self.refimgdiag = RefimgDiag(self.xml)
@@ -229,7 +232,7 @@ class Interface(object):
                 self.update_state()
             else:
                 # TODO: print error
-                pass
+                print "error loading project"
 
     def save_project(self, widget):
         ''' Shows the save dialog.
@@ -275,28 +278,25 @@ class Interface(object):
             self.project.save()
 
     def start_video(self, widget, prj):
-        ''' Start the capturing process.
+        ''' Start the capturing process. '''
 
-            Currently it keeps calling the function. In the future try to
-            implement it with a gobject.timeout '''
-#        notebook = self.xml.get_widget("mainNotebook")
-#        notebook.set_current_page(1)
+        notebook = self.xml.get_widget("mainNotebook")
+        notebook.set_current_page(0)
 
         self.capturing_state()
 
         if self.device_manager.pipeline_play.get_state() != gst.STATE_PLAYING:
             self.device_manager.pipeline_play.set_state(gst.STATE_PLAYING)
 
-#        if ( widget.get_active() ):
-#            self.device_manager.start_video(widget, project)
-#        else:
-#            gobject.source_remove(self.device_manager.timeout_id)
         if widget.get_active():
             image = gtk.Image()
             image.set_from_stock(gtk.STOCK_MEDIA_STOP,
                                  gtk.ICON_SIZE_SMALL_TOOLBAR)
             widget.set_image(image)
-            self.device_manager.start_video(prj)
+            if self.invalid_areas:
+                self.device_manager.start_video(prj, wait_click=True)
+            else:
+                self.device_manager.start_video(prj, wait_click=False)
         else:
             image = gtk.Image()
             image.set_from_stock(gtk.STOCK_MEDIA_PLAY,
@@ -308,8 +308,7 @@ class Interface(object):
             self.update_state()
 
     def report(self, widget):
-        ''' Shows the report dialog.
-        '''
+        ''' Shows the report dialog. '''
         fsdialog = gtk.FileChooserDialog(_("Save Report"), self.window,
                      gtk.FILE_CHOOSER_ACTION_SAVE,
                     (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
@@ -433,11 +432,11 @@ class Interface(object):
         widget = self.xml.get_widget("buttonRefImg")
         widget.set_sensitive(False)
 
-        widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(0).set_sensitive(False)
+#        widget = self.xml.get_widget("mainNotebook")
+#        widget.get_nth_page(0).set_sensitive(False)
 
-        widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(2).set_sensitive(False)
+#        widget = self.xml.get_widget("mainNotebook")
+#        widget.get_nth_page(2).set_sensitive(False)
 
         self.xml.get_widget("vboxProps").set_sensitive(True)
 
@@ -494,20 +493,13 @@ class Interface(object):
         widget.set_sensitive(True)
 
         widget = self.xml.get_widget("buttonStart")
-        if self.invalid_size or self.invalid_areas or \
-           self.invalid_scale or self.invalid_speed:
+        if self.invalid_size or self.invalid_scale or self.invalid_speed:
             widget.set_sensitive(False)
         else:
             widget.set_sensitive(True)
 
         widget = self.xml.get_widget("toggleTimer")
         widget.set_sensitive(True)
-
-        widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(0).set_sensitive(True)
-
-        widget = self.xml.get_widget("mainNotebook")
-        widget.get_nth_page(2).set_sensitive(True)
 
         self.xml.get_widget("vboxProps").set_sensitive(False)
 

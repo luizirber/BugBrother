@@ -24,6 +24,9 @@ import os
 import string
 import sys
 
+import gobject
+gobject.threads_init()
+
 # Python version
 REQUIRED_VERSION = (2, 4)
 

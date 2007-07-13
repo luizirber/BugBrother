@@ -41,9 +41,9 @@ class Project(object):
         prj = None
         try:
             #open the file for reading
-            #projfile = file(filename, "r")
             projfile = bz2.BZ2File(filename, 'r')
         except:
+            #TODO: Treat error
             pass
         else:
             schemafile = open(environ.find_resource('xml','sacam.rng'))
@@ -102,7 +102,6 @@ class Project(object):
     def save(self):
         ''' Save the current project in an xml file. '''
 
-#        projfile = file(self.filename,'w')
         projfile = bz2.BZ2File(self.filename, 'w')
         projfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
 
