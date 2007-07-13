@@ -1,11 +1,9 @@
 all: export src-pkg bin-pkg clean
 
 export:
-	cd ..
 	svn export https://bugbrother.svn.sourceforge.net/svnroot/bugbrother/sacam.py sacam-pkg
 
 src-pkg:
-	cd ..
 	dpkg-source -b -i sacam-pkg
 
 bin-pkg:

@@ -10,7 +10,8 @@ Standards-Version: 3.7.2
 Package: sacam
 Architecture: i386
 Depends: ${python:Depends}, python-gtk2 (>= 2.8.6), python-kiwi,
-         python-lxml (>= 0.8), python-gst0.10 (>= 0.10.5)
+         python-lxml (>= 0.8), python-gst0.10 (>= 0.10.5),
+         sacam-gst-plugins (>= 1.0)
 Description: Sistema de Analise Comportamental de Animais em Movimento
  .
  SACAM stands for 'Sistema de Analise Comportamental de Animais em Movimento'
