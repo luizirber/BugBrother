@@ -1,0 +1,7 @@
+#!/bin/sh
+svn export https://bugbrother.svn.sourceforge.net/svnroot/bugbrother/GstDetector
+dpkg-source -b -i GstDetector
+sudo pbuilder build --buildresult ../ sacam-gst-plugins_1.0.dsc
+rm -rf GstDetector
+mv sacam-gst-plugins_1.0.* ../
+
