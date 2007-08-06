@@ -19,6 +19,7 @@ from sacam.device_manager import DeviceManager
 from sacam.project import Project
 from sacam.dialogs import PropDiag, RefimgDiag, AreasDiag
 from sacam.dialogs import ScaleDiag, InsectsizeDiag
+from sacam.tracksimulator import TrackSimulator
 
 class Interface(object):
     ''' Main class, control the interface of the program.
@@ -48,6 +49,8 @@ class Interface(object):
         self.areasdiag = AreasDiag.AreasDiag(self.project, self.xml)
         self.scalediag = ScaleDiag.ScaleDiag(self.xml, self.project)
         self.insectsizediag = InsectsizeDiag.InsectsizeDiag(self.xml)
+        self.tracksimulator = TrackSimulator(self.xml, self.project,
+                                             self.device_manager)
 
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
@@ -97,6 +100,8 @@ class Interface(object):
                     home = os.environ['HOMEPATH']
         self.home = os.path.realpath(home) + os.sep
 
+        self.project.refimage = self.device_manager.get_current_frame()
+
         self.window.connect("destroy", self.destroy)
         self.window.show()
 
@@ -111,6 +116,7 @@ class Interface(object):
 
             Every time a project is created, some signals need to be
             reconnected. '''
+
         widget = self.xml.get_widget("buttonStart")
         if self.video_hnd:
             widget.disconnect(self.video_hnd)
@@ -147,6 +153,7 @@ class Interface(object):
             widget.disconnect(self.areas_hnd)
         self.areas_hnd = widget.connect("clicked", self.areasdiag.run,
                                          self.project, self)
+        self.tracksimulator.set_project(self.project)
 
     def new_project(self, widget):
         ''' Creates a new project.
@@ -370,8 +377,8 @@ class Interface(object):
         else:
             self.invalid_speed = True
 
-        if self.project.current_experiment.x_scale_ratio \
-           and self.project.current_experiment.y_scale_ratio:
+        if ( self.project.current_experiment.x_scale_ratio
+             and self.project.current_experiment.y_scale_ratio ):
             self.invalid_scale = False
         else:
             self.invalid_scale = True
@@ -453,8 +460,8 @@ class Interface(object):
         widget = self.xml.get_widget("buttonSave")
         widget.set_sensitive(True)
 
-#        if self.project.current_experiment.point_list == [] or \
-#           self.project.current_experiment.areas_list == []:
+#        if ( self.project.current_experiment.point_list == [] or
+#             self.project.current_experiment.areas_list == [] ):
 #            pass
 #        else:
         widget = self.xml.get_widget("buttonTortuosity")
