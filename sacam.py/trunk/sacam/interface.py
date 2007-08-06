@@ -39,16 +39,15 @@ class Interface(object):
         self.running = None
 
         self.project = Project()
-        self.project.current_experiment.release_area = [ \
-                           0, 0,
-                           self.device_manager.frame["width"],
-                           self.device_manager.frame["height"] ]
+        self.project.current_experiment.release_area = [ 0, 0,
+                                         self.device_manager.frame["width"],
+                                         self.device_manager.frame["height"] ]
 
-        self.propdiag = PropDiag()
-        self.refimgdiag = RefimgDiag(self.xml)
-        self.areasdiag = AreasDiag(self.project, self.xml)
-        self.scalediag = ScaleDiag(self.xml, self.project)
-        self.insectsizediag = InsectsizeDiag(self.xml)
+        self.propdiag = PropDiag.PropDiag()
+        self.refimgdiag = RefimgDiag.RefimgDiag(self.xml)
+        self.areasdiag = AreasDiag.AreasDiag(self.project, self.xml)
+        self.scalediag = ScaleDiag.ScaleDiag(self.xml, self.project)
+        self.insectsizediag = InsectsizeDiag.InsectsizeDiag(self.xml)
 
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
