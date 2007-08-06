@@ -35,7 +35,6 @@ data_files = [
      ('share/doc/sacam', ('AUTHORS', 'ChangeLog', 'CONTRIBUTORS',
                           'COPYING', 'README', 'NEWS')),
      ('share/doc/sacam', listfiles('doc', '*')),
-     ('share/doc/sacam/examples', listfiles('examples', '*')),
      ('share/applications', listfiles('.', 'sacam.desktop')),
      ('$datadir/glade', listfiles('glade', '*.glade')),
      ('$datadir/glade', listfiles('glade', '*.png')),
