@@ -9,6 +9,9 @@ class TrackSimulator(object):
         self.project = project
         self.device = device
         self.xml = xml
+        self.current_exp = project.current_experiment
+        self.current_area = None
+
         widget = self.xml.get_widget("trackArea")
         widget.connect("expose-event", self.on_expose)
 
@@ -33,7 +36,9 @@ class TrackSimulator(object):
         for exp in self.project.experiment_list:
             model.append( [exp.attributes[_("Experiment Name")]] )
         combo.set_model(model)
+        self.current_exp = self.project.experiment_list[0]
         combo.set_active(0)
+        combo.emit("changed")
 
     def fill_area_combo(self, exp):
         combo = self.xml.get_widget("comboboxArea")
@@ -44,7 +49,9 @@ class TrackSimulator(object):
         for area in exp.areas_list:
             model.append( [area.name] )
         combo.set_model(model)
+        self.current_area = self.current_exp.areas_list[0]
         combo.set_active(0)
+        combo.emit("changed")
 
     def fill_track_combo(self, area):
         combo = self.xml.get_widget("comboboxTrack")
@@ -58,6 +65,7 @@ class TrackSimulator(object):
             i += 1
         combo.set_model(model)
         combo.set_active(0)
+        combo.emit("changed")
 
     def change_experiment_combo(self, widget):
         active = widget.get_active()
@@ -73,19 +81,23 @@ class TrackSimulator(object):
         self.current_area = area
 
     def change_track_combo(self, widget):
-        active = wiget.get_active()
-        if active >= 0:
-            track = self.current_area.track_list[active]
-            self.draw_track(track.point_list, "blue")
+        active = widget.get_active()
+        if self.current_area and active >= 0:
+            try:
+                track = self.current_area.track_list[active]
+            except IndexError:
+                print "erro!"
+            else:
+                self.draw_track(track.point_list, "blue")
 
     def draw_track(self, track, color_name):
         output = self.xml.get_widget("trackArea")
         points = [(point.x_pos, point.y_pos) for point in track]
         if points and output.window:
             graphic_context = gtk.gdk.GC(output.window)
-#            output.window.draw_pixbuf(graphic_context, self.project.refimage,
-#                                      0, 0, 0, 0, -1, -1,
-#                                      gtk.gdk.RGB_DITHER_NONE, 0, 0)
+            output.window.draw_pixbuf(graphic_context, self.project.refimage,
+                                      0, 0, 0, 0, -1, -1,
+                                      gtk.gdk.RGB_DITHER_NONE, 0, 0)
             color = gtk.gdk.color_parse(color_name)
             graphic_context.set_rgb_fg_color(color)
             output.window.draw_lines(graphic_context, points)
