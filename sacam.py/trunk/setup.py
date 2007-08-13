@@ -31,6 +31,7 @@ videoprocessor = Extension("sacam.cvideoprocessor",
                             library_dirs = lib_dirs,
                             sources = ['sacam/cvideoprocessor.c'])
 
+templates = []
 data_files = [
      ('share/doc/sacam', ('AUTHORS', 'ChangeLog', 'CONTRIBUTORS',
                           'COPYING', 'README', 'NEWS')),
@@ -49,6 +50,8 @@ global_resources = dict(
 
 kwargs = {}
 scripts = ['bin/sacam']
+templates.append(('share/applications',
+                 ['sacam.desktop']))
 
 setup(name='sacam',
       version='1.0',
@@ -63,6 +66,8 @@ setup(name='sacam',
       scripts = scripts,
       data_files = data_files,
       resources = resources,
+      templates = templates,
       global_resources = global_resources,
       **kwargs
      )
+

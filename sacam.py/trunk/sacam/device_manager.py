@@ -186,6 +186,7 @@ class DeviceManager(object):
         if sys.platform == "win32":
             video_sink = 'directdrawsink name=sink keep-aspect-ratio=true'
         else:
+#            video_sink = 'ffmpegcolorspace ! xvimagesink name=sink'
             video_sink = 'ximagesink name=sink force-aspect-ratio=true'
 #        video_sink = 'autovideosink'
         pipeline = gst.parse_launch(self.pipeline_string + fake_sink)
