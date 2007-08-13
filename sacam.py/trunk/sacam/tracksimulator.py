@@ -4,7 +4,6 @@ import gobject
 from sacam.i18n import _
 
 class TrackSimulator(object):
-
     def __init__(self, xml, project, device):
         self.project = project
         self.device = device
@@ -31,11 +30,11 @@ class TrackSimulator(object):
         if model == None:
             model = gtk.ListStore(gobject.TYPE_STRING)
         model.clear()
-        for exp in self.project.experiment_list:
+        for exp in self.project.exp_list:
             model.append( [exp.attributes[_("Experiment Name")]] )
         combo.set_model(model)
         combo.set_active(0)
-        self.fill_area_combo(self.project.experiment_list[0])
+        self.fill_area_combo(self.project.exp_list[0])
 
     def fill_area_combo(self, exp):
         combo = self.xml.get_widget("comboboxArea")
@@ -63,7 +62,7 @@ class TrackSimulator(object):
     def change_experiment_combo(self, widget):
         active = widget.get_active()
         try:
-            exp = self.project.experiment_list[active]
+            exp = self.project.exp_list[active]
         except IndexError:
             pass
         else:
@@ -74,7 +73,7 @@ class TrackSimulator(object):
         active = widget.get_active()
         exp = self.xml.get_widget("comboboxExperiment").get_active()
         try:
-            area = self.project.experiment_list[exp].areas_list[active]
+            area = self.project.exp_list[exp].areas_list[active]
         except IndexError:
             pass
         else:
@@ -84,7 +83,7 @@ class TrackSimulator(object):
         active = widget.get_active()
         exp = self.xml.get_widget("comboboxExperiment").get_active()
         area = self.xml.get_widget("comboboxArea").get_active()
-        exp = self.project.experiment_list[exp]
+        exp = self.project.exp_list[exp]
         if active >= 0:
             try:
                 track = exp.areas_list[area].track_list[active]

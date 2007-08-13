@@ -26,9 +26,9 @@ class Project(object):
         self.filename = ''
         self.attributes = {}
         self.refimage = ''
-        self.experiment_list = []
-        self.experiment_list.append(Experiment())
-        self.current_experiment = self.experiment_list[-1]
+        self.exp_list = []
+        self.exp_list.append(Experiment())
+        self.current_experiment = self.exp_list[-1]
         self.bug_max_speed = 3
         self.bug_size = 39
         self.attributes[_("Project Name")] = _("Project")
@@ -87,12 +87,12 @@ class Project(object):
 
                 # Fifth step: experiment list
                 experiments = root.find("{http://cnpdia.embrapa.br}experiments")
-                prj.experiment_list = []
+                prj.exp_list = []
                 for elt in experiments:
                     new_exp = Experiment().build_from_xml(elt)
-                    prj.experiment_list.append(new_exp)
-                if prj.experiment_list:
-                    prj.current_experiment = prj.experiment_list[-1]
+                    prj.exp_list.append(new_exp)
+                if prj.exp_list:
+                    prj.current_experiment = prj.exp_list[-1]
 
             schemafile.close()
             # we don't need the projfile anymore, it can be closed
@@ -129,7 +129,7 @@ class Project(object):
         element.text = str(self.bug_max_speed)
 
         experiments = etree.SubElement(root, "experiments")
-        for exp in self.experiment_list:
+        for exp in self.exp_list:
             if exp.finished:
                 exp.object_to_xml(experiments)
 
@@ -147,9 +147,9 @@ class Project(object):
             export_rows.append( (key, self.attributes[key]) )
 
         # for each experiment, collect all the data needed
-        for exper in self.experiment_list:
-            experiment_rows = exper.export()
-            for row in experiment_rows:
+        for exp in self.exp_list:
+            exp_rows = exp.export()
+            for row in exp_rows:
                 export_rows.append(row)
 
         # at last, save the rows in the file
@@ -173,7 +173,7 @@ class Project(object):
         exp.release_area = deepcopy(self.current_experiment.release_area)
         exp.areas_list = deepcopy(self.current_experiment.areas_list)
 
-        self.experiment_list.append(exp)
+        self.exp_list.append(exp)
         self.current_experiment = exp
 
 class Experiment(object):

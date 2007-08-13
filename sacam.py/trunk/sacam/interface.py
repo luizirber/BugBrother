@@ -342,7 +342,7 @@ class Interface(object):
         ''' Prepare and process the lists to generate statistics.
 
             It is executed in every experiment present in the project.'''
-        for exp in self.project.experiment_list:
+        for exp in self.project.exp_list:
             if exp.finished:
                 exp.prepare_point_list()
                 exp.prepare_areas_list()
