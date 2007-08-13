@@ -31,4 +31,4 @@ if LIB.uninstalled:
     LIB.add_global_resource('glade', 'glade')
     LIB.add_global_resource('doc', 'doc')
     LIB.add_global_resource('xml', 'xml')
-#lib.enable_translation("sacam")
+LIB.enable_translation("sacam")

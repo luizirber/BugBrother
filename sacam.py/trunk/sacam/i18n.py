@@ -1,6 +1,6 @@
 #/usr/bin/env python
 
-''' i18n module. 
+''' i18n module.
 
     Provide the gettext _ function to make the translations.'''
 

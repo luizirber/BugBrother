@@ -334,7 +334,7 @@ class Experiment(object):
                                 _("Average Speed (") \
                                    + self.measurement_unit + "/s): ",
                                 _("Standard Deviation :"),
-                                _("Angular Average Deviation :")) )
+                                _("Angular Standard Deviation :")) )
                 for trk in item.track_list:
                     rows.append( ("", trk.start_time, trk.end_time,
                                     trk.total_time, trk.tortuosity,
@@ -365,7 +365,7 @@ class Experiment(object):
                               value) )
 
                 rows.append( (_("Standard Deviation :"), "") )
-                rows.append( (_("Angular Average Deviation :"), "") )
+                rows.append( (_("Angular Standard Deviation :"), "") )
 
             rows.append( ('') )
             rows.append( ('') )

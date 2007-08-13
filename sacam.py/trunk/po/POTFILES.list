@@ -1,0 +1,2 @@
+recursive-include sacam *.py
+recursive-include glade *.glade
