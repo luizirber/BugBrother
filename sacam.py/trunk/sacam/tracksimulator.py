@@ -46,7 +46,10 @@ class TrackSimulator(object):
             model.append( [area.name] )
         combo.set_model(model)
         combo.set_active(0)
-        self.fill_track_combo(exp.areas_list[0])
+        try:
+            self.fill_track_combo(exp.areas_list[0])
+        except IndexError:
+            pass
 
     def fill_track_combo(self, area):
         combo = self.xml.get_widget("comboboxTrack")

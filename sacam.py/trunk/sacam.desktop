@@ -2,8 +2,8 @@
 Name = SACAM
 Comment[pt_BR] = Sistema de Analise Comportamental de Animais em Movimento
 Comment[en_US] = Animal Motion Behavior Analysis System
-Icon = $datadir/glade/sacam.png
-Exec = $prefix/bin/sacam
+Icon = /usr/share/glade/sacam.png
+Exec = /usr/bin/sacam
 Terminal = false
 Type = Application
 Version = 1.0

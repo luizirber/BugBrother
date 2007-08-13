@@ -20,6 +20,7 @@ from sacam.project import Project
 from sacam.dialogs import PropDiag, RefimgDiag, AreasDiag
 from sacam.dialogs import ScaleDiag, InsectsizeDiag
 from sacam.tracksimulator import TrackSimulator
+from sacam.projectmanager import ProjectManager
 
 class Interface(object):
     ''' Main class, control the interface of the program.
@@ -51,6 +52,7 @@ class Interface(object):
         self.insectsizediag = InsectsizeDiag.InsectsizeDiag(self.xml)
         self.tracksimulator = TrackSimulator(self.xml, self.project,
                                              self.device_manager)
+        self.projectmanager = ProjectManager(self.xml, self.project)
 
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
