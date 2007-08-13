@@ -200,7 +200,8 @@ class AreasDiag(object):
         area_desc.set_text(treemodel.get_value(treeiter, 2))
         if self.red_gc == None:
             color = gtk.gdk.color_parse("red")
-            self.red_gc = output.window.new_gc(color, color)
+            self.red_gc = output.window.new_gc()
+            self.red_gc.set_rgb_fg_color(color)
         self.selected_shape.draw(output.window, self.red_gc)
         output.queue_draw()
 
@@ -466,7 +467,7 @@ class AreasDiag(object):
                 self.moving_shape.draw(wid.window, self.graphic_context)
                 self.moving_shape_started = False
         wid.queue_draw()
-               
+
     def draw_expose(self, wid, event, project, areas_list):
         ''' Redraw the areas on top of the image. '''
 
@@ -477,7 +478,9 @@ class AreasDiag(object):
         values = [ r[1] for r in areas_list ]
         for shape in values:
             shape.draw(wid.window, self.graphic_context)
-    
+        if self.selected_shape:
+            self.selected_shape.draw(wid.window, self.red_gc)
+
     def remove_area(self, wid):
         ''' Remove an area from the model. '''
         view = self.xml.get_widget("treeviewAreas")
