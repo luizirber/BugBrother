@@ -9,8 +9,6 @@ class TrackSimulator(object):
         self.project = project
         self.device = device
         self.xml = xml
-        self.current_exp = project.current_experiment
-        self.current_area = None
 
         widget = self.xml.get_widget("trackArea")
         widget.connect("expose-event", self.on_expose)
@@ -36,9 +34,8 @@ class TrackSimulator(object):
         for exp in self.project.experiment_list:
             model.append( [exp.attributes[_("Experiment Name")]] )
         combo.set_model(model)
-        self.current_exp = self.project.experiment_list[0]
         combo.set_active(0)
-        combo.emit("changed")
+        self.fill_area_combo(self.project.experiment_list[0])
 
     def fill_area_combo(self, exp):
         combo = self.xml.get_widget("comboboxArea")
@@ -49,9 +46,8 @@ class TrackSimulator(object):
         for area in exp.areas_list:
             model.append( [area.name] )
         combo.set_model(model)
-        self.current_area = self.current_exp.areas_list[0]
         combo.set_active(0)
-        combo.emit("changed")
+        self.fill_track_combo(exp.areas_list[0])
 
     def fill_track_combo(self, area):
         combo = self.xml.get_widget("comboboxTrack")
@@ -59,34 +55,41 @@ class TrackSimulator(object):
         if model == None:
             model = gtk.ListStore(gobject.TYPE_STRING)
         model.clear()
-        i = 0
         for track in area.track_list:
             model.append( [str(track.start_time.time())] )
-            i += 1
         combo.set_model(model)
         combo.set_active(0)
-        combo.emit("changed")
 
     def change_experiment_combo(self, widget):
         active = widget.get_active()
-        exp = self.project.experiment_list[active]
-        self.fill_area_combo(exp)
-        self.draw_track(exp.point_list, "red")
-        self.current_exp = exp
+        try:
+            exp = self.project.experiment_list[active]
+        except IndexError:
+            pass
+        else:
+            self.fill_area_combo(exp)
+            self.draw_track(exp.point_list, "red")
 
     def change_area_combo(self, widget):
         active = widget.get_active()
-        area = self.current_exp.areas_list[active]
-        self.fill_track_combo(area)
-        self.current_area = area
+        exp = self.xml.get_widget("comboboxExperiment").get_active()
+        try:
+            area = self.project.experiment_list[exp].areas_list[active]
+        except IndexError:
+            pass
+        else:
+            self.fill_track_combo(area)
 
     def change_track_combo(self, widget):
         active = widget.get_active()
-        if self.current_area and active >= 0:
+        exp = self.xml.get_widget("comboboxExperiment").get_active()
+        area = self.xml.get_widget("comboboxArea").get_active()
+        exp = self.project.experiment_list[exp]
+        if active >= 0:
             try:
-                track = self.current_area.track_list[active]
+                track = exp.areas_list[area].track_list[active]
             except IndexError:
-                print "erro!"
+                pass
             else:
                 self.draw_track(track.point_list, "blue")
 
@@ -108,6 +111,8 @@ class TrackSimulator(object):
         wid.window.draw_pixbuf(gtk.gdk.GC(wid.window), self.project.refimage,
                                0, 0, 0, 0, -1, -1,
                                gtk.gdk.RGB_DITHER_NONE, 0, 0)
+        combo = self.xml.get_widget("comboboxExperiment")
+        combo.emit("changed")
 
     def page_change_cb(self, widget, page, page_num):
         if page_num == 1:
