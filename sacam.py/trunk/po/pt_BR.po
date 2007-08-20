@@ -485,6 +485,9 @@ msgid ""
 "Webcam\n"
 "Firewire"
 msgstr ""
+"Placa de Captura\n"
+"Webcam\n"
+"Firewire"
 
 #: ../glade/sacam.glade.h:83
 msgid "gtk-cancel"

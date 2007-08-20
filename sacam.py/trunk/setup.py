@@ -31,6 +31,13 @@ videoprocessor = Extension("sacam.cvideoprocessor",
                             library_dirs = lib_dirs,
                             sources = ['sacam/cvideoprocessor.c'])
 
+cutils = Extension("sacam.cutils",
+                   include_dirs = includes,
+                   libraries = libs,
+                   library_dirs = lib_dirs,
+                   sources = ['sacam/cutils.c'])
+
+
 templates = []
 data_files = [
      ('share/doc/sacam', ('AUTHORS', 'ChangeLog', 'CONTRIBUTORS',
@@ -61,7 +68,8 @@ setup(name='sacam',
       author_email='luiz.irber@gmail.com',
       url='http://repositorio.agrolivre.gov.br/projects/sacam/',
       license='GPL',
-      ext_modules = [videoprocessor],
+#      ext_modules = [videoprocessor],
+      ext_modules = [cutils],
       packages = listpackages('sacam'),
       scripts = scripts,
       data_files = data_files,

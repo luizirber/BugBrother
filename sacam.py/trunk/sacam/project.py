@@ -18,6 +18,7 @@ from lxml import etree
 
 from sacam.i18n import _
 from sacam.areas import Track, Rectangle, Ellipse, Point, Area, Line
+import sacam.cutils
 
 class Project(object):
     ''' This class contains data used to define a project. '''
@@ -496,15 +497,16 @@ class Experiment(object):
                         trk.meanAngleSpeed = 0
                         trk.AngleStandardDeviation = 0
                     #tortuosity
-                    sum1 = trk.point_list[-1].x_pos - trk.point_list[0].x_pos
-                    sum2 = trk.point_list[-1].y_pos - trk.point_list[0].y_pos
-                    value = pow(sum1, 2) + pow(sum2, 2)
+                    trk.tortuosity = cutils.tortuosity(trk.point_list)
+#                    sum1 = trk.point_list[-1].x_pos - trk.point_list[0].x_pos
+#                    sum2 = trk.point_list[-1].y_pos - trk.point_list[0].y_pos
+#                    value = pow(sum1, 2) + pow(sum2, 2)
                     #TODO: using x_scale_ratio only, must use y_scale_ratio too
-                    distance = sqrt(value) / self.x_scale_ratio
-                    if trk.lenght > 0:
-                        trk.tortuosity = 1 - distance / trk.lenght
-                    else:
-                        trk.tortuosity = 0
+#                    distance = sqrt(value) / self.x_scale_ratio
+#                    if trk.lenght > 0:
+#                        trk.tortuosity = 1 - distance / trk.lenght
+#                    else:
+#                        trk.tortuosity = 0
                 else:
                     trk.mean_lin_speed = 0
                     trk.meanAngleSpeed = 0
