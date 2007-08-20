@@ -363,6 +363,7 @@ sacam_detector_set_property (GObject * object, guint prop_id,
       filter->bug_speed = g_value_get_uint (value);
       break;
     case ARG_TRACKING_AREA: {
+      g_mutex_lock (btrans->transform_lock);
       GValueArray *va = g_value_get_boxed (value);
       int tmp;
 
@@ -374,6 +375,7 @@ sacam_detector_set_property (GObject * object, guint prop_id,
       filter->tracking_area.x_end = tmp;
       tmp = g_value_get_int(g_value_array_get_nth(va, 3));
       filter->tracking_area.y_end = tmp;
+      g_mutex_unlock (btrans->transform_lock);
 
       break;
     }
