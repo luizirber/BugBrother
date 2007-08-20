@@ -3,7 +3,6 @@
 
 import sys
 
-import Numeric
 import pygtk
 pygtk.require('2.0')
 import gtk
@@ -17,7 +16,7 @@ import gst
 from kiwi.environ import environ
 
 from sacam.gstvideoprocessor import Videoprocessor
-
+from sacam.cutils import convert
 from sacam.i18n import APP_NAME
 
 class DeviceManager(object):
@@ -264,11 +263,13 @@ class DeviceManager(object):
 
     def get_current_frame(self):
         ''' Return a pixbuf from the current buffer. '''
-        self.pixbuf = gtk.gdk.pixbuf_new_from_data(self.frame_buf,
-                        gtk.gdk.COLORSPACE_RGB, True, 8,
-                        self.frame["width"], self.frame["height"],
-                        self.frame["width"]*4)
-        return self.pixbuf
+        pbuf = gtk.gdk.pixbuf_new_from_data(self.frame_buf,
+                   gtk.gdk.COLORSPACE_RGB, True, 8,
+                   self.frame["width"], self.frame["height"],
+                   self.frame["width"]*4)
+        if self.frame["format"] == "ARGB":
+            return convert(pbuf)
+        return pbuf
 
     def start_video(self, project, wait_click=False):
         ''' Start the video processing of the input. '''

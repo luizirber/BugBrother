@@ -13,55 +13,37 @@
 
 static PyTypeObject *PyGObject_Type=NULL;
 
-/*static GdkPixbuf*
-__new_from_pixbuf(guchar *data, GdkColorspace colorspace, gboolean has_alpha,
-                int bits_per_sample, int width, int height, int rowstride)
-{
-    int row, column, pos;
-    guint32 pixel;
-    for (row = 0; row < height; row++) {
-        for (column = 0; column < width; column++) {
-            pos = row*rowstride + column*bits_per_sample;
-            pixel = data[pos];
-            data[pos] =(
-                        (pixel <<  8 & 0xffffff00) |
-                        (pixel >> 24 & 0x000000ff)
-                       );
-        }
-    }
-    return gdk_pixbuf_new_from_data (data, colorspace, has_alpha,
-                      bits_per_sample, width, height, rowstride, NULL, NULL);
-}
-*/
-static PyGObject*
+static PyObject*
 cutils_convert_ARGB_to_RGBA (PyObject* self, PyObject* args)
 {
     PyGObject* old_pixbuf;
+    GdkPixbuf* new_pixbuf;
 
     if ( !PyArg_ParseTuple(args, "O!", PyGObject_Type, &old_pixbuf) )
         return NULL;
 
+    new_pixbuf = gdk_pixbuf_copy(GDK_PIXBUF(old_pixbuf->obj));
+
     int row, column;
-    int rowstride = gdk_pixbuf_get_rowstride(GDK_PIXBUF(old_pixbuf->obj));
-    int nchannels = gdk_pixbuf_get_n_channels(GDK_PIXBUF(old_pixbuf->obj));
-    int height = gdk_pixbuf_get_height(GDK_PIXBUF(old_pixbuf->obj));
-    int width = gdk_pixbuf_get_width(GDK_PIXBUF(old_pixbuf->obj));
-    guchar* pixels = gdk_pixbuf_get_pixels(GDK_PIXBUF(old_pixbuf->obj));
+    int rowstride = gdk_pixbuf_get_rowstride(GDK_PIXBUF(new_pixbuf));
+    int nchannels = gdk_pixbuf_get_n_channels(GDK_PIXBUF(new_pixbuf));
+    int height = gdk_pixbuf_get_height(GDK_PIXBUF(new_pixbuf));
+    int width = gdk_pixbuf_get_width(GDK_PIXBUF(new_pixbuf));
+    guchar* pixels = gdk_pixbuf_get_pixels(GDK_PIXBUF(new_pixbuf));
     guchar* current;
 
     for (row = 0; row < height; row++) {
         for (column = 0; column < width; column++) {
             current = pixels + row*rowstride + column*nchannels;
-            guchar aux = current[0]; // Save the value of Alpha component
-            current[0] = current[1]; // Put value of R in the right position
-            current[1] = current[2]; // Same with G
-            current[2] = current[3]; // Same with B
-            current[3] = aux;        // Put the Alpha value in right place
+            guchar aux = current[0]; /* Save the value of Alpha component */
+            current[0] = current[1]; /* Put value of R in the right position */
+            current[1] = current[2]; /* Same with G */
+            current[2] = current[3]; /* Same with B  */
+            current[3] = aux;        /* Put the Alpha value in right place */
         }
     }
 
-    return Py_BuildValue("O", old_pixbuf);
-
+    return Py_BuildValue("O", pygobject_new(G_OBJECT(new_pixbuf)));
 }
 
 static PyObject*
