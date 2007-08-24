@@ -325,7 +325,7 @@ class Experiment(object):
 
             #for each track in area, export the data needed
             if item.track_list == []:
-                string = "Insect didn't entered in this area, no data available"
+                string = "Insect didn't enter in this area, no data available"
                 rows.append( ( _(string), "") )
             else:
                 rows.append( (_("Track List: "), "") )
@@ -334,8 +334,8 @@ class Experiment(object):
                                 _("Lenght (") + self.measurement_unit + ") ",
                                 _("Average Speed (") \
                                    + self.measurement_unit + "/s): ",
-                                _("Standard Deviation :"),
-                                _("Angular Standard Deviation :")) )
+                                _("Standard Deviation"),
+                                _("Angular Standard Deviation")) )
                 for trk in item.track_list:
                     rows.append( ("", trk.start_time, trk.end_time,
                                     trk.total_time, trk.tortuosity,
@@ -349,7 +349,6 @@ class Experiment(object):
                 rows.append( (_("Residence: "), item.residence) )
                 rows.append( (_("Residence (%): "),
                               item.residence_percentage * 100) )
-                rows.append( (_("Tortuosity: "), "") )
                 rows.append( (_("Average Lenght (") \
                                  + self.measurement_unit + "): ",
                               item.total_lenght / item.number_of_tracks) )
@@ -361,13 +360,9 @@ class Experiment(object):
                 value = item.total_lenght \
                          / (float(item.residence.seconds) \
                             + float(item.residence.microseconds/1000000))
-                rows.append( (_("Average Speed (") + self.measurement_unit \
+                rows.append( (_("Average Speed (") + self.measurement_unit\
                                 + "/s): ",
                               value) )
-
-                rows.append( (_("Standard Deviation :"), "") )
-                rows.append( (_("Angular Standard Deviation :"), "") )
-
             rows.append( ('') )
             rows.append( ('') )
 
@@ -498,15 +493,6 @@ class Experiment(object):
                         trk.AngleStandardDeviation = 0
                     #tortuosity
                     trk.tortuosity = cutils.tortuosity(trk.point_list)
-#                    sum1 = trk.point_list[-1].x_pos - trk.point_list[0].x_pos
-#                    sum2 = trk.point_list[-1].y_pos - trk.point_list[0].y_pos
-#                    value = pow(sum1, 2) + pow(sum2, 2)
-                    #TODO: using x_scale_ratio only, must use y_scale_ratio too
-#                    distance = sqrt(value) / self.x_scale_ratio
-#                    if trk.lenght > 0:
-#                        trk.tortuosity = 1 - distance / trk.lenght
-#                    else:
-#                        trk.tortuosity = 0
                 else:
                     trk.mean_lin_speed = 0
                     trk.meanAngleSpeed = 0

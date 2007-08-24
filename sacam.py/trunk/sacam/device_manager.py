@@ -269,7 +269,7 @@ class DeviceManager(object):
                    self.frame["width"]*4)
         if self.frame["format"] == "ARGB":
             return convert(pbuf)
-        return pbuf
+#        return pbuf
 
     def start_video(self, project, wait_click=False):
         ''' Start the video processing of the input. '''

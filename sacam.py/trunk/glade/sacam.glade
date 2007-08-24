@@ -2108,32 +2108,21 @@
                                     <property name="visible">True</property>
                                     <property name="label" translatable="yes">Line</property>
                                     <property name="response_id">0</property>
+                                    <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
-                                    <property name="group">radiobuttonEllipse</property>
+                                    <property name="group">radiobuttonCircle</property>
                                   </widget>
                                 </child>
                                 <child>
-                                  <widget class="GtkRadioButton" id="radiobuttonEllipse">
+                                  <widget class="GtkRadioButton" id="radiobuttonCircle">
                                     <property name="visible">True</property>
-                                    <property name="label" translatable="yes">Ellipse</property>
+                                    <property name="label" translatable="yes">Circle</property>
                                     <property name="response_id">0</property>
                                     <property name="active">True</property>
                                     <property name="draw_indicator">True</property>
                                   </widget>
                                   <packing>
                                     <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkRadioButton" id="radiobuttonRectangle">
-                                    <property name="visible">True</property>
-                                    <property name="label" translatable="yes">Rectangle</property>
-                                    <property name="response_id">0</property>
-                                    <property name="draw_indicator">True</property>
-                                    <property name="group">radiobuttonEllipse</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="position">2</property>
                                   </packing>
                                 </child>
                               </widget>
@@ -2212,7 +2201,7 @@ cm</property>
                     <child>
                       <widget class="GtkLabel" id="labelShapeXSize">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Size of shape (X Axis):</property>
+                        <property name="label" translatable="yes">Size of shape:</property>
                       </widget>
                       <packing>
                         <property name="expand">False</property>
@@ -2256,61 +2245,13 @@ cm</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkHBox" id="hboxShapeYSize">
-                    <child>
-                      <widget class="GtkLabel" id="labelShapeYSize">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Size of shape (Y Axis):</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkAlignment" id="alignment24">
-                        <property name="visible">True</property>
-                        <property name="xalign">0</property>
-                        <property name="yalign">0</property>
-                        <child>
-                          <placeholder/>
-                        </child>
-                      </widget>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkEntry" id="entryShapeYSize">
-                        <property name="visible">True</property>
-                        <property name="max_length">10</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkLabel" id="labelUnitYSize">
-                        <property name="visible">True</property>
-                      </widget>
-                      <packing>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <child>
                   <widget class="GtkHSeparator" id="hseparator1">
                     <property name="visible">True</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
                     <property name="padding">5</property>
-                    <property name="position">4</property>
+                    <property name="position">3</property>
                   </packing>
                 </child>
                 <child>
@@ -2322,7 +2263,7 @@ cm</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="position">5</property>
+                    <property name="position">4</property>
                   </packing>
                 </child>
                 <child>
@@ -2344,7 +2285,7 @@ cm</property>
                                 <child>
                                   <widget class="GtkLabel" id="label11">
                                     <property name="visible">True</property>
-                                    <property name="label" translatable="yes">X Axis:</property>
+                                    <property name="label" translatable="yes">Scale:</property>
                                   </widget>
                                 </child>
                                 <child>
@@ -2373,52 +2314,12 @@ cm</property>
                                 <property name="expand">False</property>
                               </packing>
                             </child>
-                            <child>
-                              <widget class="GtkHBox" id="hbox14">
-                                <property name="visible">True</property>
-                                <child>
-                                  <widget class="GtkLabel" id="label12">
-                                    <property name="visible">True</property>
-                                    <property name="label" translatable="yes">Y Axis:</property>
-                                  </widget>
-                                </child>
-                                <child>
-                                  <placeholder/>
-                                </child>
-                                <child>
-                                  <widget class="GtkEntry" id="entryYAxis">
-                                    <property name="visible">True</property>
-                                    <property name="editable">False</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <widget class="GtkLabel" id="labelUnitYAxis">
-                                    <property name="visible">True</property>
-                                  </widget>
-                                  <packing>
-                                    <property name="position">3</property>
-                                  </packing>
-                                </child>
-                              </widget>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
                           </widget>
                         </child>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="label10">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Scale</property>
-                        <property name="use_markup">True</property>
-                      </widget>
+                      <placeholder/>
                       <packing>
                         <property name="type">label_item</property>
                       </packing>
@@ -2426,7 +2327,7 @@ cm</property>
                   </widget>
                   <packing>
                     <property name="expand">False</property>
-                    <property name="position">6</property>
+                    <property name="position">5</property>
                   </packing>
                 </child>
               </widget>

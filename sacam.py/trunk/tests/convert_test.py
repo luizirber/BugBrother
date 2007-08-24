@@ -6,4 +6,4 @@ def get_pixbuf():
 
 if __name__ == "__main__":
     new_pixbuf = convert(get_pixbuf())
-    new_pixbuf.save("output.jpg", "jpeg", {"quality":100})
+    new_pixbuf.save("output.png", "png")
