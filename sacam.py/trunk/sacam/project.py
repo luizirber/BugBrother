@@ -18,7 +18,7 @@ from lxml import etree
 
 from sacam.i18n import _
 from sacam.areas import Track, Rectangle, Ellipse, Point, Area, Line
-import sacam.cutils
+from sacam.cutils import tortuosity
 
 class Project(object):
     ''' This class contains data used to define a project. '''
@@ -149,9 +149,10 @@ class Project(object):
 
         # for each experiment, collect all the data needed
         for exp in self.exp_list:
-            exp_rows = exp.export()
-            for row in exp_rows:
-                export_rows.append(row)
+            if exp.finished:
+                exp_rows = exp.export()
+                for row in exp_rows:
+                    export_rows.append(row)
 
         # at last, save the rows in the file
         filewriter.writerows(export_rows)
@@ -173,6 +174,7 @@ class Project(object):
         exp.threshold = deepcopy(self.current_experiment.threshold)
         exp.release_area = deepcopy(self.current_experiment.release_area)
         exp.areas_list = deepcopy(self.current_experiment.areas_list)
+        exp.finished = False
 
         self.exp_list.append(exp)
         self.current_experiment = exp
@@ -325,16 +327,18 @@ class Experiment(object):
 
             #for each track in area, export the data needed
             if item.track_list == []:
-                string = "Insect didn't enter in this area, no data available"
-                rows.append( ( _(string), "") )
+                string = _("Insect didn't enter in this area, no data "
+                           "available")
+                rows.append( ( string, "") )
             else:
                 rows.append( (_("Track List: "), "") )
                 rows.append( ("", _("Start Time "), _("End Time "),
                                 _("Residence "), _("Tortuosity "),
                                 _("Lenght (") + self.measurement_unit + ") ",
                                 _("Average Speed (") \
-                                   + self.measurement_unit + "/s): ",
+                                   + self.measurement_unit + "/s) ",
                                 _("Standard Deviation"),
+                                _("Angular Average Speed"),
                                 _("Angular Standard Deviation")) )
                 for trk in item.track_list:
                     rows.append( ("", trk.start_time, trk.end_time,
@@ -342,6 +346,7 @@ class Experiment(object):
                                     trk.lenght,
                                     trk.mean_lin_speed,
                                     trk.lin_speed_deviation,
+                                    trk.meanAngleSpeed,
                                     trk.angle_speed_deviation) )
 
                 rows.append( ('') )
@@ -357,9 +362,12 @@ class Experiment(object):
                               item.total_lenght) )
 
                 #TODO: this value is different from the calculated in the track
-                value = item.total_lenght \
-                         / (float(item.residence.seconds) \
-                            + float(item.residence.microseconds/1000000))
+                div = (float(item.residence.seconds)
+                       + float(item.residence.microseconds/1000000))
+                if div:
+                    value = item.total_lenght / div
+                else:
+                    value = 0
                 rows.append( (_("Average Speed (") + self.measurement_unit\
                                 + "/s): ",
                               value) )
@@ -367,13 +375,6 @@ class Experiment(object):
             rows.append( ('') )
 
         return rows
-
-    def prepare_point_list(self):
-        ''' Clear the point list to speed up the stats generation.
-
-            Discard the points where the insect didn't move inside a
-            defined threshold.'''
-        pass
 
     def prepare_areas_list(self):
         ''' Generate the tracks inside each area.'''
@@ -436,7 +437,6 @@ class Experiment(object):
                     temp = pow((previous_point.x_pos - current_point.x_pos) +
                                (previous_point.y_pos - current_point.y_pos), 2)
                     trk.distancePixels = sqrt(temp)
-                    #TODO: currently using only x_scale_ratio
                     value = float(trk.distancePixels) / self.x_scale_ratio
                     trk.distanceScaled = value
 
@@ -492,7 +492,7 @@ class Experiment(object):
                         trk.meanAngleSpeed = 0
                         trk.AngleStandardDeviation = 0
                     #tortuosity
-                    trk.tortuosity = cutils.tortuosity(trk.point_list)
+                    trk.tortuosity = tortuosity(trk.point_list)
                 else:
                     trk.mean_lin_speed = 0
                     trk.meanAngleSpeed = 0

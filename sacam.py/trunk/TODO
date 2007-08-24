@@ -6,11 +6,11 @@ DEPENDENCIES:
 INTERFACE:
     - Before closing the main window, ask if the project should be saved.
     - Put the menubar to work
-    - Change the icons of the dialogs for something more intuitive
-    - Disable VideoInput and TrackSimulator when doing the tracking
+    - DONE: Change the icons of the dialogs for something more intuitive
+    - DONE: Disable VideoInput and TrackSimulator when doing the tracking
     - TRACK SIMULATOR (TIP: can borrow code from areas dialog)
         - Don't change directly the data. Changes generate new tracks.
-    - ALMOST: Put more experiments in a project (currently handles only one)
+    - DONE: Put more experiments in a project (currently handles only one)
     - Transfer all the callbacks to the glade file (Is it viable?)
     - DeviceManager:
         - DONE: allow changes in the pipeline
@@ -33,7 +33,7 @@ INTERFACE:
     - SCALE DIALOG:
         - DONE: If shape is a line, disable Y_axis
         - When initializing verify if a scale shape was already drawn
-        - Must only calculate the scale if a shape was drawn
+        - DONE: Must only calculate the scale if a shape was drawn
         - Forbid counting pixels when mouse leave the image
     - AREAS DIALOG:
         - ALMOST: Resize areas in Areas dialog (still need to look at
@@ -48,11 +48,11 @@ INTERFACE:
         - DONE: Remove the Circle button
         - DONE: Implement the Remove button
         - DONE: Select the last appended area
-        - When an area is selected, redraw with a different color
+        - DONE: When an area is selected, redraw with a different color
         - DONE: Put focus in area name when dialog is shown
         - use the arrow keys to move the image
         - DONE: Allow the user to change the name of an area
-        - An area must be selected to allow "Set as Release Area" button to
+        - DONE: An area must be selected to allow "Set as Release Area" button to
           work.
         - FUTURE FEATURE: create a freeform shape, and allow the user to draw
                           the track format. Could be useful to the motion
@@ -65,8 +65,8 @@ INTERFACE:
         - DONE: Allow user to enter the name of the experiment.
     - VIDEO TRACKING
         - DONE: Put a small counter, with time and current X and Y coordinates.
-        - Draw the track when tracking
-        - Only draw the point where the insect is, don't draw the boxes
+        - DONE: Draw the track when tracking
+        - DONE: Only draw the point where the insect is, don't draw the boxes
           (tracking area, i.e.)
 
 DEPLOYMENT:
@@ -78,7 +78,7 @@ AREAS:
       what the area represents
 
 PROJECT:
-    - Project contains N experiments: each experiment has his own properties.
+    - DONE: Project contains N experiments: each experiment has his own properties.
       When the experiment is stopped, begin another experiment, with the same
       properties. Allow changes in these properties for the new experiment.
     - Save each experiment in a separated file, with three images: refimg+areas,
@@ -98,12 +98,12 @@ PROJECT:
       experiment.start_time code
 
 EXPERIMENT:
-    - verify the calculations, because of x_scale_ratio and y_scale_ratio
+    - DONE: verify the calculations, because of x_scale_ratio and y_scale_ratio
     - DONE: Generate reports in CSV format
 
 VIDEOPROCESSOR:
-    - allow clicks in the image to change the point where the insect is
-    - need some corrections with parameter bug_size, sometimes it don't
+    - DONE: allow clicks in the image to change the point where the insect is
+    - DONE: need some corrections with parameter bug_size, sometimes it don't
       catch the insect.
     VIDEOPROCESSORMODULE:
         - DONE: add points to the list
@@ -113,7 +113,7 @@ REPORT:
     - DONE: Use ponderate average? NO!
     - Put date in separate cell
     - Put all times in seconds
-    - angular average deviation -> angular standard deviation
+    - DONE: angular average deviation -> angular standard deviation
     - Resume: put a resume before the areas, resuming all the experiments
     - Allow extra variables in the report (put in Track Simulator)
     - In every division, verify if the divisor isn't ZERO!

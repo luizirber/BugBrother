@@ -346,7 +346,6 @@ class Interface(object):
             It is executed in every experiment present in the project.'''
         for exp in self.project.exp_list:
             if exp.finished:
-                exp.prepare_point_list()
                 exp.prepare_areas_list()
                 exp.prepare_stats()
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-08-21 16:54-0300\n"
+"POT-Creation-Date: 2007-08-24 11:23-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -80,59 +80,67 @@ msgstr ""
 msgid "Ellipse"
 msgstr ""
 
-#: ../sacam/project.py:331
+#: ../sacam/project.py:328
+msgid "Insect didn't enter in this area, no data available"
+msgstr ""
+
+#: ../sacam/project.py:332
 msgid "Track List: "
 msgstr ""
 
-#: ../sacam/project.py:332
+#: ../sacam/project.py:333
 msgid "Start Time "
 msgstr ""
 
-#: ../sacam/project.py:332
+#: ../sacam/project.py:333
 msgid "End Time "
 msgstr ""
 
-#: ../sacam/project.py:333
+#: ../sacam/project.py:334
 msgid "Residence "
 msgstr ""
 
-#: ../sacam/project.py:333
+#: ../sacam/project.py:334
 msgid "Tortuosity "
 msgstr ""
 
-#: ../sacam/project.py:334
+#: ../sacam/project.py:335
 msgid "Lenght ("
 msgstr ""
 
-#: ../sacam/project.py:335 ../sacam/project.py:363
+#: ../sacam/project.py:336 ../sacam/project.py:369
 msgid "Average Speed ("
 msgstr ""
 
-#: ../sacam/project.py:337
+#: ../sacam/project.py:338
 msgid "Standard Deviation"
 msgstr ""
 
-#: ../sacam/project.py:338
+#: ../sacam/project.py:339
+msgid "Angular Average Speed"
+msgstr ""
+
+#: ../sacam/project.py:340
 msgid "Angular Standard Deviation"
 msgstr ""
 
-#: ../sacam/project.py:348
+#: ../sacam/project.py:351
 msgid "Resume: "
 msgstr ""
 
-#: ../sacam/project.py:349
+#: ../sacam/project.py:352
 msgid "Residence: "
 msgstr ""
 
-#: ../sacam/project.py:350
+#: ../sacam/project.py:353
 msgid "Residence (%): "
 msgstr ""
 
-#: ../sacam/project.py:352
+#: ../sacam/project.py:355
 msgid "Average Lenght ("
 msgstr ""
 
-#: ../sacam/project.py:355
+#: ../sacam/project.py:358
 msgid "Total Lenght ("
 msgstr ""
 

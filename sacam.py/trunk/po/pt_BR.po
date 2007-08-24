@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-08-21 16:54-0300\n"
+"POT-Creation-Date: 2007-08-24 11:23-0300\n"
 "PO-Revision-Date: 2007-01-16 18:22-0200\n"
 "Last-Translator: Luiz Irber <luiz.irber@gmail.com>\n"
 "Language-Team: luiz.irber@gmail.com\n"
@@ -80,59 +80,67 @@ msgstr "Retângulo"
 msgid "Ellipse"
 msgstr "Elipse"
 
-#: ../sacam/project.py:331
+#: ../sacam/project.py:328
+msgid "Insect didn't enter in this area, no data available"
+msgstr "Inseto não entrou nesta área, dados indisponíveis"
+
+#: ../sacam/project.py:332
 msgid "Track List: "
 msgstr "Lista de trajetos: "
 
-#: ../sacam/project.py:332
+#: ../sacam/project.py:333
 msgid "Start Time "
 msgstr "Tempo inicial "
 
-#: ../sacam/project.py:332
+#: ../sacam/project.py:333
 msgid "End Time "
 msgstr "Tempo Final "
 
-#: ../sacam/project.py:333
+#: ../sacam/project.py:334
 msgid "Residence "
 msgstr "Residência "
 
-#: ../sacam/project.py:333
+#: ../sacam/project.py:334
 msgid "Tortuosity "
 msgstr "Tortuosidade "
 
-#: ../sacam/project.py:334
+#: ../sacam/project.py:335
 msgid "Lenght ("
 msgstr "Distância ("
 
-#: ../sacam/project.py:335 ../sacam/project.py:363
+#: ../sacam/project.py:336 ../sacam/project.py:369
 msgid "Average Speed ("
 msgstr "Velocidade Média ("
 
-#: ../sacam/project.py:337
+#: ../sacam/project.py:338
 msgid "Standard Deviation"
 msgstr "Desvio Padrão"
 
-#: ../sacam/project.py:338
+#: ../sacam/project.py:339
+msgid "Angular Average Speed"
+msgstr "Velocidade Angular Média"
+
+#: ../sacam/project.py:340
 msgid "Angular Standard Deviation"
 msgstr "Desvio Padrão Angular"
 
-#: ../sacam/project.py:348
+#: ../sacam/project.py:351
 msgid "Resume: "
 msgstr "Resumo: "
 
-#: ../sacam/project.py:349
+#: ../sacam/project.py:352
 msgid "Residence: "
 msgstr "Residência: "
 
-#: ../sacam/project.py:350
+#: ../sacam/project.py:353
 msgid "Residence (%): "
 msgstr "Residência (%): "
 
-#: ../sacam/project.py:352
+#: ../sacam/project.py:355
 msgid "Average Lenght ("
 msgstr "Distância Média ("
 
-#: ../sacam/project.py:355
+#: ../sacam/project.py:358
 msgid "Total Lenght ("
 msgstr "Distância Total ("
 
