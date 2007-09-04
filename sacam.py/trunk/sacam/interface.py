@@ -384,6 +384,27 @@ class Interface(object):
         else:
             self.invalid_scale = True
 
+        if not self.invalid_scale:
+            scale = self.project.current_experiment.x_scale_ratio
+            if not self.invalid_size:
+                widget = self.xml.get_widget("scaleSize")
+                widget.set_range(0, self.device_manager.frame["width"] / scale)
+                widget.set_value(self.project.bug_size / scale)
+                widget = self.xml.get_widget("scaleTolerance")
+                widget.set_range(0, self.device_manager.frame["width"] / scale)
+                widget.set_value(self.project.bug_size / scale / 2)
+            if not self.invalid_speed:
+                widget = self.xml.get_widget("scaleSpeed")
+                widget.set_range(0, self.device_manager.frame["width"] / scale)
+                widget.set_value(self.project.bug_max_speed / scale)
+
+                widget = self.xml.get_widget("labelSize")
+                widget.set_text( _("Size (") +
+                        self.project.current_experiment.measurement_unit +
+                        (") :") )
+                widget = self.xml.get_widget("labelSpeed")
+                widget = self.xml.get_widget("labelTolerance")
+
         self.connect_project_signals()
 
         prj = self.project.attributes[_("Project Name")]
