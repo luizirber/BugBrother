@@ -267,9 +267,10 @@ class DeviceManager(object):
                    gtk.gdk.COLORSPACE_RGB, True, 8,
                    self.frame["width"], self.frame["height"],
                    self.frame["width"]*4)
-        if self.frame["format"] == "ARGB":
-            return convert(pbuf)
-#        return pbuf
+# TODO: still need more debugging before enabling this
+#        if self.frame["format"] == "ARGB":
+#            return convert(pbuf)
+        return pbuf
 
     def start_video(self, project, wait_click=False):
         ''' Start the video processing of the input. '''
