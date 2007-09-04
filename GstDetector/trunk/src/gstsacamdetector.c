@@ -259,7 +259,7 @@ sacam_detector_class_init (gpointer klass, gpointer class_data)
 
   g_object_class_install_property (gobject_class, ARG_SPEED,
       g_param_spec_uint ("speed", "Speed",
-          "Set the maximum speed of the object to be tracked, in pixels/s",
+          "Set the maximum speed of the object to be tracked, in pixels/frame",
           0, G_MAXUINT, 10, /* min, max, default */
           G_PARAM_READWRITE));
 
@@ -692,21 +692,35 @@ sacam_detector_transform (GstBaseTransform * trans, GstBuffer * in,
       }
 
       gettimeofday (&end_time, NULL);
+
+      /* TODO: more experiments changing these paremeters, find the better
+       * result.
       width = filter->tracking_area.x_end - filter->tracking_area.x_begin;
+      if (width < filter->bug_size)
+          width = filter->bug_size;
       height = filter->tracking_area.y_end - filter->tracking_area.y_begin;
+      if (height < filter->bug_size)
+          height = filter->bug_size;
+      */
+
+      width = filter->bug_size;
+      height = filter->bug_size;
+
+      /* TODO: we can make a verification about the direction of movement
+       * here, this would make the algorithm more precise. */
       x_center = filter->tracking_area.x_begin + width/2;
       y_center = filter->tracking_area.y_begin + height/2;
 
       if (filter->draw_method & SACAM_DRAW_METHOD_BOX) {
           /* draw the box surrounding the tracked object */
           _draw_rectangle (filter->canvas, filter->width, filter->height,
-                      x_center, y_center, filter->bug_size, filter->bug_size);
+                      x_center, y_center, width, height);
           /* draw the box delimiting the maximum location where the
            * tracked object can be. */
           _draw_rectangle (filter->canvas, filter->width, filter->height,
                        x_center, y_center,
-                       filter->bug_size + filter->bug_speed,
-                       filter->bug_size + filter->bug_speed);
+                       width + filter->bug_speed,
+                       height + filter->bug_speed);
       }
 
       /* save the point on a list. data needed:
