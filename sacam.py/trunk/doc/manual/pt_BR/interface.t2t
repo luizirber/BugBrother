@@ -1,0 +1,44 @@
+
+= A Interface =
+Eis a janela principal do SACAM:
+% TODO: Substituir por uma imagem com input de camera
+
+[imagens/principal.png]
+
+Todas as funcionalidades do programa são acessíveis através desta janela. Na
+barra de ferramentas podemos ver quatro grupos de ícones. São eles:
+- Manipulação de arquivos de projeto:
+  Iniciar novo, carregar e salvar projetos.
+
+- Propriedades do experimento:
+  Informações gerais, imagem de referência, áreas, escalas e tamanho do inseto.
+
+- Controle de vídeo:
+  Iniciar processamento e propriedades do dispositivo de entrada.
+
+- Geração de relatório:
+  Processamento e geração de relatório.
+
+
+Além disso, temos três abas. São elas:
+
+
+- Entrada de vídeo: onde é possível visualizar o que a entrada de vídeo está
+  capturando no momento.
+
+- Simulador de trajetos: permite a correção manual de trilhas.
+
+- Gerenciador de projetos: permite adicionar dados descritivos ao projeto, assim
+  como modificar nomes de trilhas e experimentos.
+
+
+%!include: manipulacao.t2t
+
+
+%!include: propriedades.t2t
+
+
+%!include: controle.t2t
+
+
+%!include: relatorios.t2t

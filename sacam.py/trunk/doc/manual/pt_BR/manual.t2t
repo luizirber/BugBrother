@@ -1,5 +1,5 @@
 Manual do SACAM
-Luiz Carlos Irber Júnior
+Embrapa Instrumentação Agrícola
 Última atualização: %%date(%Y-%m-%d %I:%M %p)
 
 %! Target        : html
@@ -8,3 +8,5 @@ Luiz Carlos Irber Júnior
 %! Encoding      : UTF-8
 
 %!include: intro.t2t
+%!include: tecnologias.t2t
+%!include: interface.t2t

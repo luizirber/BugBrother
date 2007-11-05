@@ -1,0 +1,32 @@
+
+== Propriedades do Experimento ==
+
+[imagens/info.png]
+
+Informações básicas para identificação do projeto.
+
+------------------------------------------------------------------------------
+
+[imagens/refimage.png]
+
+Imagem de referência usada para desenho da trilha e definição das áreas.
+
+------------------------------------------------------------------------------
+
+[imagens/areas.png]
+
+Definição das áreas a serem utilizadas para a geração da estatística das 
+trilhas.
+
+------------------------------------------------------------------------------
+
+[imagens/scale.png]
+
+Escala (pixels/unidade de medida) a ser utilizada.
+
+------------------------------------------------------------------------------
+
+[imagens/bugsize.png]
+
+Tamanho e velocidade do inseto (para maior precisão da detecção de movimento).
+

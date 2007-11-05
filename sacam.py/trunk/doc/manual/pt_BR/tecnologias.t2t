@@ -1,2 +1,28 @@
 
-Este software foi escrito na linguagem de programação Python
+= Tecnologias Utilizadas =
+Este programa foi desenvolvido com o auxílio dos seguintes softwares:
+
+: **Python**
+Python é uma linguagem de programação interpretada criada por Guido Von Rossum.
+Por ser interpretada permite um rápido ciclo de desenvolvimento e teste, além de
+ser facilmente extensível com módulos em C, que permitem a utilização de
+bibliotecas já disponíveis. Por utilizar espaços como delimitadores de escopo e
+possuir uma sintaxe enxuta programas em Python tendem a ser facilmente legíveis,
+o que auxilia na posterior manutenção do programa.
+Site: http://www.python.org
+
+: **GStreamer**
+Gstreamer é um framework para desenvolvimento de aplicações multimídias. Na
+verdade, seu conceito permite utilizações diferentes, mas primariamente é usado
+para multimídia, já que a maioria de seus plugins tratam formatos de vídeo e
+áudio. Foi utilizado para fazer a captura e exibição de vídeo, e um plugin
+especial foi escrito para fazer a detecção de movimento.
+Site: http://gstreamer.freedesktop.org
+
+: **PyGTK**
+PyGTK são os bindings para Python da biblioteca gráfica GTK+, parte do ambiente
+desktop GNOME. A biblioteca GTK+ é escrita em C, mas orientada a objetos
+(através da implementação gobject), o que auxilia na portabilidade do código.
+Site: http://www.pygtk.org
+
+

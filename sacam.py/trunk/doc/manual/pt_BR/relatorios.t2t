@@ -1,0 +1,14 @@
+
+== Geração de Relatórios ==
+
+[imagens/processar.png]
+
+Inicia o processamento das estatísticas. Necessário antes de gerar o relatório.
+
+------------------------------------------------------------------------------
+
+[imagens/gerar-relatorio.png]
+
+Gera o relatório, em formato CSV (importável por quase todos os programas de 
+edição de planilhas).
+
