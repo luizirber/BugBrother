@@ -134,58 +134,6 @@
                   <widget class="GtkToolItem" id="toolitem18">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkButton" id="buttonPrint">
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="tooltip" translatable="yes">Print</property>
-                        <property name="response_id">0</property>
-                        <child>
-                          <widget class="GtkImage" id="image4">
-                            <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="stock">gtk-print</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkToolItem" id="toolitem4">
-                    <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkToggleButton" id="toggleTimer">
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="tooltip" translatable="yes">Timer</property>
-                        <property name="response_id">0</property>
-                        <child>
-                          <widget class="GtkImage" id="image34">
-                            <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="pixbuf">clock.png</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkToolItem" id="toolitem5">
-                    <property name="visible">True</property>
-                    <child>
                       <widget class="GtkVSeparator" id="vseparator1">
                         <property name="width_request">10</property>
                         <property name="visible">True</property>
@@ -198,7 +146,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem6">
+                  <widget class="GtkToolItem" id="toolitem4">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonProjProperties">
@@ -224,7 +172,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem7">
+                  <widget class="GtkToolItem" id="toolitem5">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonRefImg">
@@ -246,7 +194,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem8">
+                  <widget class="GtkToolItem" id="toolitem6">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonAreas">
@@ -272,7 +220,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem9">
+                  <widget class="GtkToolItem" id="toolitem7">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonScale">
@@ -298,7 +246,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem10">
+                  <widget class="GtkToolItem" id="toolitem8">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonInsectSize">
@@ -324,7 +272,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem11">
+                  <widget class="GtkToolItem" id="toolitem9">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkVSeparator" id="vseparator2">
@@ -339,7 +287,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem12">
+                  <widget class="GtkToolItem" id="toolitem10">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkToggleButton" id="buttonStart">
@@ -365,25 +313,20 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem13">
+                  <widget class="GtkToolItem" id="toolitem11">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkToolItem" id="toolitem16">
+                      <widget class="GtkButton" id="buttonPreferences">
                         <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip" translatable="yes">Preferences</property>
+                        <property name="response_id">0</property>
                         <child>
-                          <widget class="GtkButton" id="buttonPreferences">
+                          <widget class="GtkImage" id="image30">
                             <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">Preferences</property>
-                            <property name="response_id">0</property>
-                            <child>
-                              <widget class="GtkImage" id="image30">
-                                <property name="visible">True</property>
-                                <property name="xalign">0</property>
-                                <property name="yalign">0</property>
-                                <property name="stock">gtk-preferences</property>
-                              </widget>
-                            </child>
+                            <property name="xalign">0</property>
+                            <property name="yalign">0</property>
+                            <property name="stock">gtk-preferences</property>
                           </widget>
                         </child>
                       </widget>
@@ -395,7 +338,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem14">
+                  <widget class="GtkToolItem" id="toolitem12">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkVSeparator" id="vseparator3">
@@ -410,21 +353,26 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem15">
+                  <widget class="GtkToolItem" id="toolitem13">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkButton" id="buttonProcess">
+                      <widget class="GtkToolItem" id="toolitem16">
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="tooltip" translatable="yes">Process</property>
-                        <property name="response_id">0</property>
                         <child>
-                          <widget class="GtkImage" id="image21">
+                          <widget class="GtkButton" id="buttonProcess">
                             <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="stock">gtk-execute</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="tooltip" translatable="yes">Process</property>
+                            <property name="response_id">0</property>
+                            <child>
+                              <widget class="GtkImage" id="image21">
+                                <property name="visible">True</property>
+                                <property name="xalign">0</property>
+                                <property name="yalign">0</property>
+                                <property name="stock">gtk-execute</property>
+                              </widget>
+                            </child>
                           </widget>
                         </child>
                       </widget>
@@ -436,33 +384,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolItem" id="toolitem17">
-                    <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkButton" id="buttonTortuosity">
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="tooltip" translatable="yes">Tortuosity</property>
-                        <property name="response_id">0</property>
-                        <child>
-                          <widget class="GtkImage" id="image23">
-                            <property name="visible">True</property>
-                            <property name="xalign">0</property>
-                            <property name="yalign">0</property>
-                            <property name="pixbuf">tortuosity.png</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                  </widget>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">False</property>
-                  </packing>
-                </child>
-                <child>
-                  <widget class="GtkToolItem" id="toolitem19">
+                  <widget class="GtkToolItem" id="toolitem14">
                     <property name="visible">True</property>
                     <child>
                       <widget class="GtkButton" id="buttonReport">
@@ -519,6 +441,32 @@
                     <property name="homogeneous">False</property>
                   </packing>
                 </child>
+                <child>
+                  <widget class="GtkToolItem" id="toolitem15">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkToggleButton" id="toggleTimer">
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="can_focus">True</property>
+                        <property name="tooltip" translatable="yes">Timer</property>
+                        <property name="response_id">0</property>
+                        <child>
+                          <widget class="GtkImage" id="image34">
+                            <property name="visible">True</property>
+                            <property name="xalign">0</property>
+                            <property name="yalign">0</property>
+                            <property name="pixbuf">clock.png</property>
+                          </widget>
+                        </child>
+                      </widget>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
+                </child>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -561,51 +509,26 @@
                                       <widget class="GtkTable" id="tableProps">
                                         <property name="visible">True</property>
                                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                        <property name="n_rows">5</property>
+                                        <property name="n_rows">6</property>
                                         <property name="n_columns">2</property>
                                         <child>
-                                          <widget class="GtkLabel" id="labelDrawMethods">
+                                          <widget class="GtkLabel" id="labelPosition">
                                             <property name="visible">True</property>
                                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                            <property name="xalign">0.10000000149011612</property>
-                                            <property name="label" translatable="yes">Draw Methods:</property>
-                                          </widget>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkLabel" id="labelSize">
-                                            <property name="visible">True</property>
-                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                            <property name="xalign">0.10000000149011612</property>
-                                            <property name="label" translatable="yes">Size:</property>
                                           </widget>
                                           <packing>
-                                            <property name="top_attach">1</property>
-                                            <property name="bottom_attach">2</property>
+                                            <property name="left_attach">1</property>
+                                            <property name="right_attach">2</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkLabel" id="labelSpeed">
+                                          <widget class="GtkLabel" id="label10">
                                             <property name="visible">True</property>
                                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                                             <property name="xalign">0.10000000149011612</property>
-                                            <property name="label" translatable="yes">Speed:</property>
+                                            <property name="label" translatable="yes">Position:
+</property>
                                           </widget>
-                                          <packing>
-                                            <property name="top_attach">2</property>
-                                            <property name="bottom_attach">3</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkLabel" id="labelThreshold">
-                                            <property name="visible">True</property>
-                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                            <property name="xalign">0.10000000149011612</property>
-                                            <property name="label" translatable="yes">Threshold:</property>
-                                          </widget>
-                                          <packing>
-                                            <property name="top_attach">3</property>
-                                            <property name="bottom_attach">4</property>
-                                          </packing>
                                         </child>
                                         <child>
                                           <widget class="GtkVBox" id="vbox9">
@@ -651,37 +574,12 @@
                                           <packing>
                                             <property name="left_attach">1</property>
                                             <property name="right_attach">2</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkLabel" id="labelTolerance">
-                                            <property name="visible">True</property>
-                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                            <property name="xalign">0.10000000149011612</property>
-                                            <property name="label" translatable="yes">Tolerance:</property>
-                                          </widget>
-                                          <packing>
-                                            <property name="top_attach">4</property>
-                                            <property name="bottom_attach">5</property>
-                                          </packing>
-                                        </child>
-                                        <child>
-                                          <widget class="GtkHScale" id="scaleSize">
-                                            <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                                            <property name="adjustment">0 0 100 1 10 10</property>
-                                            <property name="digits">0</property>
-                                          </widget>
-                                          <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="right_attach">2</property>
                                             <property name="top_attach">1</property>
                                             <property name="bottom_attach">2</property>
                                           </packing>
                                         </child>
                                         <child>
-                                          <widget class="GtkHScale" id="scaleSpeed">
+                                          <widget class="GtkHScale" id="scaleSize">
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
@@ -696,6 +594,21 @@
                                           </packing>
                                         </child>
                                         <child>
+                                          <widget class="GtkHScale" id="scaleSpeed">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">True</property>
+                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                            <property name="adjustment">0 0 100 1 10 10</property>
+                                            <property name="digits">0</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="left_attach">1</property>
+                                            <property name="right_attach">2</property>
+                                            <property name="top_attach">3</property>
+                                            <property name="bottom_attach">4</property>
+                                          </packing>
+                                        </child>
+                                        <child>
                                           <widget class="GtkHScale" id="scaleThreshold">
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
@@ -706,8 +619,8 @@
                                           <packing>
                                             <property name="left_attach">1</property>
                                             <property name="right_attach">2</property>
-                                            <property name="top_attach">3</property>
-                                            <property name="bottom_attach">4</property>
+                                            <property name="top_attach">4</property>
+                                            <property name="bottom_attach">5</property>
                                           </packing>
                                         </child>
                                         <child>
@@ -721,14 +634,71 @@
                                           <packing>
                                             <property name="left_attach">1</property>
                                             <property name="right_attach">2</property>
+                                            <property name="top_attach">5</property>
+                                            <property name="bottom_attach">6</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="labelDrawMethods">
+                                            <property name="visible">True</property>
+                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                            <property name="xalign">0.10000000149011612</property>
+                                            <property name="label" translatable="yes">Draw Methods:</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="top_attach">1</property>
+                                            <property name="bottom_attach">2</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="labelSize">
+                                            <property name="visible">True</property>
+                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                            <property name="xalign">0.10000000149011612</property>
+                                            <property name="label" translatable="yes">Size:</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="top_attach">2</property>
+                                            <property name="bottom_attach">3</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="labelSpeed">
+                                            <property name="visible">True</property>
+                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                            <property name="xalign">0.10000000149011612</property>
+                                            <property name="label" translatable="yes">Speed:</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="top_attach">3</property>
+                                            <property name="bottom_attach">4</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="labelThreshold">
+                                            <property name="visible">True</property>
+                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                            <property name="xalign">0.10000000149011612</property>
+                                            <property name="label" translatable="yes">Threshold:</property>
+                                          </widget>
+                                          <packing>
                                             <property name="top_attach">4</property>
                                             <property name="bottom_attach">5</property>
                                           </packing>
                                         </child>
+                                        <child>
+                                          <widget class="GtkLabel" id="labelTolerance">
+                                            <property name="visible">True</property>
+                                            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                                            <property name="xalign">0.10000000149011612</property>
+                                            <property name="label" translatable="yes">Tolerance:</property>
+                                          </widget>
+                                          <packing>
+                                            <property name="top_attach">5</property>
+                                            <property name="bottom_attach">6</property>
+                                          </packing>
+                                        </child>
                                       </widget>
-                                    </child>
-                                    <child>
-                                      <placeholder/>
                                     </child>
                                   </widget>
                                 </child>

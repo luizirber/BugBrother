@@ -105,7 +105,7 @@ class DeviceManager(object):
     def position_change(self, widget, event):
         self.processor.set_new_tracking_area(event.x, event.y)
 
-    def connect_processor_props(self, xml):
+    def connect_processor_props(self, xml, prj):
         #draw property
         prop = xml.get_widget("checkbuttonMask")
         prop.set_active(self.processor.detector.props.draw & (1))
@@ -119,28 +119,44 @@ class DeviceManager(object):
         prop.set_active(self.processor.detector.props.draw & (1 << 2))
         prop.connect("toggled", self.set_draw_methods, "box")
 
+        max_value = (min(self.frame["height"], self.frame["width"])
+                     /prj.current_experiment.x_scale_ratio)
+
         #size property
         prop = xml.get_widget("scaleSize")
-        prop.set_range(0, min(self.frame["height"], self.frame["width"]))
+        prop.set_range(0, max_value)
         prop.set_value(self.processor.detector.props.size)
-        prop.connect("value-changed", self.set_scale, "size")
+        prop.connect("value-changed", self.set_scale, "size", prj)
+        prop.connect("format-value", self.format_value,
+                     prj.current_experiment.x_scale_ratio,
+                     prj.current_experiment.measurement_unit)
 
         #speed property
         prop = xml.get_widget("scaleSpeed")
-        prop.set_range(0, min(self.frame["height"], self.frame["width"]))
+        prop.set_range(0, max_value)
         prop.set_value(self.processor.detector.props.speed)
-        prop.connect("value-changed", self.set_scale, "speed")
+        prop.connect("value-changed", self.set_scale, "speed", prj)
+        prop.connect("format-value", self.format_value,
+                     prj.current_experiment.x_scale_ratio,
+                     prj.current_experiment.measurement_unit)
 
         #threshold property
         prop = xml.get_widget("scaleThreshold")
         prop.set_value(self.processor.detector.props.threshold)
-        prop.connect("value-changed", self.set_scale, "threshold")
+        prop.connect("value-changed", self.set_scale, "threshold", prj)
 
         #tolerance property
         prop = xml.get_widget("scaleTolerance")
-        prop.set_range(0, min(self.frame["height"], self.frame["width"]))
+        prop.set_range(0, max_value)
         prop.set_value(self.processor.detector.props.tolerance)
-        prop.connect("value-changed", self.set_scale, "tolerance")
+        prop.connect("value-changed", self.set_scale, "tolerance", prj)
+        prop.connect("format-value", self.format_value,
+                     prj.current_experiment.x_scale_ratio,
+                     prj.current_experiment.measurement_unit)
+
+        #position property
+        prop = xml.get_widget("labelPosition")
+        self.processor.detector.connect("notify::position", self.set_position)
 
     def set_draw_methods(self, button, type):
         self.processor.draw[type] = button.get_active()
@@ -149,9 +165,19 @@ class DeviceManager(object):
                                         | self.processor.draw["track"] << 1 \
                                         | self.processor.draw["box"]   << 2
 
-    def set_scale(self, scale, prop):
-        self.processor.set_property(prop, int(scale.get_value()))
+    def set_scale(self, scale, prop, prj):
+        if prop == "threshold":
+            self.processor.set_property(prop, int(scale.get_value()))
+        else:
+            self.processor.set_property(prop,
+                 int(scale.get_value()*prj.current_experiment.x_scale_ratio))
 
+    def set_position(self, param, label):
+        label.set_value(self.processor.detector.position)
+
+    def format_value(self, widget, value, scale, unit):
+        return str(int(value/scale)) + " " + unit
+        
     def set_default_pipeline_string(self, button):
         ''' Set the default pipeline string, using the v4lsrc element. '''
 

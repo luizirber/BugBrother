@@ -15,7 +15,6 @@ class Videoprocessor(object):
                           ("box"  , 0 ) ])
 
     def start(self, source, project):
-        #TODO: set threshold, size, speed, tolerance based on project
         self.detector.props.active = True
         self.detector.props.draw =   self.draw["mask"] \
                                    | self.draw["track"] << 1 \
@@ -49,9 +48,9 @@ class Videoprocessor(object):
     def get_detector_name(self):
         return self.detector.get_factory().props.name
 
-    def set_property(self, name, value):
-        self.detector.set_property(name, value)
-
+    def set_property(self, prop, value):
+        self.detector.set_property(prop, value)
+        
     def set_new_tracking_area(self, x_pos, y_pos):
         size = self.detector.props.size
         x0, y0 = x_pos - size/2, y_pos - size/2

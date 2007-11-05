@@ -37,8 +37,6 @@ class Interface(object):
 
         outputarea = self.xml.get_widget("videoOutputArea")
         self.device_manager = DeviceManager(outputarea)
-        self.device_manager.connect_processor_props(self.xml)
-        self.running = None
 
         self.project = Project()
         self.project.current_experiment.release_area = [ 0, 0,
@@ -53,6 +51,9 @@ class Interface(object):
         self.tracksimulator = TrackSimulator(self.xml, self.project,
                                              self.device_manager)
         self.projectmanager = ProjectManager(self.xml, self.project)
+
+        self.device_manager.connect_processor_props(self.xml, self.project)
+        self.running = None
 
         widget = self.xml.get_widget("buttonNew")
         widget.connect("clicked", self.new_project)
@@ -436,13 +437,7 @@ class Interface(object):
         widget = self.xml.get_widget("buttonInsectSize")
         widget.set_sensitive(False)
 
-        widget = self.xml.get_widget("buttonTortuosity")
-        widget.set_sensitive(False)
-
         widget = self.xml.get_widget("buttonReport")
-        widget.set_sensitive(False)
-
-        widget = self.xml.get_widget("buttonPrint")
         widget.set_sensitive(False)
 
         widget = self.xml.get_widget("buttonProcess")
@@ -484,13 +479,7 @@ class Interface(object):
 #             self.project.current_experiment.areas_list == [] ):
 #            pass
 #        else:
-        widget = self.xml.get_widget("buttonTortuosity")
-        widget.set_sensitive(True)
-
         widget = self.xml.get_widget("buttonReport")
-        widget.set_sensitive(True)
-
-        widget = self.xml.get_widget("buttonPrint")
         widget.set_sensitive(True)
 
         if not self.invalid_refimg:
