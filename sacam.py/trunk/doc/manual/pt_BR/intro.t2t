@@ -1,0 +1,11 @@
+
+= Introdução =
+SACAM, o Sistema de Análise Comportamental de Animais em Movimento, foi criado
+para auxiliar no trabalho de entomólogos em tarefas como acompanhamento e
+geração de trilhas percorridas por animais em ambientes controlados. A partir
+dessa trilha é possível gerar análises estatísticas ligadas ao experimento.
+
+Este software foi desenvolvido no CNPDIA (Centro Nacional de Pesquisa e
+Desenvolvimento em Instrumentação Agropecuária), em São Carlos, um dos 
+institutos da Embrapa, Empresa Brasileira de Pesquisa Agropecuária.
+

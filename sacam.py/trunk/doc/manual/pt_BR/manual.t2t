@@ -1,0 +1,10 @@
+Manual do SACAM
+Luiz Carlos Irber Júnior
+Última atualização: %%date(%Y-%m-%d %I:%M %p)
+
+%! Target        : html
+%! Options(html) : --toc
+%! Options(tex)  : --toc
+%! Encoding      : UTF-8
+
+%!include: intro.t2t
