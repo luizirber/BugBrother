@@ -42,7 +42,6 @@ templates = []
 data_files = [
      ('share/doc/sacam', ('AUTHORS', 'ChangeLog', 'CONTRIBUTORS',
                           'COPYING', 'README', 'NEWS')),
-     ('share/doc/sacam', listfiles('doc', '*')),
      ('share/applications', listfiles('.', 'sacam.desktop')),
      ('$datadir/glade', listfiles('glade', '*.glade')),
      ('$datadir/glade', listfiles('glade', '*.png')),
