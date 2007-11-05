@@ -462,8 +462,6 @@ class Interface(object):
 
         widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(1).set_sensitive(False)
-
-        widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(2).set_sensitive(False)
 
         self.xml.get_widget("vboxProps").set_sensitive(True)
@@ -531,8 +529,6 @@ class Interface(object):
 
         widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(1).set_sensitive(True)
-
-        widget = self.xml.get_widget("mainNotebook")
         widget.get_nth_page(2).set_sensitive(True)
 
 #        self.xml.get_widget("vboxProps").set_sensitive(False)
