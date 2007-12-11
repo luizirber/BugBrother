@@ -165,28 +165,28 @@ class Shape(object):
 
     def contains(self, value):
         ''' Verify if the given point value is inside the shape. '''
-
         pass
 
     def area(self):
         ''' Return the area of the shape. '''
-
         pass
 
     def draw(self, canvas, graph_context):
         ''' Draw the shape in the given canvas using the given
             graphic context.'''
+        pass
 
+    def get_bounds(self):
+        ''' Return a list on the form (y0, x0, y1, x1), representing
+            the bounding rectangle. '''
         pass
 
     def object_to_xml(self, root):
         ''' Convert the instance to a lxml element '''
-
         pass
 
     def build_from_xml(self, root):
         ''' From a lxml element build a Shape instance '''
-
         pass
 
 
@@ -226,6 +226,13 @@ class Rectangle(Shape):
                               self.x_center - self.width/2,
                               self.y_center - self.height/2,
                               self.width, self.height)
+
+    def get_bounds(self):
+        y_0 = self.y_center - self.height/2
+        x_0 = self.x_center - self.width/2
+        y_1 = self.y_center + self.height/2
+        x_1 = self.x_center + self.width/2
+        return [int(y_0), int(x_0), int(y_1), int(x_1)]
 
     def build_from_xml(self, shp):
         ''' From a lxml element build a Rectangle instance '''
@@ -298,6 +305,13 @@ class Ellipse(Shape):
                         int(self.y_center - self.y_axis),
                         int(self.x_axis * 2), int(self.y_axis * 2),
                         0, 360*64)
+
+    def get_bounds(self):
+        y_0 = int(self.y_center - self.y_axis)
+        x_0 = int(self.x_center - self.x_axis)
+        y_1 = int(self.y_center + self.y_axis)
+        x_1 = int(self.x_center + self.x_axis)
+        return [y_0, x_0, y_1, x_1]
 
     def build_from_xml(self, shp):
         ''' From a lxml element build a Ellipse instance '''

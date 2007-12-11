@@ -153,20 +153,8 @@ class AreasDiag(object):
                 project.current_experiment.areas_list.append(new_area)
 
             # set the release_area attribute of the current experiment
-            if isinstance(self.release_area, Rectangle):
-                y_0 = self.release_area.y_center - self.release_area.height/2
-                x_0 = self.release_area.x_center - self.release_area.width/2
-                y_1 = self.release_area.y_center + self.release_area.height/2
-                x_1 = self.release_area.x_center + self.release_area.width/2
-                release = [int(y_0), int(x_0), int(y_1), int(x_1)]
-                self.project.current_experiment.release_area = release
-            elif isinstance(self.release_area, Ellipse):
-                y_0 = int(self.release_area.y_center - self.release_area.y_axis)
-                x_0 = int(self.release_area.x_center - self.release_area.x_axis)
-                y_1 = int(self.release_area.y_center + self.release_area.y_axis)
-                x_1 = int(self.release_area.x_center + self.release_area.x_axis)
-                release = [y_0, x_0, y_1, x_1]
-                self.project.current_experiment.release_area = release
+            release = self.release_area.get_bounds()
+            self.project.current_experiment.release_area = release
 
             self.window.hide_all()
             interface.update_state()
@@ -204,7 +192,6 @@ class AreasDiag(object):
             self.red_gc.set_rgb_fg_color(color)
         self.selected_shape.draw(output.window, self.red_gc)
         output.queue_draw()
-
 
     def set_shape(self, wid, shape_type):
         ''' Set shape with one of the valid values. '''

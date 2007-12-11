@@ -16,7 +16,6 @@ import gst
 from kiwi.environ import environ
 
 from sacam.gstvideoprocessor import Videoprocessor
-from sacam.cutils import convert
 from sacam.i18n import APP_NAME
 
 class DeviceManager(object):
