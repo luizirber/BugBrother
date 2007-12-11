@@ -42,3 +42,12 @@ Além disso, temos três abas. São elas:
 
 
 %!include: relatorios.t2t
+
+
+%!include: entrada.t2t
+
+
+%!include: simulador.t2t
+
+
+%!include: gerenciador.t2t

@@ -1,0 +1,11 @@
+[epydoc]
+
+name: SACAM
+url: http://bugbrother.sourceforge.net
+
+modules: ../sacam/
+
+output: html
+target: api/
+
+graph: all

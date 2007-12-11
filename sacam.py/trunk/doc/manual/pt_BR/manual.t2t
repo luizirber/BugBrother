@@ -10,3 +10,4 @@ Embrapa Instrumentação Agrícola
 %!include: intro.t2t
 %!include: tecnologias.t2t
 %!include: interface.t2t
+%!include: executando.t2t
