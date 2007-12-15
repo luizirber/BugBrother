@@ -81,13 +81,13 @@ class Interface(object):
         self.hnd["areas"] = None
         self.connect_project_signals()
 
-        #the "invalid_*" variables
-        self.invalid_size = True
-        self.invalid_areas = True
-        self.invalid_scale = True
-        self.invalid_refimg = True
-        self.invalid_speed = True
-        self.invalid_path = True
+        self.invalid = {}
+        self.invalid["size"] = True
+        self.invalid["areas"] = True
+        self.invalid["scale"] = True
+        self.invalid["refimg"] = True
+        self.invalid["speed"] = True
+        self.invalid["path"] = True
 
         #home dir
         home = os.curdir
@@ -251,15 +251,15 @@ class Interface(object):
             Asks the user where to save the project,
             and save it.
         '''
-        if self.invalid_path:
+        if self.invalid["path"]:
             fsdialog = gtk.FileChooserDialog(_("Save Project"), self.window,
                          gtk.FILE_CHOOSER_ACTION_SAVE,
                         (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL,
                          gtk.STOCK_OK, gtk.RESPONSE_OK) )
             fsdialog.set_current_folder(self.home)
 
-            self.invalid_path = True
-            while self.invalid_path:
+            self.invalid["path"] = True
+            while self.invalid["path"]:
                 response = fsdialog.run()
                 if response == gtk.RESPONSE_OK :
                     current = fsdialog.get_current_folder()
@@ -276,10 +276,10 @@ class Interface(object):
                         errordiag.run()
                         errordiag.destroy()
                     else:
-                        self.invalid_path = False
+                        self.invalid["path"] = False
                         fsdialog.destroy()
                 else:
-                    self.invalid_path = True
+                    self.invalid["path"] = True
                     fsdialog.destroy()
                     return
 
@@ -304,7 +304,7 @@ class Interface(object):
             image.set_from_stock(gtk.STOCK_MEDIA_STOP,
                                  gtk.ICON_SIZE_SMALL_TOOLBAR)
             widget.set_image(image)
-            if self.invalid_areas:
+            if self.invalid["areas"]:
                 self.device_manager.start_video(prj, wait_click=True)
             else:
                 self.device_manager.start_video(prj, wait_click=False)
@@ -356,47 +356,47 @@ class Interface(object):
         ''' Verify if the project values are consistent and update the
             user interface. '''
         if len(self.project.current_experiment.areas_list) == 0:
-            self.invalid_areas = True
+            self.invalid["areas"] = True
         else:
-            self.invalid_areas = False
+            self.invalid["areas"] = False
 
         if self.project.refimage:
-            self.invalid_refimg = False
+            self.invalid["refimg"] = False
         else:
-            self.invalid_refimg = True
+            self.invalid["refimg"] = True
 
         if self.project.filename:
             if os.path.exists(self.project.filename):
-                self.invalid_path = False
+                self.invalid["path"] = False
             else:
-                self.invalid_path = True
+                self.invalid["path"] = True
 
         if self.project.bug_size:
-            self.invalid_size = False
+            self.invalid["size"] = False
         else:
-            self.invalid_size = True
+            self.invalid["size"] = True
 
         if self.project.bug_max_speed:
-            self.invalid_speed = False
+            self.invalid["speed"] = False
         else:
-            self.invalid_speed = True
+            self.invalid["speed"] = True
 
         if ( self.project.current_experiment.x_scale_ratio
              and self.project.current_experiment.y_scale_ratio ):
-            self.invalid_scale = False
+            self.invalid["scale"] = False
         else:
-            self.invalid_scale = True
+            self.invalid["scale"] = True
 
-        if not self.invalid_scale:
+        if not self.invalid["scale"]:
             scale = self.project.current_experiment.x_scale_ratio
-            if not self.invalid_size:
+            if not self.invalid["size"]:
                 widget = self.xml.get_widget("scaleSize")
                 widget.set_range(0, self.device_manager.frame["width"] / scale)
                 widget.set_value(self.project.bug_size / scale)
                 widget = self.xml.get_widget("scaleTolerance")
                 widget.set_range(0, self.device_manager.frame["width"] / scale)
                 widget.set_value(self.project.bug_size / scale / 2)
-            if not self.invalid_speed:
+            if not self.invalid["speed"]:
                 widget = self.xml.get_widget("scaleSpeed")
                 widget.set_range(0, self.device_manager.frame["width"] / scale)
                 widget.set_value(self.project.bug_max_speed / scale)
@@ -484,22 +484,18 @@ class Interface(object):
         widget = self.xml.get_widget("buttonReport")
         widget.set_sensitive(True)
 
-        if not self.invalid_refimg:
+        if not self.invalid["refimg"]:
             widget = self.xml.get_widget("buttonProcess")
             widget.set_sensitive(True)
 
-        if self.invalid_refimg:
-            pass
-        else:
+        if not self.invalid["refimg"]:
             widget = self.xml.get_widget("buttonAreas")
             widget.set_sensitive(True)
 
             widget = self.xml.get_widget("buttonScale")
             widget.set_sensitive(True)
 
-            if self.invalid_scale:
-                pass
-            else:
+            if not self.invalid["scale"]:
                 widget = self.xml.get_widget("buttonInsectSize")
                 widget.set_sensitive(True)
 
@@ -510,7 +506,8 @@ class Interface(object):
         widget.set_sensitive(True)
 
         widget = self.xml.get_widget("buttonStart")
-        if self.invalid_size or self.invalid_scale or self.invalid_speed:
+        if (self.invalid["size"] or self.invalid["scale"]
+            or self.invalid["speed"]):
             widget.set_sensitive(False)
         else:
             widget.set_sensitive(True)
