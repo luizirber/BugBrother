@@ -1,7 +1,6 @@
 ''' Main module, it manages the relationship of the others.'''
 
 import os
-from datetime import datetime
 
 import pygtk
 pygtk.require('2.0')
@@ -13,7 +12,6 @@ pygst.require('0.10')
 import gst
 
 from kiwi.environ import environ
-from sacam.i18n import _, APP_NAME
 
 from sacam.device_manager import DeviceManager
 from sacam.project import Project
@@ -21,6 +19,7 @@ from sacam.dialogs import PropDiag, RefimgDiag, AreasDiag
 from sacam.dialogs import ScaleDiag, InsectsizeDiag
 from sacam.tracksimulator import TrackSimulator
 from sacam.projectmanager import ProjectManager
+from sacam.i18n import _, APP_NAME
 
 class Interface(object):
     ''' Main class, control the interface of the program.
@@ -43,11 +42,11 @@ class Interface(object):
                                          self.device_manager.frame["width"],
                                          self.device_manager.frame["height"] ]
 
-        self.propdiag = PropDiag.PropDiag()
-        self.refimgdiag = RefimgDiag.RefimgDiag(self.xml)
-        self.areasdiag = AreasDiag.AreasDiag(self.project, self.xml)
-        self.scalediag = ScaleDiag.ScaleDiag(self.xml, self.project)
-        self.insectsizediag = InsectsizeDiag.InsectsizeDiag(self.xml)
+        self.propdiag = PropDiag()
+        self.refimgdiag = RefimgDiag()
+        self.areasdiag = AreasDiag(self.project)
+        self.scalediag = ScaleDiag(self.project)
+        self.insectsizediag = InsectsizeDiag()
         self.tracksimulator = TrackSimulator(self.xml, self.project,
                                              self.device_manager)
         self.projectmanager = ProjectManager(self.xml, self.project)
@@ -120,6 +119,8 @@ class Interface(object):
             Every time a project is created, some signals need to be
             reconnected. '''
 
+        #TODO: must run update_state after each time these dialogs
+        # run.
         widget = self.xml.get_widget("buttonStart")
         if self.video_hnd:
             widget.disconnect(self.video_hnd)
@@ -130,7 +131,7 @@ class Interface(object):
         if self.prop_hnd:
             widget.disconnect(self.prop_hnd)
         self.prop_hnd = widget.connect("clicked", self.propdiag.run,
-                                        self.project, self.xml)
+                                        self.project)
 
         widget = self.xml.get_widget("buttonScale")
         if self.scale_hnd:
@@ -180,10 +181,9 @@ class Interface(object):
                 diag.destroy()
                 self.project = Project()
 
-        response = self.propdiag.run(None, self.project, self.xml)
+        response = self.propdiag.run(None, self.project)
 
         if response == False :
-            self.update_state()
             return
 
         self.device_manager.pipeline_start()
@@ -528,6 +528,6 @@ class Interface(object):
         gtk.main_quit()
 
 if __name__ == "__main__":
-    BASE = Interface()
-    BASE.main()
+    program = Interface()
+    program.main()
 

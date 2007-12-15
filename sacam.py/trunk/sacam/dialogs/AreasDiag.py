@@ -5,9 +5,10 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-from sacam.areas import Ellipse, Rectangle, Area, Line
+from kiwi.environ import environ
 
-from sacam.i18n import _
+from sacam.areas import Ellipse, Rectangle, Area, Line
+from sacam.i18n import _, APP_NAME
 
 class AreasDiag(object):
     ''' This dialog contains the code necessary to create areas for the
@@ -16,8 +17,10 @@ class AreasDiag(object):
         It contains the code to move the areas and save them in the experiment,
         too. '''
 
-    def __init__(self, project, xml):
-        self.xml = xml
+    def __init__(self, project):
+        gladefile = environ.find_resource('glade', 'areas.glade')
+        self.xml = gtk.glade.XML(gladefile, domain=APP_NAME)
+
         self.project = project
         self.output_handler = None
 

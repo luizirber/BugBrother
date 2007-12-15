@@ -5,16 +5,19 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-from sacam.areas import Ellipse, Rectangle, Area, Line
+from kiwi.environ import environ
 
-from sacam.i18n import _
+from sacam.areas import Ellipse, Rectangle, Area, Line
+from sacam.i18n import _, APP_NAME
 
 class InsectsizeDiag(object):
     ''' Dialog that control the insect size and speed, parameters
         needed to make the videoprocessor faster. '''
 
-    def __init__(self, xml):
-        self.xml = xml
+    def __init__(self):
+        gladefile = environ.find_resource('glade', 'insectsize.glade')
+        self.xml = gtk.glade.XML(gladefile, domain=APP_NAME)
+
         self.project = None
     
     def run(self, wid, project, interface):

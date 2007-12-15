@@ -5,15 +5,18 @@ pygtk.require('2.0')
 import gtk
 import gobject
 
-from sacam.areas import Ellipse, Rectangle, Area, Line
+from kiwi.environ import environ
 
-from sacam.i18n import _
+from sacam.areas import Ellipse, Rectangle, Area, Line
+from sacam.i18n import _, APP_NAME
 
 class ScaleDiag(object):
     ''' Dialog that control the scale of the project. '''
 
-    def __init__(self, xml, project):
-        self.xml = xml
+    def __init__(self, project):
+        gladefile = environ.find_resource('glade', 'scale.glade')
+        self.xml = gtk.glade.XML(gladefile, domain=APP_NAME)
+
         self.project = project
         self.output_handler = None
         

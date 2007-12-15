@@ -34,8 +34,9 @@ class DeviceManager(object):
 
     def __init__(self, video_output):
 
-        gladefile = environ.find_resource('glade', 'sacam.glade')
+        gladefile = environ.find_resource('glade', 'devicemanager.glade')
         windowname = "devicemanager"
+
         self.xml = gtk.glade.XML(gladefile, windowname, domain=APP_NAME)
         self.devicewindow = self.xml.get_widget(windowname)
         self.devicewindow.connect("delete-event", self.delete)
