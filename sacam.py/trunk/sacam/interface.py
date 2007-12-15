@@ -72,12 +72,13 @@ class Interface(object):
         widget = self.xml.get_widget("buttonReport")
         widget.connect("clicked", self.report)
 
-        self.video_hnd = None
-        self.prop_hnd = None
-        self.scale_hnd = None
-        self.size_hnd = None
-        self.refimg_hnd = None
-        self.areas_hnd = None
+        self.hnd = {}
+        self.hnd["video"] = None
+        self.hnd["prop"] = None
+        self.hnd["scale"] = None
+        self.hnd["size"] = None
+        self.hnd["refimg"] = None
+        self.hnd["areas"] = None
         self.connect_project_signals()
 
         #the "invalid_*" variables
@@ -122,41 +123,42 @@ class Interface(object):
         #TODO: must run update_state after each time these dialogs
         # run.
         widget = self.xml.get_widget("buttonStart")
-        if self.video_hnd:
-            widget.disconnect(self.video_hnd)
-        self.video_hnd = widget.connect("clicked", self.start_video,
-                                         self.project)
+        if self.hnd["video"]:
+            widget.disconnect(self.hnd["video"])
+        self.hnd["video"] = widget.connect("clicked", self.start_video,
+                                           self.project)
 
         widget = self.xml.get_widget("buttonProjProperties")
-        if self.prop_hnd:
-            widget.disconnect(self.prop_hnd)
-        self.prop_hnd = widget.connect("clicked", self.propdiag.run,
-                                        self.project)
+        if self.hnd["prop"]:
+            widget.disconnect(self.hnd["prop"])
+        self.hnd["prop"] = widget.connect("clicked", self.propdiag.run,
+                                          self.project)
 
         widget = self.xml.get_widget("buttonScale")
-        if self.scale_hnd:
-            widget.disconnect(self.scale_hnd)
-        self.scale_hnd = widget.connect("clicked", self.scalediag.run,
-                                         self.project, self)
+        if self.hnd["scale"]:
+            widget.disconnect(self.hnd["scale"])
+        self.hnd["scale"] = widget.connect("clicked", self.scalediag.run,
+                                           self.project, self)
 
         widget = self.xml.get_widget("buttonInsectSize")
-        if self.size_hnd:
-            widget.disconnect(self.size_hnd)
-        self.size_hnd = widget.connect("clicked", self.insectsizediag.run,
-                                        self.project, self)
+        if self.hnd["size"]:
+            widget.disconnect(self.hnd["size"])
+        self.hnd["size"] = widget.connect("clicked", self.insectsizediag.run,
+                                          self.project, self)
 
         widget = self.xml.get_widget("buttonRefImg")
-        if self.refimg_hnd:
-            widget.disconnect(self.refimg_hnd)
-        self.refimg_hnd = widget.connect("clicked", self.refimgdiag.run,
-                                          self.project, self.device_manager,
-                                          self)
+        if self.hnd["refimg"]:
+            widget.disconnect(self.hnd["refimg"])
+        self.hnd["refimg"] = widget.connect("clicked", self.refimgdiag.run,
+                                            self.project, self.device_manager,
+                                            self)
 
         widget = self.xml.get_widget("buttonAreas")
-        if self.areas_hnd:
-            widget.disconnect(self.areas_hnd)
-        self.areas_hnd = widget.connect("clicked", self.areasdiag.run,
-                                         self.project, self)
+        if self.hnd["areas"]:
+            widget.disconnect(self.hnd["areas"])
+        self.hnd["areas"] = widget.connect("clicked", self.areasdiag.run,
+                                           self.project, self)
+
         self.tracksimulator.set_project(self.project)
 
     def new_project(self, widget):
