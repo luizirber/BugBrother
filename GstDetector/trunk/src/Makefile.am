@@ -11,9 +11,8 @@ libgstsacam_la_SOURCES = gstsacam.c gstsacamdetector.c \
 # add other _CFLAGS and _LIBS as needed
 libgstsacam_la_CFLAGS = $(GST_CFLAGS) \
                         $(GST_BASE_CFLAGS) \
-                        $(GST_PLUGINS_BASE_CFLAGS) \
-                        -I$(top_srcdir)/gst/videofilter -g
-libgstsacam_la_LIBADD = $(GST_PLUGINS_BASE_LIBS) -lgstvideo-@GST_MAJORMINOR@ \
+                        $(GSTPB_BASE_CFLAGS)
+libgstsacam_la_LIBADD = $(GSTPB_BASE_LIBS) -lgstvideo-@GST_MAJORMINOR@ \
                         $(GST_BASE_LIBS) \
                         $(GST_LIBS)
 libgstsacam_la_LDFLAGS = $(GST_PLUGIN_LDFLAGS)
