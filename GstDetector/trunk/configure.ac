@@ -95,7 +95,7 @@ PKG_CHECK_MODULES(GSTPB_BASE,
 dnl Give a warning if we don't have gstreamer libs
 dnl you can turn this into an error if you need them
 if test "x$HAVE_GSTPB_BASE" = "xno"; then
-  AC_MSG_NOTICE(no GStreamer Plugins Base libraries found (gstreamer-plugins-base-$GST_MAJORMINOR))
+  AC_MSG_ERROR(no GStreamer Plugins Base libraries found (gstreamer-plugins-base-$GST_MAJORMINOR))
 fi
 
 dnl make _CFLAGS and _LIBS available
